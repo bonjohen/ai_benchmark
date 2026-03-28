@@ -79,6 +79,7 @@ async def update_profile(
             else:
                 setattr(m, key, value)
     await session.flush()
+    await session.refresh(m)
     return m
 
 

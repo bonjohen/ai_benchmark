@@ -101,6 +101,7 @@ async def update_target(
             else:
                 setattr(t, key, value)
     await session.flush()
+    await session.refresh(t)
     return t
 
 

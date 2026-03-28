@@ -161,6 +161,7 @@ async def update_status(
     if error_message:
         run.error_message = error_message
     await session.flush()
+    await session.refresh(run)
     return run
 
 

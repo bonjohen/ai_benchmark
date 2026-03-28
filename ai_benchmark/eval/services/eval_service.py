@@ -86,6 +86,7 @@ async def update_evaluation(
     if is_archived is not None:
         ed.is_archived = is_archived
     await session.flush()
+    await session.refresh(ed)
     return ed
 
 
