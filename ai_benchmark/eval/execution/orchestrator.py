@@ -171,20 +171,18 @@ class RunOrchestrator:
         await session.flush()
 
     async def score_run(self, session: AsyncSession, run_id: int) -> Run:
-        """Set status=scoring, invoke scorer runner, compute aggregates.
-
-        Scoring implementation is deferred to E4 (ScorerRunner).
-        This method sets up the lifecycle hooks.
-        """
+        """Set status=scoring, invoke scorer runner, compute aggregates."""
         run = await session.get(Run, run_id)
         if run is None:
             raise ValueError(f"Run {run_id} not found")
 
         await run_service.update_status(session, run_id, "scoring")
 
-        # E4 will plug in ScorerRunner here
-        # For now, compute basic aggregate metrics from item results
-        await self._compute_basic_aggregates(session, run_id)
+        from ..scoring.scorer_runner import ScorerRunner
+
+        runner = ScorerRunner()
+        await runner.score_run(session, run_id)
+        await runner.compute_aggregates(session, run_id)
 
         return await self.finalize_run(session, run_id)
 
