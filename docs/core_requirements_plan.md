@@ -159,17 +159,17 @@ Each phase summary includes a `Changes hosted at:` field. Populate this with the
 
 | Task | Status | Started | Completed | Description |
 |---|---|---|---|---|
-| 5.1 | Open | — | — | Reuters collector — poll `/technology/artificial-intelligence/`, Artificial Intelligencer newsletter. High-confidence secondary tier. 3–6h polling. Key file: `sources/news/reuters.py` |
-| 5.2 | Open | — | — | TechCrunch collector — poll AI category. Medium-confidence discovery tier. Flag material claims for confirmation. Key file: `sources/news/techcrunch.py` |
-| 5.3 | Open | — | — | News confidence tier system — assign `confidence_tier` per source classification (`high_secondary`, `medium_discovery`). Wire into `ClaimRecord`. Key file: `processing/normalizer.py` |
-| 5.4 | Open | — | — | HF Forums minimal metadata collector — title, author, timestamp, tags, outbound links only. Discovery-only per requirements. Key file: `sources/community/hf_forums.py` |
-| 5.5 | Open | — | — | GitHub discovery collector — poll watched orgs via API. Track new repos, releases, README changes, tags. Key file: `sources/community/github_discovery.py` |
-| 5.6 | Open | — | — | HF leaderboard docs collector — poll leaderboard docs index as meta-source for new community benchmarks. Key file: `sources/benchmarks/__init__.py` or dedicated |
-| 5.7 | Open | — | — | Full source coverage integration test — verify all 22 sources registered, each returns well-formed results against fixtures. Key file: `tests/test_full_coverage.py` |
+| 5.1 | Completed | 2026-03-28 14:00 PST | 2026-03-28 14:10 PST | Reuters collector — poll `/technology/artificial-intelligence/`, Artificial Intelligencer newsletter. High-confidence secondary tier. 3–6h polling. Key file: `sources/news/reuters.py` |
+| 5.2 | Completed | 2026-03-28 14:00 PST | 2026-03-28 14:10 PST | TechCrunch collector — poll AI category. Medium-confidence discovery tier. Flag material claims for confirmation. Key file: `sources/news/techcrunch.py` |
+| 5.3 | Completed | 2026-03-28 14:00 PST | 2026-03-28 14:10 PST | News confidence tier system — `confidence_tier_for_classification()` maps source classification to tier. Each collector sets its own `CONFIDENCE_TIER` on items. Key file: `processing/normalizer.py` |
+| 5.4 | Completed | 2026-03-28 14:00 PST | 2026-03-28 14:10 PST | HF Forums minimal metadata collector — title, author, timestamp, tags, outbound links only. Discovery-only per requirements. Key file: `sources/community/hf_forums.py` |
+| 5.5 | Completed | 2026-03-28 14:00 PST | 2026-03-28 14:10 PST | GitHub discovery collector — poll watched orgs via API. Track new repos, releases, README changes, tags. Key file: `sources/community/github_discovery.py` |
+| 5.6 | Completed | 2026-03-28 14:00 PST | 2026-03-28 14:10 PST | HF leaderboard docs collector — poll leaderboard docs index as meta-source for new community benchmarks. Key file: `sources/community/hf_leaderboard_docs.py` |
+| 5.7 | Completed | 2026-03-28 14:10 PST | 2026-03-28 14:15 PST | Full source coverage integration test — verify all 21 polled sources registered (S2 is enrichment-only), each returns well-formed results against fixtures. 18 new tests (96 total). Key file: `tests/test_full_coverage.py` |
 
 ### Phase 5 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** Reuters and TechCrunch news collectors with confidence tiers (high_secondary, medium_discovery). HF Forums minimal-metadata collector (title, author, tags, outbound links; empty body). GitHub discovery collector for 7 watched AI orgs with repo+release tracking. HF Leaderboard Docs collector for community benchmark discovery. Confidence tier mapping added to normalizer. Registry updated to 21 polled collectors (all 22 sources minus S2 enrichment client). 18 new tests (96 total).
 - **Changes hosted at:** TBD
 - **Commit:** `Phase 5: News and community integrations — all 22 sources covered`
 

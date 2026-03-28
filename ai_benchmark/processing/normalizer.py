@@ -110,6 +110,19 @@ def extract_date(text: str) -> str | None:
     return None
 
 
+# Source classification → confidence tier mapping
+CONFIDENCE_TIERS: dict[str, str] = {
+    "primary": "official_self_report",
+    "secondary": "high_secondary",
+    "discovery-only": "low_discovery",
+}
+
+
+def confidence_tier_for_classification(classification: str) -> str:
+    """Map a source classification to the appropriate confidence tier."""
+    return CONFIDENCE_TIERS.get(classification, "low_discovery")
+
+
 def classify_event_type(title: str, body: str = "") -> str:
     """Classify an event into one of the defined types based on keywords."""
     combined = f"{title} {body}".lower()

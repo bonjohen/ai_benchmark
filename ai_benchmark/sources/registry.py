@@ -13,9 +13,14 @@ from .benchmarks.lmarena import LMArenaCollector
 from .benchmarks.swebench import SWEBenchCollector
 from .benchmarks.terminal_bench import TerminalBenchCollector
 from .cohere import CohereCollector
+from .community.github_discovery import GitHubDiscoveryCollector
+from .community.hf_forums import HFForumsCollector
+from .community.hf_leaderboard_docs import HFLeaderboardDocsCollector
 from .google import GoogleCollector
 from .meta import MetaCollector
 from .mistral import MistralCollector
+from .news.reuters import ReutersCollector
+from .news.techcrunch import TechCrunchCollector
 from .openai import OpenAICollector
 from .research.arxiv import ArxivCollector
 from .research.hf_papers import HFPapersCollector
@@ -42,6 +47,13 @@ COLLECTOR_CLASSES: dict[str, type[SourceCollector]] = {
     # Research
     "arXiv": ArxivCollector,
     "Hugging Face Papers": HFPapersCollector,
+    # News
+    "Reuters": ReutersCollector,
+    "TechCrunch": TechCrunchCollector,
+    # Community
+    "Hugging Face Forums": HFForumsCollector,
+    "GitHub": GitHubDiscoveryCollector,
+    "Hugging Face Leaderboard Docs": HFLeaderboardDocsCollector,
 }
 
 
@@ -52,7 +64,7 @@ def get_collector(source_config: SourceConfig, **kwargs) -> SourceCollector:
         raise ValueError(
             f"No collector registered for organization: {source_config.organization}"
         )
-    if cls is MetaCollector:
+    if cls in (MetaCollector, GitHubDiscoveryCollector):
         return cls(source_config, github_token=kwargs.get("github_token"))
     return cls(source_config)
 
