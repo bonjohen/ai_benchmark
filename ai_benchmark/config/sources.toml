@@ -1,0 +1,509 @@
+# AI Benchmark Intelligence Pipeline — Source Catalog
+# All 22 monitored sources with their pages and polling configuration.
+
+# ─── Primary Sources: Official Vendor Pages ───
+
+[[sources]]
+source_name = "OpenAI"
+category = "official company source"
+organization = "OpenAI"
+homepage_url = "https://openai.com/news/"
+base_domain = "openai.com"
+trust_rating = 5.0
+source_role = "primary source for model launches, API changes, pricing, system cards"
+classification = "primary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://openai.com/news/product-releases/"
+page_type = "product-news index"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://platform.openai.com/docs/changelog"
+page_type = "api changelog"
+polling_frequency = "6h"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://platform.openai.com/docs/models"
+page_type = "model catalog"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://openai.com/api/pricing/"
+page_type = "pricing"
+polling_frequency = "daily"
+priority = true
+
+[[sources]]
+source_name = "Anthropic"
+category = "official company source"
+organization = "Anthropic"
+homepage_url = "https://www.anthropic.com/news"
+base_domain = "anthropic.com"
+trust_rating = 5.0
+source_role = "primary source for Claude announcements, system cards, pricing"
+classification = "primary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://www.anthropic.com/news"
+page_type = "newsroom"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://www.anthropic.com/system-cards"
+page_type = "system-card index"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://docs.anthropic.com/en/docs/about-claude/models"
+page_type = "model catalog"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://docs.anthropic.com/en/docs/about-claude/pricing"
+page_type = "pricing"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://docs.anthropic.com/en/release-notes/api"
+page_type = "api release notes"
+polling_frequency = "6h"
+
+[[sources]]
+source_name = "Google Gemini API / Google DeepMind"
+category = "official company source"
+organization = "Google"
+homepage_url = "https://ai.google.dev/"
+base_domain = "ai.google.dev"
+trust_rating = 5.0
+source_role = "primary source for Gemini models, pricing, release notes"
+classification = "primary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://ai.google.dev/gemini-api/docs/changelog"
+page_type = "api changelog"
+polling_frequency = "6h"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://ai.google.dev/pricing"
+page_type = "pricing"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://ai.google.dev/gemini-api/docs/models/gemini"
+page_type = "model catalog"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://blog.google/technology/google-deepmind/"
+page_type = "research blog"
+polling_frequency = "daily"
+
+[[sources]]
+source_name = "xAI"
+category = "official company source"
+organization = "xAI"
+homepage_url = "https://x.ai/"
+base_domain = "x.ai"
+trust_rating = 4.5
+source_role = "primary source for Grok announcements, API release notes, pricing"
+classification = "primary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://docs.x.ai/docs/release-notes"
+page_type = "release notes"
+polling_frequency = "6h"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://docs.x.ai/developers/models"
+page_type = "model catalog / pricing"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://x.ai/news"
+page_type = "news"
+polling_frequency = "daily"
+
+[[sources]]
+source_name = "Mistral AI"
+category = "official company source"
+organization = "Mistral AI"
+homepage_url = "https://mistral.ai/news/"
+base_domain = "mistral.ai"
+trust_rating = 5.0
+source_role = "primary source for model launches, open-weight releases, API updates"
+classification = "primary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://docs.mistral.ai/getting-started/changelog"
+page_type = "changelog"
+polling_frequency = "6h"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://mistral.ai/news/"
+page_type = "news"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://mistral.ai/pricing"
+page_type = "pricing"
+polling_frequency = "daily"
+
+[[sources]]
+source_name = "Cohere"
+category = "official company source"
+organization = "Cohere"
+homepage_url = "https://cohere.com/blog"
+base_domain = "cohere.com"
+trust_rating = 4.5
+source_role = "primary source for enterprise-model announcements, release notes"
+classification = "primary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://docs.cohere.com/changelog/release-notes"
+page_type = "release notes"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://cohere.com/blog"
+page_type = "blog"
+polling_frequency = "daily"
+
+[[sources]]
+source_name = "Meta Open Source AI"
+category = "official company source"
+organization = "Meta"
+homepage_url = "https://ai.meta.com/opensourceAI/"
+base_domain = "github.com"
+trust_rating = 4.5
+source_role = "primary source for Llama repos, model utilities, safety tools"
+classification = "primary"
+collection_method = "github_api"
+
+[[sources.pages]]
+canonical_url = "https://github.com/meta-llama"
+page_type = "github org"
+polling_frequency = "6h"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://ai.meta.com/opensourceAI/"
+page_type = "landing page"
+polling_frequency = "daily"
+
+# ─── Secondary Sources: Benchmarks / Leaderboards ───
+
+[[sources]]
+source_name = "Artificial Analysis"
+category = "benchmark / leaderboard"
+organization = "Artificial Analysis"
+homepage_url = "https://artificialanalysis.ai/leaderboards/models"
+base_domain = "artificialanalysis.ai"
+trust_rating = 4.5
+source_role = "independent benchmark and price/speed comparator"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://artificialanalysis.ai/leaderboards/models"
+page_type = "leaderboard"
+polling_frequency = "6h"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://artificialanalysis.ai/text/arena?tab=Ranking"
+page_type = "methodology"
+polling_frequency = "weekly"
+
+[[sources]]
+source_name = "LMArena"
+category = "benchmark / arena leaderboard"
+organization = "LMArena"
+homepage_url = "https://lmarena.ai/leaderboard/"
+base_domain = "lmarena.ai"
+trust_rating = 4.5
+source_role = "human-preference arena for text, image, vision"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources]]
+source_name = "LiveBench"
+category = "benchmark / evaluation project"
+organization = "LiveBench"
+homepage_url = "https://livebench.ai/"
+base_domain = "livebench.ai"
+trust_rating = 4.5
+source_role = "contamination-resistant, frequently refreshed benchmark"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://livebench.ai/"
+page_type = "leaderboard"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://livebench.ai/livebench.pdf"
+page_type = "methodology pdf"
+polling_frequency = "weekly"
+
+[[sources]]
+source_name = "SWE-bench"
+category = "benchmark / coding evaluation"
+organization = "SWE-bench team"
+homepage_url = "https://www.swebench.com/"
+base_domain = "swebench.com"
+trust_rating = 4.5
+source_role = "coding-agent benchmark and leaderboard"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://www.swebench.com/verified.html"
+page_type = "leaderboard"
+polling_frequency = "daily"
+priority = true
+
+[[sources]]
+source_name = "GAIA"
+category = "benchmark / agent evaluation"
+organization = "GAIA benchmark"
+homepage_url = "https://huggingface.co/gaia-benchmark"
+base_domain = "huggingface.co"
+trust_rating = 4.5
+source_role = "general AI assistant benchmark"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://huggingface.co/spaces/gaia-benchmark/leaderboard"
+page_type = "leaderboard"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://huggingface.co/gaia-benchmark"
+page_type = "org page"
+polling_frequency = "daily"
+
+[[sources]]
+source_name = "Humanity's Last Exam"
+category = "benchmark / leaderboard"
+organization = "Scale AI"
+homepage_url = "https://scale.com/leaderboard/humanitys_last_exam"
+base_domain = "scale.com"
+trust_rating = 4.5
+source_role = "frontier knowledge/reasoning exam"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://scale.com/leaderboard/humanitys_last_exam"
+page_type = "leaderboard"
+polling_frequency = "daily"
+priority = true
+
+[[sources]]
+source_name = "Terminal-Bench"
+category = "benchmark / agent evaluation"
+organization = "Stanford x Laude"
+homepage_url = "https://www.tbench.ai/"
+base_domain = "tbench.ai"
+trust_rating = 4.5
+source_role = "terminal-environment agent benchmark"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://www.tbench.ai/"
+page_type = "leaderboard"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://www.tbench.ai/docs/registry"
+page_type = "registry"
+polling_frequency = "weekly"
+
+# ─── Research Discovery Sources ───
+
+[[sources]]
+source_name = "arXiv recent lists"
+category = "research-discovery source"
+organization = "arXiv / Cornell"
+homepage_url = "https://arxiv.org/list/cs.AI/recent"
+base_domain = "arxiv.org"
+trust_rating = 4.5
+source_role = "early paper discovery"
+classification = "discovery-only"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://arxiv.org/list/cs.AI/recent"
+page_type = "recent submissions"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://arxiv.org/list/cs.CL/recent"
+page_type = "recent submissions"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://arxiv.org/list/cs.LG/recent"
+page_type = "recent submissions"
+polling_frequency = "12h"
+
+[[sources]]
+source_name = "Hugging Face Papers"
+category = "research-discovery source"
+organization = "Hugging Face community"
+homepage_url = "https://huggingface.co/papers"
+base_domain = "huggingface.co"
+trust_rating = 4.0
+source_role = "community-amplified paper discovery"
+classification = "discovery-only"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://huggingface.co/papers"
+page_type = "papers index"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://huggingface.co/papers/trending"
+page_type = "trending papers"
+polling_frequency = "daily"
+
+[[sources]]
+source_name = "Semantic Scholar"
+category = "searchable research database"
+organization = "Ai2"
+homepage_url = "https://www.semanticscholar.org/"
+base_domain = "semanticscholar.org"
+trust_rating = 4.5
+source_role = "searchable research database and API"
+classification = "secondary"
+collection_method = "api"
+
+[[sources.pages]]
+canonical_url = "https://api.semanticscholar.org/graph/v1"
+page_type = "api endpoint"
+polling_frequency = "on_demand"
+
+# ─── News Sources ───
+
+[[sources]]
+source_name = "Reuters AI"
+category = "reputable news source"
+organization = "Reuters"
+homepage_url = "https://www.reuters.com/technology/artificial-intelligence/"
+base_domain = "reuters.com"
+trust_rating = 5.0
+source_role = "high-quality secondary reporting and AI newsletter"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://www.reuters.com/technology/artificial-intelligence/"
+page_type = "news index"
+polling_frequency = "3h"
+priority = true
+
+[[sources]]
+source_name = "TechCrunch AI"
+category = "reputable trade-press source"
+organization = "TechCrunch"
+homepage_url = "https://techcrunch.com/category/artificial-intelligence/"
+base_domain = "techcrunch.com"
+trust_rating = 4.0
+source_role = "fast-moving startup, product, and ecosystem coverage"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://techcrunch.com/category/artificial-intelligence/"
+page_type = "news index"
+polling_frequency = "6h"
+
+# ─── Community / Ecosystem Sources ───
+
+[[sources]]
+source_name = "GitHub"
+category = "searchable ecosystem source"
+organization = "GitHub"
+homepage_url = "https://github.com/"
+base_domain = "github.com"
+trust_rating = 4.5
+source_role = "official repos, releases, SDKs, eval harnesses"
+classification = "primary"
+collection_method = "github_api"
+
+[[sources.pages]]
+canonical_url = "https://github.com/openai"
+page_type = "github org"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/anthropics"
+page_type = "github org"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/google"
+page_type = "github org"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/mistralai"
+page_type = "github org"
+polling_frequency = "12h"
+
+[[sources]]
+source_name = "Hugging Face Forums"
+category = "community / ecosystem source"
+organization = "Hugging Face community"
+homepage_url = "https://discuss.huggingface.co/"
+base_domain = "discuss.huggingface.co"
+trust_rating = 3.0
+source_role = "discovery-only community source"
+classification = "discovery-only"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://discuss.huggingface.co/"
+page_type = "forum index"
+polling_frequency = "daily"
+
+[[sources]]
+source_name = "Hugging Face leaderboards and eval docs"
+category = "benchmark directory / evaluation infrastructure"
+organization = "Hugging Face"
+homepage_url = "https://huggingface.co/docs/leaderboards/en/index"
+base_domain = "huggingface.co"
+trust_rating = 4.5
+source_role = "searchable index for community-managed eval surfaces"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://huggingface.co/docs/leaderboards/en/index"
+page_type = "leaderboard docs"
+polling_frequency = "weekly"
