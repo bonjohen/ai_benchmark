@@ -142,58 +142,58 @@ Configure `structlog` with JSON output, bound context (source_name, page_url). W
 `Fetcher` class wrapping `httpx.AsyncClient`. Configurable user-agent rotation, request timeout, retry with exponential backoff (3 attempts), concurrency semaphore (default 5), proxy support. Returns `FetchResult` dataclass: status_code, headers, body_text, elapsed_ms, fetched_at. Handles 403 (log + skip), 429 (respect Retry-After), connection errors, timeouts.
 
 - **Key file:** `ai_benchmark/collection/fetcher.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:16 PST
+- **Completed:** 2026-03-28 10:22 PST
 
 ### Task 2.2 — HTML cleaning and text extraction
 
 `clean_html()` strips scripts, styles, nav, footer, ads; extracts main content area; normalizes whitespace. Uses BeautifulSoup + lxml. Configurable CSS selectors per source.
 
 - **Key file:** `ai_benchmark/collection/differ.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:16 PST
+- **Completed:** 2026-03-28 10:22 PST
 
 ### Task 2.3 — HTML diffing engine
 
 `diff_snapshots(old_text, new_text)` returning `DiffResult`: changed (bool), added_lines, removed_lines, change_ratio (float 0–1), diff_html. Semantic layer detects structural changes (new changelog items, new pricing rows, new articles) vs cosmetic noise. Configurable noise threshold (default change_ratio < 0.01).
 
 - **Key file:** `ai_benchmark/collection/differ.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:16 PST
+- **Completed:** 2026-03-28 10:22 PST
 
 ### Task 2.4 — Snapshot storage and comparison
 
 `SnapshotManager`: `store_snapshot(page_id, content, content_hash)`, `get_latest_snapshot(page_id)`, `compare_with_latest(page_id, new_content)`. SHA-256 content hashing for fast no-change detection before running the full differ.
 
 - **Key file:** `ai_benchmark/collection/snapshot.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:16 PST
+- **Completed:** 2026-03-28 10:22 PST
 
 ### Task 2.5 — Base API client for REST sources
 
 `APIClient` base class for JSON API sources. Handles auth headers (Bearer tokens, API keys from config), rate limiting, pagination. Subclassable for Semantic Scholar, GitHub, HF APIs.
 
 - **Key file:** `ai_benchmark/collection/api_client.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:16 PST
+- **Completed:** 2026-03-28 10:22 PST
 
 ### Task 2.6 — Integration tests with fixture HTML
 
 Sample HTML snapshots in `tests/fixtures/` (changelog, pricing, newsroom). Test full fetch → clean → diff → store cycle with `respx` mocks. Verify identical content → `changed=False`, simulated changelog addition → correct diff.
 
 - **Key files:** `tests/test_fetcher.py`, `tests/test_differ.py`, `tests/test_snapshot.py`, `tests/fixtures/`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:22 PST
+- **Completed:** 2026-03-28 10:28 PST
 
 ### Phase 2 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** Async HTTP fetcher with retry/backoff/429 handling, HTML cleaner (strips noise tags, extracts via CSS selectors), semantic diff engine (text diff + structural change detection), snapshot manager with SHA-256 fast-path, base API client with pagination, 3 HTML fixture files, 16 new tests (24 total passing).
 - **Changes hosted at:** TBD
 - **Commit:** `git commit -m "Phase 2: Core collection engine (fetch, diff, store)"`
 
