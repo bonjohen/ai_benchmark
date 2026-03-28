@@ -10,7 +10,6 @@ def configure_logging(log_level: str = "INFO", log_format: str = "json") -> None
     processors: list[structlog.types.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
-        structlog.stdlib.add_logger_name,
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.UnicodeDecoder(),
@@ -28,3 +27,21 @@ def configure_logging(log_level: str = "INFO", log_format: str = "json") -> None
         logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=True,
     )
+
+
+async def bootstrap_pipeline():
+    """Initialize the full pipeline — engine, session factory, models.
+
+    Used by the scheduler and CLI for programmatic setup.
+    """
+    from .config.settings import PipelineSettings
+    from .models.base import Base, create_engine, create_session_factory
+    from .models import events, research, sources  # noqa: F401
+
+    settings = PipelineSettings()
+    configure_logging(settings.log_level, settings.log_format)
+
+    engine = create_engine(settings.database_url)
+    session_factory = create_session_factory(engine)
+
+    return settings, engine, session_factory

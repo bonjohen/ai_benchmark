@@ -1,0 +1,113 @@
+# Source polling schedule configuration
+# Maps source organizations to cron expressions
+# Format: "minute hour day_of_month month day_of_week"
+
+# Official changelogs/release notes — every 6-12 hours
+[[schedules]]
+organization = "OpenAI"
+cron = "0 */6 * * *"
+max_concurrent = 2
+
+[[schedules]]
+organization = "Anthropic"
+cron = "15 */6 * * *"
+max_concurrent = 2
+
+[[schedules]]
+organization = "Google"
+cron = "30 */6 * * *"
+max_concurrent = 2
+
+[[schedules]]
+organization = "xAI"
+cron = "45 */12 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "Mistral AI"
+cron = "0 */12 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "Cohere"
+cron = "15 */12 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "Meta"
+cron = "30 */12 * * *"
+max_concurrent = 1
+
+# Benchmark leaderboards — daily to every 6 hours
+[[schedules]]
+organization = "Artificial Analysis"
+cron = "0 */6 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "LMArena"
+cron = "0 */6 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "LiveBench"
+cron = "0 8 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "SWE-bench"
+cron = "0 9 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "GAIA"
+cron = "0 10 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "HLE"
+cron = "0 11 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "Terminal-Bench"
+cron = "0 12 * * *"
+max_concurrent = 1
+
+# Research feeds — every 12-24 hours
+[[schedules]]
+organization = "arXiv"
+cron = "0 6,18 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "Hugging Face Papers"
+cron = "30 6,18 * * *"
+max_concurrent = 1
+
+# News — Reuters every 3-6 hours, TechCrunch every 6-12 hours
+[[schedules]]
+organization = "Reuters"
+cron = "0 */3 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "TechCrunch"
+cron = "0 */6 * * *"
+max_concurrent = 1
+
+# Community — daily
+[[schedules]]
+organization = "Hugging Face Forums"
+cron = "0 7 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "GitHub"
+cron = "0 8 * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "Hugging Face Leaderboard Docs"
+cron = "0 9 * * *"
+max_concurrent = 1

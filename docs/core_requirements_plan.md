@@ -206,18 +206,18 @@ Each phase summary includes a `Changes hosted at:` field. Populate this with the
 
 | Task | Status | Started | Completed | Description |
 |---|---|---|---|---|
-| 7.1 | Open | — | — | APScheduler integration — async scheduler, cron triggers per page from `schedules.toml`, SQLite-backed job store, configurable concurrency. Key file: `scheduling/scheduler.py` |
-| 7.2 | Open | — | — | Cadence configuration — `schedules.toml` mapping sources to cron expressions (changelogs 6h, Reuters 3–6h, daily sources). Parse and validate. Key files: `config/schedules.toml`, `scheduling/cadence.py` |
-| 7.3 | Open | — | — | Error handling and health tracking — per-job retry with backoff, circuit breaker, `last_success_at`/`last_failure_at`/`consecutive_failures` tracking, 24h failure warnings. Key file: `scheduling/scheduler.py` |
-| 7.4 | Open | — | — | CLI operations — `collect` (run one/all immediately), `status` (per-source health), `query` (search events), `export` (JSON/CSV dump). Key file: `ai_benchmark/cli.py` |
-| 7.5 | Open | — | — | Query and reporting — `get_events()`, `get_claims()`, `get_cross_refs()`, `get_unconfirmed_claims()`, `get_recent_changes()`. JSON/CSV export. Key files: `reporting/query.py`, `reporting/export.py` |
-| 7.6 | Open | — | — | Application bootstrap and daemon mode — wire config, db init, scheduler start, graceful shutdown signal handling. Key file: `ai_benchmark/main.py` |
-| 7.7 | Open | — | — | End-to-end integration tests — scheduler cadence triggers, full pipeline cycle, graceful shutdown mid-cycle. Key files: `tests/test_scheduler.py`, `tests/test_e2e.py` |
-| 7.8 | Open | — | — | Update `README.md` (overview, setup, architecture, CLI, adding sources) and `CLAUDE.md` (build/test/lint commands, dev workflow). Key files: `README.md`, `CLAUDE.md` |
+| 7.1 | Completed | 2026-03-28 15:00 PST | 2026-03-28 15:15 PST | APScheduler integration — async scheduler with `PipelineScheduler` class, cron triggers per source, configurable concurrency via max_instances. Key file: `scheduling/scheduler.py` |
+| 7.2 | Completed | 2026-03-28 15:00 PST | 2026-03-28 15:10 PST | Cadence configuration — `schedules.toml` with 21 cron entries matching documented polling cadences. `ScheduleEntry` dataclass, cron parser. Key files: `config/schedules.toml`, `scheduling/cadence.py` |
+| 7.3 | Completed | 2026-03-28 15:00 PST | 2026-03-28 15:15 PST | Error handling and health tracking — `SourceHealthTracker` with success/failure recording, circuit breaker (5 consecutive failures), per-source status reporting. Key file: `scheduling/scheduler.py` |
+| 7.4 | Completed | 2026-03-28 15:15 PST | 2026-03-28 15:25 PST | CLI operations — `collect` (one or all), `status` (per-source event counts), `query` (filter by org/type/model, text/json/csv output), `export` (JSON/CSV to file or stdout). Key file: `ai_benchmark/cli.py` |
+| 7.5 | Completed | 2026-03-28 15:00 PST | 2026-03-28 15:15 PST | Query and reporting — `get_events()`, `get_claims()`, `get_cross_refs()`, `get_unconfirmed_claims()`, `get_recent_changes()`, `count_events_by_org()`, `count_events_by_type()`. JSON/CSV export. Key files: `reporting/query.py`, `reporting/export.py` |
+| 7.6 | Completed | 2026-03-28 15:15 PST | 2026-03-28 15:25 PST | Application bootstrap and daemon mode — `run` command starts scheduler with all schedules, graceful shutdown via SIGINT/SIGTERM. `bootstrap_pipeline()` helper. Key files: `ai_benchmark/main.py`, `cli.py` |
+| 7.7 | Completed | 2026-03-28 15:25 PST | 2026-03-28 15:35 PST | Scheduler and reporting tests — cadence loading, cron parsing, health tracking/circuit breaker, query filters/pagination, export JSON/CSV, CLI smoke tests (8 commands). 32 new tests (163 total). Key files: `tests/test_scheduler.py`, `test_reporting.py`, `test_cli.py` |
+| 7.8 | Completed | 2026-03-28 15:35 PST | 2026-03-28 15:45 PST | Update `README.md` (CLI commands, architecture, source coverage) and `CLAUDE.md` (build/test/lint, dev workflow, scheduling). Key files: `README.md`, `CLAUDE.md` |
 
 ### Phase 7 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** APScheduler-based async scheduler with cron triggers, health tracking with circuit breaker, and daemon mode. Full CLI: collect, status, query, export, run. Query/reporting layer with filters, pagination, JSON/CSV export. 21-source schedule config in TOML. Updated README and CLAUDE.md. 32 new tests (163 total). All phases complete.
 - **Changes hosted at:** TBD
 - **Commit:** `Phase 7: Scheduling, orchestration, reporting, and documentation`
 - **Final commit:** `Update README.md with project documentation`
