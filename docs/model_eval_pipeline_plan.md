@@ -249,17 +249,17 @@ These are additions to the existing pipeline stack.
 
 | Task | Status | Started | Completed | Description |
 |---|---|---|---|---|
-| E8.1 | Open | — | — | Implement `templates/comparisons/compare.html` — multi-column layout (one column per run). Section 1: aggregate metric table with delta columns and win/loss color coding. Section 2: per-scorer pass rate and avg score side by side. |
-| E8.2 | Open | — | — | Add item comparison section to compare.html — aligned table showing each item's output and scores across runs. Diff highlighting for output text (insertions green, deletions red). Filters: show only disagreements, only failures, only items above latency threshold. |
-| E8.3 | Open | — | — | Add config diff section to compare.html — side-by-side target configuration with differing fields highlighted. Uses comparison_service.diff_target_configs(). |
-| E8.4 | Open | — | — | Implement `templates/reports/dashboard.html` — preset report list (Best Coding Runs, Quantization Comparison, Standard Laptop Viability, Older Hardware Baseline). Custom report builder form: group_by, filters, metrics, date range. |
-| E8.5 | Open | — | — | Add charts to report dashboard — bar chart (pass rate by model), scatter plot (quality vs latency), trend line (metrics over time). Use a lightweight JS charting library (Chart.js or similar). |
-| E8.6 | Open | — | — | Implement report export — JSON, CSV, HTML download buttons. Generate via report_service and serve as file downloads. |
-| E8.7 | Open | — | — | Implement saved preset CRUD in UI — create, edit, delete presets. Run a preset from the reports page. |
+| E8.1 | Completed | 2026-03-28 | 2026-03-28 | Implement `templates/comparisons/compare.html` — multi-column layout (one column per run). Section 1: aggregate metric table with delta columns and win/loss color coding. Section 2: per-scorer pass rate and avg score side by side. |
+| E8.2 | Completed | 2026-03-28 | 2026-03-28 | Add item comparison section to compare.html — aligned table showing each item's output and scores across runs. Diff highlighting for output text (insertions green, deletions red). Filters: show only disagreements, only failures, only items above latency threshold. |
+| E8.3 | Completed | 2026-03-28 | 2026-03-28 | Add config diff section to compare.html — side-by-side target configuration with differing fields highlighted. Uses comparison_service.diff_target_configs(). |
+| E8.4 | Completed | 2026-03-28 | 2026-03-28 | Implement `templates/reports/dashboard.html` — preset report list (Best Coding Runs, Quantization Comparison, Standard Laptop Viability, Older Hardware Baseline). Custom report builder form: group_by, filters, metrics, date range. |
+| E8.5 | Completed | 2026-03-28 | 2026-03-28 | Add charts to report dashboard — bar chart (pass rate by model), scatter plot (quality vs latency), trend line (metrics over time). Use a lightweight JS charting library (Chart.js or similar). |
+| E8.6 | Completed | 2026-03-28 | 2026-03-28 | Implement report export — JSON, CSV, HTML download buttons. Generate via report_service and serve as file downloads. |
+| E8.7 | Completed | 2026-03-28 | 2026-03-28 | Implement saved preset CRUD in UI — create, edit, delete presets. Run a preset from the reports page. |
 
 ### Phase E8 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** Enhanced comparison page with multi-column metric deltas, item-level diff table with disagree/failure filters, config diff with field highlighting. Reports dashboard with Chart.js charts (pass rate bar, quality-vs-latency scatter, trend line). Report export route for JSON/CSV/HTML downloads. Preset CRUD UI (create form, run/delete buttons). Updated server.py with comparison data fetching and report export endpoint. All 283 tests passing.
 - **Changes hosted at:** TBD
 - **Commit:** `Eval Phase E8: Comparison UI, report builder, charts, and saved presets`
 

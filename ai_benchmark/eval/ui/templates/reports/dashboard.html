@@ -2,10 +2,42 @@
 {% set active_page = "reports" %}
 {% block title %}Reports{% endblock %}
 
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <h1>Reports</h1>
+    <div>
+        <a href="/eval/reports/export?format=json" class="btn btn-sm btn-outline">Export JSON</a>
+        <a href="/eval/reports/export?format=csv" class="btn btn-sm btn-outline">Export CSV</a>
+        <a href="/eval/reports/export?format=html" class="btn btn-sm btn-outline">Export HTML</a>
+    </div>
 </div>
+
+<!-- Charts -->
+{% if chart_data %}
+<div class="card-grid" style="grid-template-columns: 1fr 1fr;">
+    <!-- Bar chart: pass rate by run -->
+    <div class="card">
+        <div class="card-header">Pass Rate by Run</div>
+        <canvas id="passRateChart" height="250"></canvas>
+    </div>
+
+    <!-- Scatter: quality vs latency -->
+    <div class="card">
+        <div class="card-header">Quality vs Latency</div>
+        <canvas id="qualityLatencyChart" height="250"></canvas>
+    </div>
+</div>
+
+<!-- Trend chart: pass rate over time -->
+<div class="card">
+    <div class="card-header">Pass Rate Trend</div>
+    <canvas id="trendChart" height="200"></canvas>
+</div>
+{% endif %}
 
 <!-- Saved Presets -->
 <div class="card">
@@ -25,21 +57,49 @@
                 <tr>
                     <td>{{ p.name }}</td>
                     <td>{{ p.description or "—" }}</td>
-                    <td><button class="btn btn-sm btn-outline">Run</button></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="runPreset({{ p.id }})">Run</button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePreset({{ p.id }})">Delete</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     {% else %}
-    <p class="text-muted">No saved presets yet. Create one using the API.</p>
+    <p class="text-muted">No saved presets yet.</p>
     {% endif %}
+
+    <!-- Create Preset Form -->
+    <details class="mt-2">
+        <summary class="btn btn-sm btn-outline" style="cursor: pointer;">Create New Preset</summary>
+        <form id="preset-form" class="mt-1" style="max-width: 500px;">
+            <div class="form-group">
+                <label for="preset-name">Name</label>
+                <input type="text" id="preset-name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="preset-description">Description</label>
+                <input type="text" id="preset-description" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="preset-group-by">Group By</label>
+                <select id="preset-group-by" class="form-control">
+                    <option value="evaluation">Evaluation</option>
+                    <option value="model_family">Model Family</option>
+                    <option value="machine">Machine</option>
+                    <option value="hardware_class">Hardware Class</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Save Preset</button>
+        </form>
+    </details>
 </div>
 
 <!-- Custom Report Builder -->
 <div class="card">
     <div class="card-header">Custom Report</div>
-    <form class="filter-bar" method="GET" action="/api/eval/reports/summary">
+    <form class="filter-bar" action="/api/eval/reports/summary" method="GET">
         <div class="form-group">
             <label for="group_by">Group By</label>
             <select id="group_by" name="group_by" class="form-control">
@@ -70,4 +130,150 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var chartData = {{ chart_data | tojson if chart_data else '[]' }};
+
+// Bar chart: pass rate by run
+(function() {
+    var ctx = document.getElementById("passRateChart");
+    if (!ctx || !chartData.length) return;
+
+    var labels = [];
+    var values = [];
+    var colors = [];
+    chartData.forEach(function(d) {
+        if (d.pass_rate !== null && d.pass_rate !== undefined) {
+            labels.push("Run " + d.run_id);
+            values.push(d.pass_rate);
+            colors.push(d.pass_rate >= 0.7 ? "#198754" : d.pass_rate >= 0.4 ? "#ffc107" : "#dc3545");
+        }
+    });
+
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Pass Rate",
+                data: values,
+                backgroundColor: colors,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, max: 1.0 } },
+            plugins: { legend: { display: false } },
+        }
+    });
+})();
+
+// Scatter: quality vs latency
+(function() {
+    var ctx = document.getElementById("qualityLatencyChart");
+    if (!ctx || !chartData.length) return;
+
+    var points = [];
+    chartData.forEach(function(d) {
+        if (d.pass_rate !== null && d.avg_latency_ms !== null &&
+            d.pass_rate !== undefined && d.avg_latency_ms !== undefined) {
+            points.push({ x: d.avg_latency_ms, y: d.pass_rate, label: "Run " + d.run_id });
+        }
+    });
+
+    new Chart(ctx, {
+        type: "scatter",
+        data: {
+            datasets: [{
+                label: "Runs",
+                data: points,
+                backgroundColor: "#0d6efd",
+                pointRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { title: { display: true, text: "Avg Latency (ms)" } },
+                y: { title: { display: true, text: "Pass Rate" }, beginAtZero: true, max: 1.0 },
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            var p = ctx.raw;
+                            return (p.label || "") + " — Latency: " + p.x.toFixed(0) + "ms, Pass: " + (p.y * 100).toFixed(1) + "%";
+                        }
+                    }
+                }
+            }
+        }
+    });
+})();
+
+// Trend: pass rate over time
+(function() {
+    var ctx = document.getElementById("trendChart");
+    if (!ctx || !chartData.length) return;
+
+    var sorted = chartData
+        .filter(function(d) { return d.pass_rate !== null && d.pass_rate !== undefined && d.created_at; })
+        .sort(function(a, b) { return new Date(a.created_at) - new Date(b.created_at); });
+
+    var labels = sorted.map(function(d) { return d.created_at.split("T")[0] || d.created_at.split(" ")[0]; });
+    var values = sorted.map(function(d) { return d.pass_rate; });
+
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Pass Rate",
+                data: values,
+                borderColor: "#0d6efd",
+                backgroundColor: "rgba(13,110,253,0.1)",
+                fill: true,
+                tension: 0.3,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, max: 1.0 } },
+        }
+    });
+})();
+
+// Preset CRUD
+function runPreset(id) {
+    fetch("/api/eval/reports/presets/" + id + "/run", { method: "POST" })
+        .then(function(r) { return r.json(); })
+        .then(function(data) { alert(JSON.stringify(data, null, 2)); })
+        .catch(function(e) { alert("Error: " + e); });
+}
+
+function deletePreset(id) {
+    if (!confirm("Delete this preset?")) return;
+    fetch("/api/eval/reports/presets/" + id, { method: "DELETE" })
+        .then(function() { window.location.reload(); })
+        .catch(function(e) { alert("Error: " + e); });
+}
+
+document.getElementById("preset-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    var body = {
+        name: document.getElementById("preset-name").value,
+        description: document.getElementById("preset-description").value,
+        config: { group_by: document.getElementById("preset-group-by").value },
+    };
+    fetch("/api/eval/reports/presets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+    })
+    .then(function() { window.location.reload(); })
+    .catch(function(e) { alert("Error: " + e); });
+});
+</script>
 {% endblock %}

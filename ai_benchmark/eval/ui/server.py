@@ -279,10 +279,49 @@ async def run_live(request: Request, run_id: int,
 # ── Comparisons ──────────────────────────────────────────────────────────
 
 @router.get("/comparisons", response_class=HTMLResponse)
-async def comparison_page(request: Request):
+async def comparison_page(request: Request, runs: str | None = None,
+                          session: AsyncSession = Depends(get_session)):
+    comparison = None
+    run_details = []
+
+    if runs:
+        from ..services import comparison_service, run_service
+
+        run_ids = [int(r.strip()) for r in runs.split(",") if r.strip()]
+        if len(run_ids) >= 2:
+            comparison = await comparison_service.compare_runs(session, run_ids)
+            comparison["run_ids"] = run_ids
+
+            # Also fetch run details and items for each run
+            for rid in run_ids:
+                r = await run_service.get_run(session, rid)
+                if r:
+                    items = await run_service.get_item_results(session, rid, limit=1000)
+                    run_details.append({
+                        "run": _run_to_dict(r),
+                        "items": [{
+                            "item_index": i.item_index,
+                            "raw_output": (i.raw_output or "")[:300],
+                            "overall_pass": i.overall_pass,
+                            "latency_ms": i.latency_ms,
+                        } for i in items],
+                    })
+
+            # Config diff
+            from ..services import target_service
+            target_ids = []
+            for rid in run_ids:
+                r = await run_service.get_run(session, rid)
+                if r:
+                    target_ids.append(r.target_config_id)
+            if len(set(target_ids)) > 1:
+                config_diff = await comparison_service.diff_target_configs(session, target_ids)
+                comparison["config_diff"] = config_diff
+
     return templates.TemplateResponse("comparisons/compare.html", {
         "request": request,
-        "comparison": None,
+        "comparison": comparison,
+        "run_details": run_details,
     })
 
 
@@ -290,13 +329,69 @@ async def comparison_page(request: Request):
 
 @router.get("/reports", response_class=HTMLResponse)
 async def reports_page(request: Request, session: AsyncSession = Depends(get_session)):
-    from ..services import report_service
+    from ..services import report_service, run_service
+
     presets = await report_service.list_presets(session)
     preset_data = [{"id": p.id, "name": p.name, "description": getattr(p, "description", "")}
                    for p in presets]
+
+    # Gather chart data from recent runs
+    runs = await run_service.list_runs(session, limit=50)
+    chart_data = []
+    for r in runs:
+        metrics = await run_service.get_metrics(session, r.id)
+        metric_dict = {m.metric_name: m.metric_value for m in metrics}
+        chart_data.append({
+            "run_id": r.id,
+            "status": r.status,
+            "target_config_id": r.target_config_id,
+            "pass_rate": metric_dict.get("pass_rate"),
+            "avg_latency_ms": metric_dict.get("avg_latency_ms"),
+            "total_cost_usd": metric_dict.get("total_cost_usd"),
+            "created_at": str(r.created_at) if r.created_at else None,
+        })
+
     return templates.TemplateResponse("reports/dashboard.html", {
-        "request": request, "presets": preset_data,
+        "request": request,
+        "presets": preset_data,
+        "chart_data": chart_data,
     })
+
+
+@router.get("/reports/export", response_class=HTMLResponse)
+async def report_export(request: Request, format: str = "json",
+                        session: AsyncSession = Depends(get_session)):
+    """Export recent run data as JSON/CSV/HTML download."""
+    from ..services import run_service, report_service
+
+    runs = await run_service.list_runs(session, limit=100)
+    rows = []
+    for r in runs:
+        metrics = await run_service.get_metrics(session, r.id)
+        row = _run_to_dict(r)
+        for m in metrics:
+            row[m.metric_name] = m.metric_value
+        rows.append(row)
+
+    if format == "csv":
+        content = report_service.export_csv(rows)
+        media_type = "text/csv"
+        filename = "eval_report.csv"
+    elif format == "html":
+        content = report_service.export_html({"runs": rows}, title="Eval Report")
+        media_type = "text/html"
+        filename = "eval_report.html"
+    else:
+        content = report_service.export_json(rows)
+        media_type = "application/json"
+        filename = "eval_report.json"
+
+    from fastapi.responses import Response
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
