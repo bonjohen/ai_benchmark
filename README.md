@@ -109,9 +109,55 @@ Schedule config: `ai_benchmark/config/schedules.toml` (21 cron entries)
 - **events.py**: `EventRecord`, `ClaimRecord`, `CrossReference` — normalized events, per-source claims, inter-event links
 - **research.py**: `CandidatePaper`, `EnrichedPaper` — research triage pipeline (discovered → enriched → promoted/rejected)
 
-## Model Evaluation Pipeline (Planned)
+## Model Evaluation Pipeline
 
-A separate evaluation subsystem for comparing models across machines, runtimes, and configurations.
+A full evaluation subsystem for running, scoring, and comparing model outputs across machines, runtimes, and configurations.
+
+### Quick Start
+
+```bash
+ai-benchmark eval serve                          # Start eval API + UI on port 8100
+ai-benchmark eval run --evaluation X --target Y   # Run an evaluation
+ai-benchmark eval status --recent 10              # Show recent runs
+ai-benchmark eval compare --runs 1,2              # Compare two runs
+ai-benchmark eval export --run 1 --format json    # Export results
+ai-benchmark eval list --evaluations --targets    # List entities
+```
+
+### Eval Architecture
+
+```
+ai_benchmark/eval/
+  models/         15 SQLAlchemy tables (datasets, scorers, evaluations, targets,
+                  machines, runs, item results, metrics, artifacts)
+  services/       8 async CRUD services (dataset, scorer, eval, machine, target,
+                  run, comparison, report)
+  execution/      RunOrchestrator, ItemExecutor, 4 model adapters (OpenAI,
+                  Anthropic, Local, Generic HTTP)
+  scoring/        ScorerRunner + 7 built-in scorers (exact_match, fuzzy_match,
+                  rubric, format_validator, latency_cost, safety, model_judge)
+  api/            FastAPI with ~45 REST endpoints under /api/eval/
+  ui/             Jinja2 templates: dashboard, entity pages, run detail/live,
+                  comparison view, reports with Chart.js
+  cli/            9 Click subcommands (run, run-matrix, status, list, compare,
+                  export, rescore, serve)
+  config.py       EvalSettings with AI_BENCH_EVAL_ env prefix
+```
+
+### Eval Configuration
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `AI_BENCH_EVAL_API_HOST` | `127.0.0.1` | API bind host |
+| `AI_BENCH_EVAL_API_PORT` | `8100` | API bind port |
+| `AI_BENCH_EVAL_ARTIFACT_STORAGE_PATH` | `./artifacts` | Artifact file storage |
+| `AI_BENCH_EVAL_MAX_CONCURRENT_ITEMS` | `10` | Parallel item execution |
+| `AI_BENCH_EVAL_DEFAULT_EXECUTION_MODE` | `sequential` | Default run mode |
+| `AI_BENCH_EVAL_RUN_TIMEOUT_SECONDS` | `3600` | Per-run timeout |
+| `AI_BENCH_EVAL_ITEM_TIMEOUT_SECONDS` | `120` | Per-item timeout |
+| `AI_BENCH_EVAL_RETRY_FAILED_ITEMS` | `2` | Auto-retries per item |
+
+### Design Documents
 
 - Design: `docs/model_eval_pipeline_design.md`
 - Physical requirements: `docs/model_eval_pipeline_pdr.md`
@@ -120,20 +166,20 @@ A separate evaluation subsystem for comparing models across machines, runtimes, 
 ## Implementation Plans
 
 - **Source pipeline:** `docs/core_requirements_plan.md` — All 7 phases complete
-- **Eval pipeline:** `docs/model_eval_pipeline_plan.md` — 9 phases (E1–E9), not yet started
+- **Eval pipeline:** `docs/model_eval_pipeline_plan.md` — 9 phases (E1–E9) complete
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all 163 tests
+pytest                       # Run all 297 tests
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint
 mypy ai_benchmark            # Type check (strict mode)
 ```
 
-Key dev dependencies: pytest, pytest-asyncio, respx (httpx mocking), ruff, mypy.
+Key dev dependencies: pytest, pytest-asyncio, respx (httpx mocking), httpx (API tests), ruff, mypy.
 
 ## License
 

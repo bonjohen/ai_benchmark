@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install -e ".[dev]"          # Install with dev dependencies
 pip install -e ".[dev,research]" # Include research extras (S2, PDF)
-pytest                           # Run all 163 tests
+pytest                           # Run all 297 tests
 pytest tests/test_config.py      # Single file
 pytest -x -v                     # Verbose, stop on first failure
 ai-benchmark init-db             # Create database
@@ -21,6 +21,16 @@ ai-benchmark run                 # Start daemon mode
 ai-benchmark status              # Show per-source event counts
 ai-benchmark query --org OpenAI  # Search events
 ai-benchmark export --format csv --output events.csv  # Export
+
+# Eval pipeline commands
+ai-benchmark eval serve                          # Start eval API + UI
+ai-benchmark eval run --evaluation X --target Y   # Execute evaluation
+ai-benchmark eval status --recent 10              # Show recent runs
+ai-benchmark eval compare --runs 1,2              # Compare runs
+ai-benchmark eval export --run 1 --format json    # Export results
+ai-benchmark eval list --evaluations --targets    # List entities
+ai-benchmark eval rescore --run 1 --scorer-config new.json  # Rescore
+ai-benchmark eval run-matrix --evaluation X --targets 1,2,3  # Matrix run
 ```
 
 ## Core Domain Concepts
@@ -61,7 +71,45 @@ ai_benchmark/
   processing/       Normalizer, deduplicator, verification, cross-reference builder, triage, pipeline orchestrator
   scheduling/       APScheduler async scheduler, cron cadence config, health tracker with circuit breaker
   reporting/        Query functions (events, claims, cross-refs), JSON/CSV export
+  eval/             Model evaluation pipeline (see Eval Architecture below)
 ```
+
+## Eval Architecture
+
+```
+ai_benchmark/eval/
+  config.py         EvalSettings with AI_BENCH_EVAL_ env prefix
+  models/           15 SQLAlchemy tables: datasets, dataset_versions, test_cases, scorers,
+                    scorer_versions, evaluation_definitions, evaluation_versions, machine_profiles,
+                    machine_snapshots, target_configurations, run_groups, runs, run_item_results,
+                    run_aggregate_metrics, artifacts
+  services/         8 async service modules: dataset, scorer, eval, machine, target, run,
+                    comparison, report — all accept AsyncSession, return model instances
+  execution/        RunOrchestrator (3-stage: create → execute → score/finalize),
+                    ItemExecutor (prompt templating, retry), 4 model adapters
+    adapters/       OpenAIAdapter, AnthropicAdapter, LocalAdapter, GenericHTTPAdapter
+  scoring/          ScorerRunner (weighted pass logic, aggregate metrics), BaseScorer ABC
+    builtin/        7 scorers: exact_match, fuzzy_match, rubric, format_validator,
+                    latency_cost, safety, model_judge
+  api/              FastAPI app factory, ~45 endpoints under /api/eval/
+    routes/         evaluations, datasets, scorers, targets, machines, runs, comparisons, reports
+    schemas/        Pydantic request/response models for all entities
+  ui/               Jinja2 server-rendered UI with sidebar navigation
+    templates/      14 HTML templates: dashboard, entity list/detail, run detail/live,
+                    comparison view, reports dashboard with Chart.js
+    static/         CSS (tables, cards, badges, progress bars) + JS (sorting, tabs, auto-refresh)
+  cli/              9 Click subcommands: run, run-matrix, status, list, compare, export,
+                    rescore, serve
+```
+
+## Eval Key Patterns
+
+- **Model Adapters**: ABC in `execution/adapters/base.py`. Implement `async generate(prompt, params, options) -> GenerationResult`. Registry resolves by provider string.
+- **Scorers**: ABC in `scoring/base.py`. Implement `score(output, expected) -> ScorerResult`. Registry in `_SCORER_REGISTRY`. Built-in scorers auto-register.
+- **Orchestrator**: `execution/orchestrator.py` — `create_run()` → `execute_run()` → `score_run()`. Supports sequential and parallel modes via `asyncio.Semaphore`.
+- **Service pattern**: Each service accepts `AsyncSession`, returns ORM instances. All CRUD is async. Versioning auto-increments `version_number`.
+- **API pattern**: ORM objects converted to dicts BEFORE `session.commit()` to avoid MissingGreenlet. Service update methods call `await session.refresh(obj)` after flush on `onupdate` columns.
+- **UI mounting**: `eval/ui/server.py` — `mount_ui(app)` registers templates and static files on the FastAPI app.
 
 ## Database Models
 
