@@ -60,74 +60,21 @@ Each phase summary includes a `Changes hosted at:` field. Populate this with the
 
 **Depends on:** Nothing (first phase).
 
-### Task 1.1 — Create `pyproject.toml` with dependency groups
-
-Define project metadata, Python 3.12+ requirement. Core deps: `httpx[http2]`, `beautifulsoup4`, `lxml`, `sqlalchemy[asyncio]`, `aiosqlite`, `alembic`, `apscheduler`, `pydantic`, `pydantic-settings`, `structlog`, `click`. Dev deps: `pytest`, `pytest-asyncio`, `respx`, `ruff`, `mypy`. Optional research deps: `pymupdf`, `semanticscholar`.
-
-- **Key file:** `pyproject.toml`
-- **State:** Completed
-- **Started:** 2026-03-28 10:00 PST
-- **Completed:** 2026-03-28 10:05 PST
-
-### Task 1.2 — Create the package structure
-
-All `__init__.py` files and empty module stubs: `ai_benchmark/` with subpackages `config/`, `models/`, `collection/`, `sources/` (with `benchmarks/`, `research/`, `news/`, `community/` sub-packages), `processing/`, `scheduling/`, `reporting/`. Entry points: `main.py`, `cli.py`.
-
-- **Key files:** `ai_benchmark/__init__.py`, `ai_benchmark/main.py`, `ai_benchmark/cli.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:00 PST
-- **Completed:** 2026-03-28 10:05 PST
-
-### Task 1.3 — Implement Pydantic settings and TOML config loading
-
-`PipelineSettings` model with database URL, log level, user-agent string, request timeout, concurrency limits, proxy config. Load from environment variables with TOML file fallback.
-
-- **Key file:** `ai_benchmark/config/settings.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:05 PST
-- **Completed:** 2026-03-28 10:10 PST
-
-### Task 1.4 — Define the source catalog in TOML
-
-All 22 sources with metadata fields from `docs/core_requirements.md`: source_name, category, organization, homepage_url, base_domain, trust_rating, source_role, classification, pages (canonical_url, page_type, polling_frequency), collection_method. Pydantic models `SourceConfig` and `PageConfig` to validate the TOML.
-
-- **Key files:** `ai_benchmark/config/sources.toml`, `ai_benchmark/config/settings.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:05 PST
-- **Completed:** 2026-03-28 10:12 PST
-
-### Task 1.5 — Define SQLAlchemy data models and initial Alembic migration
-
-Models: `Source`, `Page`, `Snapshot` (content + hash + timestamp), `EventRecord` (normalized change event), `ClaimRecord` (claim_text, source_type, confidence_tier, cross_refs), `CrossReference` (link table with relationship_type), `CandidatePaper`, `EnrichedPaper`. Composite unique constraints matching the dedup key: `{normalized_title, organization, source_type, canonical_path_or_slug, published_date}`. Alembic init + first migration.
-
-- **Key files:** `ai_benchmark/models/base.py`, `models/sources.py`, `models/events.py`, `models/research.py`, `alembic/`
-- **State:** Completed
-- **Started:** 2026-03-28 10:05 PST
-- **Completed:** 2026-03-28 10:12 PST
-
-### Task 1.6 — CLI entry point and database init command
-
-Click-based CLI: `init-db` (runs migrations), `run` (stub), `check-config` (validates source catalog TOML). Register as console script in `pyproject.toml`.
-
-- **Key file:** `ai_benchmark/cli.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:10 PST
-- **Completed:** 2026-03-28 10:14 PST
-
-### Task 1.7 — Structured logging and smoke tests
-
-Configure `structlog` with JSON output, bound context (source_name, page_url). Write smoke tests for config loading and model creation.
-
-- **Key files:** `ai_benchmark/main.py`, `tests/conftest.py`, `tests/test_config.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:10 PST
-- **Completed:** 2026-03-28 10:15 PST
+| Task | Status | Started | Completed | Description |
+|---|---|---|---|---|
+| 1.1 | Completed | 2026-03-28 10:00 PST | 2026-03-28 10:05 PST | Create `pyproject.toml` with core/dev/research dependency groups. Key file: `pyproject.toml` |
+| 1.2 | Completed | 2026-03-28 10:00 PST | 2026-03-28 10:05 PST | Create full package structure — all `__init__.py` and stubs for `config/`, `models/`, `collection/`, `sources/` (with `benchmarks/`, `research/`, `news/`, `community/`), `processing/`, `scheduling/`, `reporting/`, `main.py`, `cli.py` |
+| 1.3 | Completed | 2026-03-28 10:05 PST | 2026-03-28 10:10 PST | Implement Pydantic `PipelineSettings` with env-var support and TOML config loading. Key file: `ai_benchmark/config/settings.py` |
+| 1.4 | Completed | 2026-03-28 10:05 PST | 2026-03-28 10:12 PST | Define source catalog in TOML — all 22 sources with metadata, pages, polling frequencies. Pydantic `SourceConfig`/`PageConfig` validation. Key files: `config/sources.toml`, `config/settings.py` |
+| 1.5 | Completed | 2026-03-28 10:05 PST | 2026-03-28 10:12 PST | Define SQLAlchemy models (`Source`, `Page`, `Snapshot`, `EventRecord`, `ClaimRecord`, `CrossReference`, `CandidatePaper`, `EnrichedPaper`) with composite unique constraints. Alembic init. Key files: `models/*.py`, `alembic/` |
+| 1.6 | Completed | 2026-03-28 10:10 PST | 2026-03-28 10:14 PST | Click CLI: `init-db`, `check-config`, `run` (stub). Register as console script. Key file: `ai_benchmark/cli.py` |
+| 1.7 | Completed | 2026-03-28 10:10 PST | 2026-03-28 10:15 PST | Configure `structlog` JSON logging with bound context. Write 8 smoke tests for config and models. Key files: `main.py`, `tests/conftest.py`, `tests/test_config.py` |
 
 ### Phase 1 Summary
 
-- **Changes:** Created project skeleton with `pyproject.toml`, full package structure (13 sub-packages), Pydantic settings with env-var support, TOML source catalog (22 sources / 48 pages), SQLAlchemy async models (Source, Page, Snapshot, EventRecord, ClaimRecord, CrossReference, CandidatePaper, EnrichedPaper), Alembic migration setup, Click CLI with `init-db`/`check-config`/`run` commands, structlog JSON logging, `.gitignore`, and 8 passing smoke tests. APScheduler pinned to 3.x (4.x is alpha-only).
+- **Changes:** Project skeleton with `pyproject.toml`, 13 sub-packages, Pydantic settings, TOML source catalog (22 sources / 48 pages), SQLAlchemy async models, Alembic setup, Click CLI, structlog logging, `.gitignore`, 8 passing tests. APScheduler pinned to 3.x (4.x alpha-only).
 - **Changes hosted at:** TBD
-- **Commit:** `git commit -m "Phase 1: Project scaffolding, data model, and configuration"`
+- **Commit:** `Phase 1: Project scaffolding, data model, and configuration`
 
 ---
 
@@ -137,65 +84,20 @@ Configure `structlog` with JSON output, bound context (source_name, page_url). W
 
 **Depends on:** Phase 1 (database models, config).
 
-### Task 2.1 — Async HTTP fetcher
-
-`Fetcher` class wrapping `httpx.AsyncClient`. Configurable user-agent rotation, request timeout, retry with exponential backoff (3 attempts), concurrency semaphore (default 5), proxy support. Returns `FetchResult` dataclass: status_code, headers, body_text, elapsed_ms, fetched_at. Handles 403 (log + skip), 429 (respect Retry-After), connection errors, timeouts.
-
-- **Key file:** `ai_benchmark/collection/fetcher.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:16 PST
-- **Completed:** 2026-03-28 10:22 PST
-
-### Task 2.2 — HTML cleaning and text extraction
-
-`clean_html()` strips scripts, styles, nav, footer, ads; extracts main content area; normalizes whitespace. Uses BeautifulSoup + lxml. Configurable CSS selectors per source.
-
-- **Key file:** `ai_benchmark/collection/differ.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:16 PST
-- **Completed:** 2026-03-28 10:22 PST
-
-### Task 2.3 — HTML diffing engine
-
-`diff_snapshots(old_text, new_text)` returning `DiffResult`: changed (bool), added_lines, removed_lines, change_ratio (float 0–1), diff_html. Semantic layer detects structural changes (new changelog items, new pricing rows, new articles) vs cosmetic noise. Configurable noise threshold (default change_ratio < 0.01).
-
-- **Key file:** `ai_benchmark/collection/differ.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:16 PST
-- **Completed:** 2026-03-28 10:22 PST
-
-### Task 2.4 — Snapshot storage and comparison
-
-`SnapshotManager`: `store_snapshot(page_id, content, content_hash)`, `get_latest_snapshot(page_id)`, `compare_with_latest(page_id, new_content)`. SHA-256 content hashing for fast no-change detection before running the full differ.
-
-- **Key file:** `ai_benchmark/collection/snapshot.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:16 PST
-- **Completed:** 2026-03-28 10:22 PST
-
-### Task 2.5 — Base API client for REST sources
-
-`APIClient` base class for JSON API sources. Handles auth headers (Bearer tokens, API keys from config), rate limiting, pagination. Subclassable for Semantic Scholar, GitHub, HF APIs.
-
-- **Key file:** `ai_benchmark/collection/api_client.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:16 PST
-- **Completed:** 2026-03-28 10:22 PST
-
-### Task 2.6 — Integration tests with fixture HTML
-
-Sample HTML snapshots in `tests/fixtures/` (changelog, pricing, newsroom). Test full fetch → clean → diff → store cycle with `respx` mocks. Verify identical content → `changed=False`, simulated changelog addition → correct diff.
-
-- **Key files:** `tests/test_fetcher.py`, `tests/test_differ.py`, `tests/test_snapshot.py`, `tests/fixtures/`
-- **State:** Completed
-- **Started:** 2026-03-28 10:22 PST
-- **Completed:** 2026-03-28 10:28 PST
+| Task | Status | Started | Completed | Description |
+|---|---|---|---|---|
+| 2.1 | Completed | 2026-03-28 10:16 PST | 2026-03-28 10:22 PST | Async HTTP `Fetcher` — httpx with retry/backoff, concurrency semaphore, 403/429 handling, proxy support. Returns `FetchResult` dataclass. Key file: `collection/fetcher.py` |
+| 2.2 | Completed | 2026-03-28 10:16 PST | 2026-03-28 10:22 PST | `clean_html()` — strips noise tags (script/style/nav/footer), extracts main content via configurable CSS selectors, normalizes whitespace. Key file: `collection/differ.py` |
+| 2.3 | Completed | 2026-03-28 10:16 PST | 2026-03-28 10:22 PST | `diff_snapshots()` — returns `DiffResult` with added/removed lines, change_ratio, diff_text. `extract_structural_changes()` for DOM-level diffs. Noise threshold 0.01. Key file: `collection/differ.py` |
+| 2.4 | Completed | 2026-03-28 10:16 PST | 2026-03-28 10:22 PST | `SnapshotManager` — store/retrieve snapshots, `compare_with_latest()` with SHA-256 fast-path for no-change detection. Key file: `collection/snapshot.py` |
+| 2.5 | Completed | 2026-03-28 10:16 PST | 2026-03-28 10:22 PST | Base `APIClient` for REST sources — auth headers, rate limiting, paginated fetching. Subclassable for S2/GitHub/HF. Key file: `collection/api_client.py` |
+| 2.6 | Completed | 2026-03-28 10:22 PST | 2026-03-28 10:28 PST | Integration tests with 3 HTML fixtures (changelog v1/v2, pricing). Tests for fetcher, differ, snapshot manager. 16 new tests (24 total). Key files: `tests/test_fetcher.py`, `test_differ.py`, `test_snapshot.py`, `fixtures/` |
 
 ### Phase 2 Summary
 
-- **Changes:** Async HTTP fetcher with retry/backoff/429 handling, HTML cleaner (strips noise tags, extracts via CSS selectors), semantic diff engine (text diff + structural change detection), snapshot manager with SHA-256 fast-path, base API client with pagination, 3 HTML fixture files, 16 new tests (24 total passing).
+- **Changes:** Async fetcher with retry/backoff/429, HTML cleaner, semantic diff engine, snapshot manager with SHA-256 fast-path, base API client, 3 fixtures, 16 new tests (24 total).
 - **Changes hosted at:** TBD
-- **Commit:** `git commit -m "Phase 2: Core collection engine (fetch, diff, store)"`
+- **Commit:** `Phase 2: Core collection engine (fetch, diff, store)`
 
 ---
 
@@ -205,83 +107,22 @@ Sample HTML snapshots in `tests/fixtures/` (changelog, pricing, newsroom). Test 
 
 **Depends on:** Phase 2 (fetcher, differ, snapshot store).
 
-### Task 3.1 — Abstract SourceCollector base class
-
-Abstract `SourceCollector` with methods: `collect(page)` → raw items, `extract_events(raw_items)` → `EventRecord` candidates, `get_pages()` → page configs. Hooks for source-specific CSS selectors, content extraction, model-name parsing.
-
-- **Key file:** `ai_benchmark/sources/base.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:30 PST
-- **Completed:** 2026-03-28 10:38 PST
-
-### Task 3.2 — Normalizer for event field extraction
-
-Functions: `normalize_title()`, `extract_model_slug()`, `extract_version()`, `extract_date()`, `classify_event_type()` (model_release, pricing_change, api_update, deprecation, system_card, announcement). Regex patterns for known model families: GPT-*, Claude-*, Gemini-*, Grok-*, Mistral-*, Command-*, Llama-*.
-
-- **Key file:** `ai_benchmark/processing/normalizer.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:30 PST
-- **Completed:** 2026-03-28 10:38 PST
-
-### Task 3.3 — OpenAI collector
-
-Pages: product newsroom, API changelog, models page, pricing, system cards. Changelog: parse dated entries, extract model slugs. Pricing: parse tables, detect row changes.
-
-- **Key file:** `ai_benchmark/sources/openai.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:38 PST
-- **Completed:** 2026-03-28 10:45 PST
-
-### Task 3.4 — Anthropic collector
-
-Pages: newsroom, system cards, models overview, pricing, API release notes. System card extraction: parse card index, detect new cards by date.
-
-- **Key file:** `ai_benchmark/sources/anthropic.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:38 PST
-- **Completed:** 2026-03-28 10:45 PST
-
-### Task 3.5 — Google/Gemini collector
-
-Pages: Gemini release notes, pricing, rate limits, models catalog, DeepMind blog. Handles two domains: `ai.google.dev` and `blog.google`.
-
-- **Key file:** `ai_benchmark/sources/google.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:38 PST
-- **Completed:** 2026-03-28 10:45 PST
-
-### Task 3.6 — xAI, Mistral, Cohere, Meta collectors
-
-xAI: release notes, models/pricing, news. Mistral: changelog (labeled entries like "MODEL RELEASED"), news, pricing. Cohere: blog, release notes, docs. Meta: GitHub API for `meta-llama` org (releases, repos), open-source AI page.
-
-- **Key files:** `ai_benchmark/sources/xai.py`, `mistral.py`, `cohere.py`, `meta.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:38 PST
-- **Completed:** 2026-03-28 10:45 PST
-
-### Task 3.7 — Event record persistence
-
-Wire collectors to database: persist `EventRecord` rows linked to source and page. Skip storage if identical event exists by composite key (early dedup).
-
-- **Key files:** `ai_benchmark/sources/persistence.py`, `ai_benchmark/sources/registry.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:45 PST
-- **Completed:** 2026-03-28 10:48 PST
-
-### Task 3.8 — Tests for vendor collectors
-
-One fixture HTML file per major page type per vendor. Tests that extraction produces correct event records from known HTML.
-
-- **Key files:** `tests/test_sources/test_collectors.py`, `tests/test_sources/test_persistence.py`
-- **State:** Completed
-- **Started:** 2026-03-28 10:45 PST
-- **Completed:** 2026-03-28 10:50 PST
+| Task | Status | Started | Completed | Description |
+|---|---|---|---|---|
+| 3.1 | Completed | 2026-03-28 10:30 PST | 2026-03-28 10:38 PST | Abstract `SourceCollector` base — `collect_page()` with fetch/diff/extract lifecycle, `extract_items()` abstract method, configurable CSS selectors. Key file: `sources/base.py` |
+| 3.2 | Completed | 2026-03-28 10:30 PST | 2026-03-28 10:38 PST | Normalizer — `normalize_title()`, `extract_model_slug()` (10 families with stop-word trimming), `extract_date()`, `classify_event_type()`. Key file: `processing/normalizer.py` |
+| 3.3 | Completed | 2026-03-28 10:38 PST | 2026-03-28 10:45 PST | OpenAI collector — newsroom, API changelog, models page, pricing extraction. Key file: `sources/openai.py` |
+| 3.4 | Completed | 2026-03-28 10:38 PST | 2026-03-28 10:45 PST | Anthropic collector — newsroom, system cards, models overview, pricing, API release notes. Key file: `sources/anthropic.py` |
+| 3.5 | Completed | 2026-03-28 10:38 PST | 2026-03-28 10:45 PST | Google/Gemini collector — release notes, pricing, models catalog, DeepMind blog. Handles `ai.google.dev` + `blog.google`. Key file: `sources/google.py` |
+| 3.6 | Completed | 2026-03-28 10:38 PST | 2026-03-28 10:45 PST | xAI, Mistral, Cohere, Meta collectors — release notes, pricing, news, GitHub API for `meta-llama` org. Key files: `sources/xai.py`, `mistral.py`, `cohere.py`, `meta.py` |
+| 3.7 | Completed | 2026-03-28 10:45 PST | 2026-03-28 10:48 PST | Event persistence — `persist_events()` converts `RawItem` → `EventRecord`, skips duplicates by composite key. Collector registry. Key files: `sources/persistence.py`, `sources/registry.py` |
+| 3.8 | Completed | 2026-03-28 10:45 PST | 2026-03-28 10:50 PST | Vendor collector tests — normalizer tests, extraction tests per vendor, registry tests, persistence dedup tests. 22 new tests (46 total). Key files: `tests/test_sources/test_collectors.py`, `test_persistence.py` |
 
 ### Phase 3 Summary
 
-- **Changes:** Abstract SourceCollector base class with fetch/diff/extract lifecycle, event field normalizer (model slug extraction for 10 model families with stop-word trimming, date extraction, event type classification), 7 vendor collectors (OpenAI, Anthropic, Google, xAI, Mistral, Cohere, Meta with GitHub API), collector registry, event persistence with composite-key dedup, 22 new tests (46 total passing).
+- **Changes:** SourceCollector base, normalizer (10 model families), 7 vendor collectors (OpenAI, Anthropic, Google, xAI, Mistral, Cohere, Meta+GitHub), registry, event persistence with dedup, 22 new tests (46 total).
 - **Changes hosted at:** TBD
-- **Commit:** `git commit -m "Phase 3: Official vendor source integrations"`
+- **Commit:** `Phase 3: Official vendor source integrations`
 
 ---
 
@@ -291,83 +132,22 @@ One fixture HTML file per major page type per vendor. Tests that extraction prod
 
 **Depends on:** Phase 3 (base collector, normalizer, event persistence).
 
-### Task 4.1 — Benchmark base class with variant-aware extraction
-
-`BenchmarkCollector(SourceCollector)` with additional fields: benchmark_family, variant_name, evaluation_conditions. Store leaderboard snapshots as structured data (model, score, rank, conditions), not just raw HTML diffs.
-
-- **Key file:** `ai_benchmark/sources/benchmarks/__init__.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 4.2 — Artificial Analysis, LMArena, LiveBench collectors
-
-Artificial Analysis: leaderboard (model, score, price, speed), methodology tracking. LMArena: arena tabs, ELO/preference scores. LiveBench: leaderboard, PDF methodology (pymupdf).
-
-- **Key files:** `ai_benchmark/sources/benchmarks/artificial_analysis.py`, `lmarena.py`, `livebench.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 4.3 — SWE-bench, GAIA, HLE, Terminal-Bench collectors
-
-SWE-bench: variant-aware (Verified, Lite, Full, Pro, Multilingual, Multimodal), contamination flag. GAIA: HF org page, leaderboard Space, results_public. HLE: Scale leaderboard, confidence intervals, slice tracking. Terminal-Bench: leaderboard + registry/version tracking.
-
-- **Key files:** `ai_benchmark/sources/benchmarks/swebench.py`, `gaia.py`, `hle.py`, `terminal_bench.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 4.4 — arXiv collector
-
-Poll `cs.AI/recent`, `cs.CL/recent`, `cs.LG/recent`. Extract: title, authors, arxiv_id, categories, abstract link, date. Feed into `CandidatePaper` queue. Filter by relevance to tracked models/benchmarks.
-
-- **Key file:** `ai_benchmark/sources/research/arxiv.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 4.5 — Semantic Scholar API client
-
-Extend `APIClient` for S2 Graph API. Paper search, details (abstract, citations, venue, references), recommendations. Rate limit handling. Used for enrichment, not direct polling.
-
-- **Key file:** `ai_benchmark/sources/research/semantic_scholar.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 4.6 — Hugging Face Papers collector
-
-Poll `/papers` and `/papers/trending`. Extract: title, upvotes, code links, arxiv links, date. Feed into candidate queue.
-
-- **Key file:** `ai_benchmark/sources/research/hf_papers.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 4.7 — Research triage pipeline
-
-Three-stage pipeline: (1) Candidate — arXiv/HF Papers discoveries land with status `pending`. (2) Enrichment — call Semantic Scholar, check relevance, set `enriched` or `rejected`. (3) Promotion — relevant papers promoted to `EnrichedPaper` in authoritative store.
-
-- **Key file:** `ai_benchmark/processing/triage.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 4.8 — Tests for benchmark and research collectors
-
-Fixture HTML for benchmark leaderboards and arXiv listings. Test variant name extraction. Test triage pipeline with mock Semantic Scholar responses.
-
-- **Key files:** `tests/test_sources/test_benchmarks/`, `tests/test_sources/test_research/`, `tests/test_triage.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+| Task | Status | Started | Completed | Description |
+|---|---|---|---|---|
+| 4.1 | Open | — | — | `BenchmarkCollector(SourceCollector)` base with `LeaderboardEntry` dataclass — variant_name, evaluation_conditions, structured leaderboard extraction. Key file: `sources/benchmarks/__init__.py` |
+| 4.2 | Open | — | — | Artificial Analysis, LMArena, LiveBench collectors — leaderboard scraping, methodology tracking, PDF parsing. Key files: `sources/benchmarks/artificial_analysis.py`, `lmarena.py`, `livebench.py` |
+| 4.3 | Open | — | — | SWE-bench (variant-aware: Verified/Lite/Full/Pro/Multilingual/Multimodal, contamination flag), GAIA (HF org + leaderboard), HLE (confidence intervals, slice tracking), Terminal-Bench (registry). Key files: `sources/benchmarks/swebench.py`, `gaia.py`, `hle.py`, `terminal_bench.py` |
+| 4.4 | Open | — | — | arXiv collector — poll `cs.AI/CL/LG/recent`, extract title/authors/arxiv_id, relevance keyword filter, feed to `CandidatePaper` queue. Key file: `sources/research/arxiv.py` |
+| 4.5 | Open | — | — | Semantic Scholar API client — paper search, details, recommendations via Graph API. Rate limit handling. Enrichment only. Key file: `sources/research/semantic_scholar.py` |
+| 4.6 | Open | — | — | HF Papers collector — poll `/papers` and `/papers/trending`, extract title/upvotes/code links/arxiv links, feed to candidate queue. Key file: `sources/research/hf_papers.py` |
+| 4.7 | Open | — | — | Research triage pipeline — 3 stages: (1) Candidate ingestion, (2) Semantic Scholar enrichment + relevance scoring, (3) Promotion to `EnrichedPaper`. Key file: `processing/triage.py` |
+| 4.8 | Open | — | — | Benchmark and research tests — fixture HTML for leaderboards and arXiv, variant extraction tests, triage pipeline with mock S2 responses. Key files: `tests/test_sources/test_benchmarks/`, `test_research/`, `test_triage.py` |
 
 ### Phase 4 Summary
 
 - **Changes:** _(fill on completion)_
 - **Changes hosted at:** TBD
-- **Commit:** `git commit -m "Phase 4: Benchmark and research discovery integrations"`
+- **Commit:** `Phase 4: Benchmark and research discovery integrations`
 
 ---
 
@@ -377,74 +157,21 @@ Fixture HTML for benchmark leaderboards and arXiv listings. Test variant name ex
 
 **Depends on:** Phase 4 (all prior collectors operational).
 
-### Task 5.1 — Reuters collector
-
-Poll `/technology/artificial-intelligence/` and Artificial Intelligencer newsletter pattern. Extract: headline, byline, date, summary, URL. Auto-ingest with high-confidence secondary tier. Polling: every 3–6h.
-
-- **Key file:** `ai_benchmark/sources/news/reuters.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 5.2 — TechCrunch collector
-
-Poll `/category/artificial-intelligence/`. Extract: headline, author, date, summary, tags. Medium-confidence discovery tier. Flag material claims for confirmation against primary sources.
-
-- **Key file:** `ai_benchmark/sources/news/techcrunch.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 5.3 — News confidence tier system
-
-Assign `confidence_tier` to news events based on source classification. Reuters: `high_secondary` (auto-ingest, lighter review). TechCrunch: `medium_discovery` (triggers confirmation). Wire into `ClaimRecord` creation.
-
-- **Key file:** `ai_benchmark/processing/normalizer.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 5.4 — Hugging Face Forums minimal metadata collector
-
-Poll `discuss.huggingface.co` top-level and research/Spaces areas. Ingest only: title, author, timestamp, tags, outbound links. No full content — discovery-only per requirements.
-
-- **Key file:** `ai_benchmark/sources/community/hf_forums.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 5.5 — GitHub discovery collector
-
-Poll watched orgs (`meta-llama`, `openai`, `anthropics`, `google`, `mistralai`, `cohere-ai`, `xai-org`) via GitHub API. Track: new repos, releases, README changes, tags. Non-official orgs: discovery-only.
-
-- **Key file:** `ai_benchmark/sources/community/github_discovery.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 5.6 — HF leaderboard docs collector
-
-Poll the HF leaderboard docs index as a meta-source for discovering new community benchmarks.
-
-- **Key file:** `ai_benchmark/sources/benchmarks/__init__.py` (or dedicated collector)
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 5.7 — Full source coverage integration test
-
-Verify all 22 sources have a registered collector. Verify each returns well-formed results against fixture data.
-
-- **Key file:** `tests/test_full_coverage.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+| Task | Status | Started | Completed | Description |
+|---|---|---|---|---|
+| 5.1 | Open | — | — | Reuters collector — poll `/technology/artificial-intelligence/`, Artificial Intelligencer newsletter. High-confidence secondary tier. 3–6h polling. Key file: `sources/news/reuters.py` |
+| 5.2 | Open | — | — | TechCrunch collector — poll AI category. Medium-confidence discovery tier. Flag material claims for confirmation. Key file: `sources/news/techcrunch.py` |
+| 5.3 | Open | — | — | News confidence tier system — assign `confidence_tier` per source classification (`high_secondary`, `medium_discovery`). Wire into `ClaimRecord`. Key file: `processing/normalizer.py` |
+| 5.4 | Open | — | — | HF Forums minimal metadata collector — title, author, timestamp, tags, outbound links only. Discovery-only per requirements. Key file: `sources/community/hf_forums.py` |
+| 5.5 | Open | — | — | GitHub discovery collector — poll watched orgs via API. Track new repos, releases, README changes, tags. Key file: `sources/community/github_discovery.py` |
+| 5.6 | Open | — | — | HF leaderboard docs collector — poll leaderboard docs index as meta-source for new community benchmarks. Key file: `sources/benchmarks/__init__.py` or dedicated |
+| 5.7 | Open | — | — | Full source coverage integration test — verify all 22 sources registered, each returns well-formed results against fixtures. Key file: `tests/test_full_coverage.py` |
 
 ### Phase 5 Summary
 
 - **Changes:** _(fill on completion)_
 - **Changes hosted at:** TBD
-- **Commit:** `git commit -m "Phase 5: News and community integrations — all 22 sources covered"`
+- **Commit:** `Phase 5: News and community integrations — all 22 sources covered`
 
 ---
 
@@ -454,65 +181,20 @@ Verify all 22 sources have a registered collector. Verify each returns well-form
 
 **Depends on:** Phase 5 (all 22 sources producing events and claims).
 
-### Task 6.1 — Composite-key deduplicator
-
-`deduplicate(event)` checks against `{normalized_title, organization, source_type, canonical_path_or_slug, published_date}`. For model events, also checks `{model_slug, version_date}`. Returns: `is_duplicate`, `existing_record_id`, `similarity_score`. Near-duplicate detection via fuzzy title matching within same org + date window.
-
-- **Key file:** `ai_benchmark/processing/deduplicator.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 6.2 — Verification hierarchy engine
-
-Implements five verification chains: (1) Model releases — vendor launch > docs > pricing > changelog > system card; confirmed when 2+ official surfaces agree. (2) Benchmark claims — benchmark owner first, then vendor; record variant + conditions. (3) Pricing — confirmed only when official pricing page changes; store snapshot + timestamp. (4) Company announcements — newsroom > docs > Reuters > others. (5) Research — primary paper > Semantic Scholar > company blog; blog alone never confirms.
-
-- **Key file:** `ai_benchmark/processing/verification.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 6.3 — Conflict-preserving claim management
-
-When sources conflict, store both as separate `ClaimRecord` entries with labels: `official_self_report`, `benchmark_owner_report`, `secondary_news_report`, etc. Never merge conflicting claims.
-
-- **Key files:** `ai_benchmark/models/events.py`, `ai_benchmark/processing/verification.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 6.4 — Cross-reference table builder
-
-`link_related_records(event)` scans for related records across sources. Matching: same model_slug within time window, same org + event_type, same arxiv_id. Creates `CrossReference` rows with relationship: `confirms`, `supplements`, `conflicts_with`, `cites`.
-
-- **Key file:** `ai_benchmark/processing/cross_reference.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 6.5 — Post-collection processing pipeline
-
-Wire normalize → deduplicate → verify → cross-reference into the collection flow. Define as a processing pipeline invoked after each collector produces events.
-
-- **Key file:** `ai_benchmark/processing/pipeline.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 6.6 — Verification and dedup tests
-
-Test: same event from two sources deduplicates. Test: model release confirmed when 2 official surfaces agree. Test: conflicting benchmark claims stored separately. Test: cross-references created between related events.
-
-- **Key files:** `tests/test_deduplicator.py`, `tests/test_verification.py`, `tests/test_cross_reference.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+| Task | Status | Started | Completed | Description |
+|---|---|---|---|---|
+| 6.1 | Open | — | — | Composite-key deduplicator — check `{normalized_title, org, source_type, path, date}` + `{model_slug, version_date}`. Fuzzy near-duplicate detection. Key file: `processing/deduplicator.py` |
+| 6.2 | Open | — | — | Verification hierarchy engine — 5 chains: model releases (2+ surfaces), benchmark claims (owner first), pricing (page change only), announcements (newsroom > docs > Reuters), research (paper > S2 > blog). Key file: `processing/verification.py` |
+| 6.3 | Open | — | — | Conflict-preserving claim management — separate `ClaimRecord` entries with labels (`official_self_report`, `benchmark_owner_report`, etc.). Never merge conflicts. Key files: `models/events.py`, `processing/verification.py` |
+| 6.4 | Open | — | — | Cross-reference table builder — match by model_slug + time window, org + event_type, arxiv_id. Relationship types: `confirms`, `supplements`, `conflicts_with`, `cites`. Key file: `processing/cross_reference.py` |
+| 6.5 | Open | — | — | Post-collection processing pipeline — wire normalize → dedup → verify → cross-ref after each collector run. Key file: `processing/pipeline.py` |
+| 6.6 | Open | — | — | Verification and dedup tests — duplicate detection, 2-surface confirmation, conflict preservation, cross-reference creation. Key files: `tests/test_deduplicator.py`, `test_verification.py`, `test_cross_reference.py` |
 
 ### Phase 6 Summary
 
 - **Changes:** _(fill on completion)_
 - **Changes hosted at:** TBD
-- **Commit:** `git commit -m "Phase 6: Verification, deduplication, and cross-referencing"`
+- **Commit:** `Phase 6: Verification, deduplication, and cross-referencing`
 
 ---
 
@@ -522,81 +204,20 @@ Test: same event from two sources deduplicates. Test: model release confirmed wh
 
 **Depends on:** Phase 6 (complete processing pipeline).
 
-### Task 7.1 — APScheduler integration
-
-Initialize async scheduler. Register each source's pages as jobs with cron triggers matching cadences from `schedules.toml`. SQLite-backed job store for persistence. Configurable concurrency limit (default 5).
-
-- **Key file:** `ai_benchmark/scheduling/scheduler.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 7.2 — Cadence configuration
-
-`schedules.toml` mapping each source/page to cron expressions. Official changelogs: every 6h. Reuters: every 3–6h. Daily sources: multiple daily windows. `cadence.py`: parse and validate.
-
-- **Key files:** `ai_benchmark/config/schedules.toml`, `ai_benchmark/scheduling/cadence.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 7.3 — Error handling and health tracking
-
-Per-job: log failures, retry with backoff, circuit breaker after N consecutive failures. Track `last_success_at`, `last_failure_at`, `consecutive_failures` per source/page. Warn on sources failing > 24h.
-
-- **Key file:** `ai_benchmark/scheduling/scheduler.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 7.4 — CLI commands for operations
-
-`collect` — run one or all collectors immediately. `status` — last collection time, success/failure, event counts per source. `query` — search events by model, org, date, type. `export` — dump to JSON/CSV.
-
-- **Key file:** `ai_benchmark/cli.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 7.5 — Query and reporting interface
-
-`get_events(filters)`, `get_claims(entity)`, `get_cross_refs(event_id)`, `get_unconfirmed_claims()`, `get_recent_changes(hours=24)`. JSON and CSV export with configurable fields.
-
-- **Key files:** `ai_benchmark/reporting/query.py`, `ai_benchmark/reporting/export.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 7.6 — Application bootstrap and daemon mode
-
-Wire config loading, database init, scheduler start, signal handling (graceful shutdown). Foreground mode for dev, daemon-style for production.
-
-- **Key file:** `ai_benchmark/main.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 7.7 — End-to-end integration tests
-
-Test scheduler triggers on cadence. Test full cycle: fetch → diff → extract → normalize → dedup → verify → cross-ref → store. Test graceful shutdown mid-cycle.
-
-- **Key files:** `tests/test_scheduler.py`, `tests/test_e2e.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
-
-### Task 7.8 — Update README.md and project documentation
-
-Update `README.md` with: project overview, setup/install instructions, architecture summary, CLI usage, how to add a new source. Update `CLAUDE.md` with build/test/lint commands and development workflow.
-
-- **Key files:** `README.md`, `CLAUDE.md`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+| Task | Status | Started | Completed | Description |
+|---|---|---|---|---|
+| 7.1 | Open | — | — | APScheduler integration — async scheduler, cron triggers per page from `schedules.toml`, SQLite-backed job store, configurable concurrency. Key file: `scheduling/scheduler.py` |
+| 7.2 | Open | — | — | Cadence configuration — `schedules.toml` mapping sources to cron expressions (changelogs 6h, Reuters 3–6h, daily sources). Parse and validate. Key files: `config/schedules.toml`, `scheduling/cadence.py` |
+| 7.3 | Open | — | — | Error handling and health tracking — per-job retry with backoff, circuit breaker, `last_success_at`/`last_failure_at`/`consecutive_failures` tracking, 24h failure warnings. Key file: `scheduling/scheduler.py` |
+| 7.4 | Open | — | — | CLI operations — `collect` (run one/all immediately), `status` (per-source health), `query` (search events), `export` (JSON/CSV dump). Key file: `ai_benchmark/cli.py` |
+| 7.5 | Open | — | — | Query and reporting — `get_events()`, `get_claims()`, `get_cross_refs()`, `get_unconfirmed_claims()`, `get_recent_changes()`. JSON/CSV export. Key files: `reporting/query.py`, `reporting/export.py` |
+| 7.6 | Open | — | — | Application bootstrap and daemon mode — wire config, db init, scheduler start, graceful shutdown signal handling. Key file: `ai_benchmark/main.py` |
+| 7.7 | Open | — | — | End-to-end integration tests — scheduler cadence triggers, full pipeline cycle, graceful shutdown mid-cycle. Key files: `tests/test_scheduler.py`, `tests/test_e2e.py` |
+| 7.8 | Open | — | — | Update `README.md` (overview, setup, architecture, CLI, adding sources) and `CLAUDE.md` (build/test/lint commands, dev workflow). Key files: `README.md`, `CLAUDE.md` |
 
 ### Phase 7 Summary
 
 - **Changes:** _(fill on completion)_
 - **Changes hosted at:** TBD
-- **Commit:** `git commit -m "Phase 7: Scheduling, orchestration, reporting, and documentation"`
-- **Final commit:** `git commit -m "Update README.md with project documentation"`
+- **Commit:** `Phase 7: Scheduling, orchestration, reporting, and documentation`
+- **Final commit:** `Update README.md with project documentation`
