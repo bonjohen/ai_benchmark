@@ -18,6 +18,9 @@ ai-benchmark init-db             # Create database
 ai-benchmark check-config        # Validate config
 ai-benchmark collect --source OpenAI  # Test single source collection
 ai-benchmark run                 # Start daemon mode
+ai-benchmark status              # Show per-source event counts
+ai-benchmark query --org OpenAI  # Search events
+ai-benchmark export --format csv --output events.csv  # Export
 ```
 
 ## Core Domain Concepts
@@ -43,12 +46,37 @@ This ordering is load-bearing for the entire pipeline:
 
 Each collected item goes through: normalize → deduplicate → create event → create claim → update confirmation status → build cross-references. Duplicates from different sources still create claims on the existing event, enabling multi-source confirmation.
 
+## Architecture
+
+```
+ai_benchmark/
+  config/           Pydantic settings (env vars), TOML source catalog + schedule definitions
+  models/           SQLAlchemy 2.0 async ORM — 8 models across 3 modules
+  collection/       HTTP fetcher (httpx, retry/backoff), HTML differ, snapshot manager, API client
+  sources/          21 registered source collectors + Semantic Scholar enrichment client
+    benchmarks/     7 benchmark collectors (Artificial Analysis, LMArena, LiveBench, SWE-bench, GAIA, HLE, Terminal-Bench)
+    research/       arXiv, Semantic Scholar, HF Papers
+    news/           Reuters, TechCrunch
+    community/      HF Forums, GitHub discovery, HF Leaderboard Docs
+  processing/       Normalizer, deduplicator, verification, cross-reference builder, triage, pipeline orchestrator
+  scheduling/       APScheduler async scheduler, cron cadence config, health tracker with circuit breaker
+  reporting/        Query functions (events, claims, cross-refs), JSON/CSV export
+```
+
+## Database Models
+
+- `sources.py`: **Source**, **Page**, **Snapshot** — source catalog, monitored pages, HTML snapshots
+- `events.py`: **EventRecord**, **ClaimRecord**, **CrossReference** — normalized events, per-source claims, inter-event links
+- `research.py`: **CandidatePaper**, **EnrichedPaper** — research triage pipeline (candidate → enriched → promoted)
+
 ## Key Patterns
 
-- **SourceCollector**: Abstract base in `sources/base.py`. Subclass and implement `extract_items(html, page)`. Register in `sources/registry.py`.
-- **BenchmarkCollector**: Extended base in `sources/benchmarks/__init__.py` with `extract_leaderboard()` returning `LeaderboardEntry` objects. Auto-converts to `RawItem`.
+- **SourceCollector**: Abstract base in `sources/base.py`. Subclass and implement `extract_items(html: str, page: PageConfig) -> list[RawItem]`. Register in `sources/registry.py`.
+- **BenchmarkCollector**: Extended base in `sources/benchmarks/__init__.py` with `extract_leaderboard()` returning `LeaderboardEntry` objects. Auto-converts to `RawItem` via default `extract_items()`.
 - **Registry**: `COLLECTOR_CLASSES` dict in `sources/registry.py` maps org names to classes. `get_collector(source_config)` is the factory.
 - **Processing pipeline**: `processing/pipeline.py` — `process_item()` / `process_items()` run the full normalize→dedup→verify→xref chain.
+- **Scheduling**: `scheduling/scheduler.py` — `PipelineScheduler` wraps APScheduler with `SourceHealthTracker` circuit breaker (5 consecutive failures trips the breaker).
+- **Reporting**: `reporting/query.py` for filtered event/claim queries; `reporting/export.py` for JSON/CSV serialization.
 - **Async throughout**: SQLAlchemy async sessions, httpx async client, APScheduler AsyncIOScheduler.
 
 ## Polling Cadences
@@ -58,6 +86,24 @@ Defined in `config/schedules.toml`. Vendors every 6-12h, Reuters every 3h, bench
 ## Deduplication Strategy
 
 Three-layer: (1) exact composite key `{normalized_title, org, source_type, path, date}`, (2) model slug + org + date, (3) fuzzy title match (0.85 threshold via SequenceMatcher). Cross-reference table links related records — do not flatten into a merged record.
+
+## Configuration
+
+Settings are loaded via `PipelineSettings` (Pydantic) with `AI_BENCH_` env prefix:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `AI_BENCH_DATABASE_URL` | `sqlite+aiosqlite:///ai_benchmark.db` | Database connection |
+| `AI_BENCH_LOG_LEVEL` | `INFO` | Logging level |
+| `AI_BENCH_LOG_FORMAT` | `json` | `json` or `console` output |
+| `AI_BENCH_GITHUB_TOKEN` | — | GitHub API access (Meta, GitHub discovery) |
+| `AI_BENCH_SEMANTIC_SCHOLAR_API_KEY` | — | Semantic Scholar enrichment |
+| `AI_BENCH_PROXY_URL` | — | HTTP proxy for fetcher |
+| `AI_BENCH_REQUEST_TIMEOUT` | `30` | HTTP request timeout (seconds) |
+| `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent requests |
+| `AI_BENCH_RETRY_ATTEMPTS` | `3` | Fetch retry count |
+
+Also supports `.env` file in project root.
 
 ## Key Design Constraints
 

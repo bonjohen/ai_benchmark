@@ -1,6 +1,8 @@
 # AI Benchmark Intelligence Pipeline
 
-Monitors AI model releases, benchmark results, pricing changes, and research papers across 22 sources. Produces a structured local knowledge base of verified AI industry events with deduplication, verification hierarchy, and cross-referencing.
+Monitors AI model releases, benchmark results, pricing changes, and research papers across 22 sources. Produces a structured local knowledge base of verified AI industry events with multi-layer deduplication, a 5-chain verification hierarchy, and cross-referencing.
+
+Requires Python 3.12+.
 
 ## Setup
 
@@ -82,14 +84,30 @@ Claims from different sources are stored as separate records — never merged.
 
 ## Configuration
 
-Environment variables use the `AI_BENCH_` prefix:
+Settings are loaded via Pydantic with the `AI_BENCH_` env prefix. Also reads `.env` in the project root.
 
-- `AI_BENCH_DATABASE_URL` — database connection (default: `sqlite+aiosqlite:///ai_benchmark.db`)
-- `AI_BENCH_GITHUB_TOKEN` — GitHub API access for Meta and org discovery
-- `AI_BENCH_SEMANTIC_SCHOLAR_API_KEY` — Semantic Scholar enrichment
+| Variable | Default | Purpose |
+|---|---|---|
+| `AI_BENCH_DATABASE_URL` | `sqlite+aiosqlite:///ai_benchmark.db` | Database connection string |
+| `AI_BENCH_GITHUB_TOKEN` | — | GitHub API access (Meta repos, org discovery) |
+| `AI_BENCH_SEMANTIC_SCHOLAR_API_KEY` | — | Semantic Scholar paper enrichment |
+| `AI_BENCH_LOG_LEVEL` | `INFO` | Logging level |
+| `AI_BENCH_LOG_FORMAT` | `json` | `json` or `console` output |
+| `AI_BENCH_PROXY_URL` | — | HTTP proxy for fetcher |
+| `AI_BENCH_REQUEST_TIMEOUT` | `30` | HTTP timeout in seconds |
+| `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent fetch requests |
+| `AI_BENCH_RETRY_ATTEMPTS` | `3` | Retry count with exponential backoff |
 
 Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 48 pages)
 Schedule config: `ai_benchmark/config/schedules.toml` (21 cron entries)
+
+## Database Models
+
+8 SQLAlchemy 2.0 async ORM models across 3 modules:
+
+- **sources.py**: `Source`, `Page`, `Snapshot` — catalog, monitored pages, HTML content snapshots
+- **events.py**: `EventRecord`, `ClaimRecord`, `CrossReference` — normalized events, per-source claims, inter-event links
+- **research.py**: `CandidatePaper`, `EnrichedPaper` — research triage pipeline (discovered → enriched → promoted/rejected)
 
 ## Model Evaluation Pipeline (Planned)
 
@@ -104,11 +122,19 @@ A separate evaluation subsystem for comparing models across machines, runtimes, 
 - **Source pipeline:** `docs/core_requirements_plan.md` — All 7 phases complete
 - **Eval pipeline:** `docs/model_eval_pipeline_plan.md` — 9 phases (E1–E9), not yet started
 
-## Tests
+## Development
 
 ```bash
+pip install -e ".[dev]"      # Install with dev + test dependencies
 pytest                       # Run all 163 tests
 pytest tests/test_config.py  # Single test file
-pytest -x                    # Stop on first failure
-pytest -v                    # Verbose output
+pytest -x -v                 # Verbose, stop on first failure
+ruff check .                 # Lint
+mypy ai_benchmark            # Type check (strict mode)
 ```
+
+Key dev dependencies: pytest, pytest-asyncio, respx (httpx mocking), ruff, mypy.
+
+## License
+
+MIT
