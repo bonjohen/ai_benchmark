@@ -134,18 +134,18 @@ Each phase summary includes a `Changes hosted at:` field. Populate this with the
 
 | Task | Status | Started | Completed | Description |
 |---|---|---|---|---|
-| 4.1 | Open | — | — | `BenchmarkCollector(SourceCollector)` base with `LeaderboardEntry` dataclass — variant_name, evaluation_conditions, structured leaderboard extraction. Key file: `sources/benchmarks/__init__.py` |
-| 4.2 | Open | — | — | Artificial Analysis, LMArena, LiveBench collectors — leaderboard scraping, methodology tracking, PDF parsing. Key files: `sources/benchmarks/artificial_analysis.py`, `lmarena.py`, `livebench.py` |
-| 4.3 | Open | — | — | SWE-bench (variant-aware: Verified/Lite/Full/Pro/Multilingual/Multimodal, contamination flag), GAIA (HF org + leaderboard), HLE (confidence intervals, slice tracking), Terminal-Bench (registry). Key files: `sources/benchmarks/swebench.py`, `gaia.py`, `hle.py`, `terminal_bench.py` |
-| 4.4 | Open | — | — | arXiv collector — poll `cs.AI/CL/LG/recent`, extract title/authors/arxiv_id, relevance keyword filter, feed to `CandidatePaper` queue. Key file: `sources/research/arxiv.py` |
-| 4.5 | Open | — | — | Semantic Scholar API client — paper search, details, recommendations via Graph API. Rate limit handling. Enrichment only. Key file: `sources/research/semantic_scholar.py` |
-| 4.6 | Open | — | — | HF Papers collector — poll `/papers` and `/papers/trending`, extract title/upvotes/code links/arxiv links, feed to candidate queue. Key file: `sources/research/hf_papers.py` |
-| 4.7 | Open | — | — | Research triage pipeline — 3 stages: (1) Candidate ingestion, (2) Semantic Scholar enrichment + relevance scoring, (3) Promotion to `EnrichedPaper`. Key file: `processing/triage.py` |
-| 4.8 | Open | — | — | Benchmark and research tests — fixture HTML for leaderboards and arXiv, variant extraction tests, triage pipeline with mock S2 responses. Key files: `tests/test_sources/test_benchmarks/`, `test_research/`, `test_triage.py` |
+| 4.1 | Completed | 2026-03-28 11:30 PST | 2026-03-28 11:35 PST | `BenchmarkCollector(SourceCollector)` base with `LeaderboardEntry` dataclass — variant_name, evaluation_conditions, structured leaderboard extraction. Key file: `sources/benchmarks/__init__.py` |
+| 4.2 | Completed | 2026-03-28 11:30 PST | 2026-03-28 11:35 PST | Artificial Analysis, LMArena, LiveBench collectors — leaderboard scraping, methodology tracking, PDF parsing. Key files: `sources/benchmarks/artificial_analysis.py`, `lmarena.py`, `livebench.py` |
+| 4.3 | Completed | 2026-03-28 11:30 PST | 2026-03-28 11:35 PST | SWE-bench (variant-aware: Verified/Lite/Full/Pro/Multilingual/Multimodal, contamination flag), GAIA (HF org + leaderboard), HLE (confidence intervals, slice tracking), Terminal-Bench (registry). Key files: `sources/benchmarks/swebench.py`, `gaia.py`, `hle.py`, `terminal_bench.py` |
+| 4.4 | Completed | 2026-03-28 11:30 PST | 2026-03-28 11:35 PST | arXiv collector — poll `cs.AI/CL/LG/recent`, extract title/authors/arxiv_id, relevance keyword filter, feed to `CandidatePaper` queue. Key file: `sources/research/arxiv.py` |
+| 4.5 | Completed | 2026-03-28 11:30 PST | 2026-03-28 11:35 PST | Semantic Scholar API client — paper search, details, recommendations via Graph API. Rate limit handling. Enrichment only. Key file: `sources/research/semantic_scholar.py` |
+| 4.6 | Completed | 2026-03-28 11:30 PST | 2026-03-28 11:35 PST | HF Papers collector — poll `/papers` and `/papers/trending`, extract title/upvotes/code links/arxiv links, feed to candidate queue. Key file: `sources/research/hf_papers.py` |
+| 4.7 | Completed | 2026-03-28 11:30 PST | 2026-03-28 11:35 PST | Research triage pipeline — 3 stages: (1) Candidate ingestion, (2) Semantic Scholar enrichment + relevance scoring, (3) Promotion to `EnrichedPaper`. Key file: `processing/triage.py` |
+| 4.8 | Completed | 2026-03-28 13:45 PST | 2026-03-28 13:55 PST | Benchmark and research tests — fixture HTML for leaderboards and arXiv, variant extraction tests, triage pipeline with mock S2 responses. Registry updated with all 17 sources. Key files: `tests/test_sources/test_benchmarks.py`, `test_research.py`, `test_triage.py` |
 
 ### Phase 4 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** 7 benchmark collectors (Artificial Analysis, LMArena, LiveBench, SWE-bench with variant detection, GAIA with org page support, HLE with confidence intervals, Terminal-Bench with registry). 2 research collectors (arXiv with relevance filtering, HF Papers). Semantic Scholar API client. 3-stage triage pipeline (ingest → enrich → promote). Registry updated to include all 17 sources (7 vendors + 7 benchmarks + 2 research + S2 client). 32 new tests (78 total).
 - **Changes hosted at:** TBD
 - **Commit:** `Phase 4: Benchmark and research discovery integrations`
 
