@@ -56,6 +56,7 @@ ai_benchmark/
   scheduling/       APScheduler async scheduler, cron cadence config, health tracking
                     with circuit breaker
   reporting/        Query functions (events, claims, cross-refs), JSON/CSV export
+  eval/             Model evaluation pipeline (see below)
 ```
 
 ## Source Coverage
@@ -136,10 +137,10 @@ ai_benchmark/eval/
                   Anthropic, Local, Generic HTTP)
   scoring/        ScorerRunner + 7 built-in scorers (exact_match, fuzzy_match,
                   rubric, format_validator, latency_cost, safety, model_judge)
-  api/            FastAPI with ~45 REST endpoints under /api/eval/
+  api/            FastAPI with 44 REST endpoints under /api/eval/
   ui/             Jinja2 templates: dashboard, entity pages, run detail/live,
-                  comparison view, reports with Chart.js
-  cli/            9 Click subcommands (run, run-matrix, status, list, compare,
+                  comparison view, reports with Chart.js (16 templates)
+  cli/            8 Click subcommands (run, run-matrix, status, list, compare,
                   export, rescore, serve)
   config.py       EvalSettings with AI_BENCH_EVAL_ env prefix
 ```
@@ -150,8 +151,8 @@ ai_benchmark/eval/
 |---|---|---|
 | `AI_BENCH_EVAL_API_HOST` | `127.0.0.1` | API bind host |
 | `AI_BENCH_EVAL_API_PORT` | `8100` | API bind port |
-| `AI_BENCH_EVAL_ARTIFACT_STORAGE_PATH` | `./artifacts` | Artifact file storage |
-| `AI_BENCH_EVAL_MAX_CONCURRENT_ITEMS` | `10` | Parallel item execution |
+| `AI_BENCH_EVAL_ARTIFACT_STORAGE_PATH` | `artifacts` | Artifact file storage |
+| `AI_BENCH_EVAL_MAX_CONCURRENT_ITEMS` | `5` | Parallel item execution |
 | `AI_BENCH_EVAL_DEFAULT_EXECUTION_MODE` | `sequential` | Default run mode |
 | `AI_BENCH_EVAL_RUN_TIMEOUT_SECONDS` | `3600` | Per-run timeout |
 | `AI_BENCH_EVAL_ITEM_TIMEOUT_SECONDS` | `120` | Per-item timeout |

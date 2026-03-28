@@ -91,14 +91,14 @@ ai_benchmark/eval/
   scoring/          ScorerRunner (weighted pass logic, aggregate metrics), BaseScorer ABC
     builtin/        7 scorers: exact_match, fuzzy_match, rubric, format_validator,
                     latency_cost, safety, model_judge
-  api/              FastAPI app factory, ~45 endpoints under /api/eval/
+  api/              FastAPI app factory, 44 endpoints under /api/eval/
     routes/         evaluations, datasets, scorers, targets, machines, runs, comparisons, reports
     schemas/        Pydantic request/response models for all entities
   ui/               Jinja2 server-rendered UI with sidebar navigation
-    templates/      14 HTML templates: dashboard, entity list/detail, run detail/live,
+    templates/      16 HTML templates: dashboard, entity list/detail, run detail/live,
                     comparison view, reports dashboard with Chart.js
     static/         CSS (tables, cards, badges, progress bars) + JS (sorting, tabs, auto-refresh)
-  cli/              9 Click subcommands: run, run-matrix, status, list, compare, export,
+  cli/              8 Click subcommands: run, run-matrix, status, list, compare, export,
                     rescore, serve
 ```
 
