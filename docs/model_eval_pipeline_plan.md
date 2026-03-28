@@ -273,19 +273,19 @@ These are additions to the existing pipeline stack.
 
 | Task | Status | Started | Completed | Description |
 |---|---|---|---|---|
-| E9.1 | Open | — | — | End-to-end smoke test — create evaluation + dataset (with 5+ items) + scorer + target + machine → trigger run via API → poll until completion → verify item results + aggregate metrics → trigger second run with different target → compare both runs. Covers AC-1, AC-2. |
-| E9.2 | Open | — | — | Historical inspectability test — complete a run, then query it by ID. Verify response contains full evaluation version, dataset version, scorer versions, target config snapshot, and machine snapshot. Covers AC-3. |
-| E9.3 | Open | — | — | CLI smoke test — `eval run`, `eval status`, `eval compare`, `eval export` against test database. Verify each command produces expected output and exit codes. Covers AC-4. |
-| E9.4 | Open | — | — | Machine class filter test — create runs on different hardware classes, query `GET /runs?hardware_class=standard_laptop`, verify only matching runs returned. Covers AC-5. |
-| E9.5 | Open | — | — | Active vs historical separation test — create active (queued/running) and completed runs. Verify dashboard API returns them in distinct groups. Covers AC-6. |
-| E9.6 | Open | — | — | Rescore test — complete a run with one scorer, then `POST /runs/{id}/rescore` with a different scorer config. Verify new scores are computed on stored outputs without re-running generation. Verify original outputs are unchanged. Covers AC-7. |
-| E9.7 | Open | — | — | Partial failure test — create a run where 1 of 10 items fails (via a bad prompt or endpoint error). Verify status=partially_completed, 9 items have results, 1 has error captured. Covers AC-8. |
-| E9.8 | Open | — | — | Update `README.md` — add eval pipeline section: purpose, quick start (eval serve, eval run), architecture overview, API reference link. Update `CLAUDE.md` — add eval build/test commands, eval package structure, key patterns (adapters, scorers, orchestrator). |
-| E9.9 | Open | — | — | Create `tests/test_eval/fixtures/` — `sample_dataset.json` (5 coding + 5 general items), `sample_scorer.py` (custom scorer example), `sample_target.json` (local ollama config). Used by integration tests and as user examples. |
+| E9.1 | Completed | 2026-03-28 | 2026-03-28 | End-to-end smoke test — create evaluation + dataset (with 5+ items) + scorer + target + machine → trigger run via API → poll until completion → verify item results + aggregate metrics → trigger second run with different target → compare both runs. Covers AC-1, AC-2. |
+| E9.2 | Completed | 2026-03-28 | 2026-03-28 | Historical inspectability test — complete a run, then query it by ID. Verify response contains full evaluation version, dataset version, scorer versions, target config snapshot, and machine snapshot. Covers AC-3. |
+| E9.3 | Completed | 2026-03-28 | 2026-03-28 | CLI smoke test — `eval run`, `eval status`, `eval compare`, `eval export` against test database. Verify each command produces expected output and exit codes. Covers AC-4. |
+| E9.4 | Completed | 2026-03-28 | 2026-03-28 | Machine class filter test — create runs on different hardware classes, query `GET /runs?hardware_class=standard_laptop`, verify only matching runs returned. Covers AC-5. |
+| E9.5 | Completed | 2026-03-28 | 2026-03-28 | Active vs historical separation test — create active (queued/running) and completed runs. Verify dashboard API returns them in distinct groups. Covers AC-6. |
+| E9.6 | Completed | 2026-03-28 | 2026-03-28 | Rescore test — complete a run with one scorer, then `POST /runs/{id}/rescore` with a different scorer config. Verify new scores are computed on stored outputs without re-running generation. Verify original outputs are unchanged. Covers AC-7. |
+| E9.7 | Completed | 2026-03-28 | 2026-03-28 | Partial failure test — create a run where 1 of 10 items fails (via a bad prompt or endpoint error). Verify status=partially_completed, 9 items have results, 1 has error captured. Covers AC-8. |
+| E9.8 | Completed | 2026-03-28 | 2026-03-28 | Update `README.md` — add eval pipeline section: purpose, quick start (eval serve, eval run), architecture overview, API reference link. Update `CLAUDE.md` — add eval build/test commands, eval package structure, key patterns (adapters, scorers, orchestrator). |
+| E9.9 | Completed | 2026-03-28 | 2026-03-28 | Create `tests/test_eval/fixtures/` — `sample_dataset.json` (5 coding + 5 general items), `sample_scorer.py` (custom scorer example), `sample_target.json` (local ollama config). Used by integration tests and as user examples. |
 
 ### Phase E9 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** 14 integration tests covering all 8 acceptance criteria (AC-1 through AC-8): end-to-end lifecycle, batch runs with 3 targets, historical inspectability, CLI smoke tests, machine class filtering, active/historical separation, rescore endpoint, partial failure tracking. Fixed CompareResponse schema to match service output. Fixed batch run route to pass dataset_version_id. Created 3 fixture files (sample_dataset.json, sample_scorer.py, sample_target.json). Updated README.md with eval quick start, architecture, and config. Updated CLAUDE.md with eval commands, architecture, and key patterns. Full test suite: 297 tests passing.
 - **Changes hosted at:** TBD
 - **Commit:** `Eval Phase E9: Integration tests, acceptance criteria verification, and documentation`
 - **Final commit:** `Update README.md and CLAUDE.md with eval pipeline documentation`

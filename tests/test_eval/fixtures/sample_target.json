@@ -1,0 +1,21 @@
+{
+  "name": "local-ollama-llama3",
+  "model_name": "llama3.2:3b",
+  "model_family": "Llama",
+  "provider": "local_ollama",
+  "endpoint_url": "http://localhost:11434",
+  "runtime_backend": "ollama",
+  "inference_params": {
+    "temperature": 0.0,
+    "max_tokens": 2048,
+    "top_p": 1.0,
+    "stop_sequences": []
+  },
+  "runtime_options": {
+    "gpu_layers": -1,
+    "context_size": 4096,
+    "batch_size": 512
+  },
+  "tags": ["local", "llama", "3b"],
+  "notes": "Sample local Ollama target for eval testing. Requires Ollama running with llama3.2:3b pulled."
+}

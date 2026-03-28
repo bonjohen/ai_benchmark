@@ -61,20 +61,27 @@ async def create_run(
     return result
 
 
-@router.post("/batch", response_model=list[RunResponse], status_code=201)
+@router.post("/batch", status_code=201)
 async def create_batch(
     body: RunBatchCreate,
     session: AsyncSession = Depends(get_session),
 ):
+    # Look up dataset_version_id from evaluation version
+    from ...models.evaluation import EvaluationVersion
+    ev = await session.get(EvaluationVersion, body.evaluation_version_id)
+    if ev is None:
+        raise HTTPException(404, f"EvaluationVersion {body.evaluation_version_id} not found")
+
     rg, runs = await run_service.create_batch(
         session,
         evaluation_version_id=body.evaluation_version_id,
         target_config_ids=body.target_config_ids,
+        dataset_version_id=ev.dataset_version_id,
         execution_type=body.execution_type,
         name=body.name,
         machine_profile_id=body.machine_profile_id,
     )
-    result = [_run_to_dict(r) for r in runs]
+    result = {"group_id": rg.id, "runs": [_run_to_dict(r) for r in runs]}
     await session.commit()
     return result
 

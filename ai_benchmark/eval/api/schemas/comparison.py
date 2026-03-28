@@ -10,9 +10,11 @@ class CompareRequest(BaseModel):
 
 
 class CompareResponse(BaseModel):
-    metric_deltas: dict
-    scorer_breakdown: dict
+    run_ids: list[int]
+    metric_comparison: list[dict]
+    scorer_breakdown: list[dict]
     item_diffs: list[dict]
+    disagreement_count: int
 
 
 class ConfigDiffRequest(BaseModel):
