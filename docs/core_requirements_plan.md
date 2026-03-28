@@ -210,76 +210,76 @@ Sample HTML snapshots in `tests/fixtures/` (changelog, pricing, newsroom). Test 
 Abstract `SourceCollector` with methods: `collect(page)` → raw items, `extract_events(raw_items)` → `EventRecord` candidates, `get_pages()` → page configs. Hooks for source-specific CSS selectors, content extraction, model-name parsing.
 
 - **Key file:** `ai_benchmark/sources/base.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:30 PST
+- **Completed:** 2026-03-28 10:38 PST
 
 ### Task 3.2 — Normalizer for event field extraction
 
 Functions: `normalize_title()`, `extract_model_slug()`, `extract_version()`, `extract_date()`, `classify_event_type()` (model_release, pricing_change, api_update, deprecation, system_card, announcement). Regex patterns for known model families: GPT-*, Claude-*, Gemini-*, Grok-*, Mistral-*, Command-*, Llama-*.
 
 - **Key file:** `ai_benchmark/processing/normalizer.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:30 PST
+- **Completed:** 2026-03-28 10:38 PST
 
 ### Task 3.3 — OpenAI collector
 
 Pages: product newsroom, API changelog, models page, pricing, system cards. Changelog: parse dated entries, extract model slugs. Pricing: parse tables, detect row changes.
 
 - **Key file:** `ai_benchmark/sources/openai.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:38 PST
+- **Completed:** 2026-03-28 10:45 PST
 
 ### Task 3.4 — Anthropic collector
 
 Pages: newsroom, system cards, models overview, pricing, API release notes. System card extraction: parse card index, detect new cards by date.
 
 - **Key file:** `ai_benchmark/sources/anthropic.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:38 PST
+- **Completed:** 2026-03-28 10:45 PST
 
 ### Task 3.5 — Google/Gemini collector
 
 Pages: Gemini release notes, pricing, rate limits, models catalog, DeepMind blog. Handles two domains: `ai.google.dev` and `blog.google`.
 
 - **Key file:** `ai_benchmark/sources/google.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:38 PST
+- **Completed:** 2026-03-28 10:45 PST
 
 ### Task 3.6 — xAI, Mistral, Cohere, Meta collectors
 
 xAI: release notes, models/pricing, news. Mistral: changelog (labeled entries like "MODEL RELEASED"), news, pricing. Cohere: blog, release notes, docs. Meta: GitHub API for `meta-llama` org (releases, repos), open-source AI page.
 
 - **Key files:** `ai_benchmark/sources/xai.py`, `mistral.py`, `cohere.py`, `meta.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **State:** Completed
+- **Started:** 2026-03-28 10:38 PST
+- **Completed:** 2026-03-28 10:45 PST
 
 ### Task 3.7 — Event record persistence
 
 Wire collectors to database: persist `EventRecord` rows linked to source and page. Skip storage if identical event exists by composite key (early dedup).
 
-- **Key files:** `ai_benchmark/sources/base.py`, `ai_benchmark/models/events.py`
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **Key files:** `ai_benchmark/sources/persistence.py`, `ai_benchmark/sources/registry.py`
+- **State:** Completed
+- **Started:** 2026-03-28 10:45 PST
+- **Completed:** 2026-03-28 10:48 PST
 
 ### Task 3.8 — Tests for vendor collectors
 
 One fixture HTML file per major page type per vendor. Tests that extraction produces correct event records from known HTML.
 
-- **Key files:** `tests/test_sources/test_openai.py`, `test_anthropic.py`, `test_google.py`, etc.
-- **State:** Open
-- **Started:** —
-- **Completed:** —
+- **Key files:** `tests/test_sources/test_collectors.py`, `tests/test_sources/test_persistence.py`
+- **State:** Completed
+- **Started:** 2026-03-28 10:45 PST
+- **Completed:** 2026-03-28 10:50 PST
 
 ### Phase 3 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** Abstract SourceCollector base class with fetch/diff/extract lifecycle, event field normalizer (model slug extraction for 10 model families with stop-word trimming, date extraction, event type classification), 7 vendor collectors (OpenAI, Anthropic, Google, xAI, Mistral, Cohere, Meta with GitHub API), collector registry, event persistence with composite-key dedup, 22 new tests (46 total passing).
 - **Changes hosted at:** TBD
 - **Commit:** `git commit -m "Phase 3: Official vendor source integrations"`
 
