@@ -223,19 +223,19 @@ These are additions to the existing pipeline stack.
 
 | Task | Status | Started | Completed | Description |
 |---|---|---|---|---|
-| E7.1 | Open | — | — | Create `eval/ui/__init__.py`, `eval/ui/server.py` — mount Jinja2 template engine and static file serving on the FastAPI app. Define base template with sidebar navigation: Dashboard, Evaluations, Datasets, Scorers, Targets, Machines, Runs, Reports. |
-| E7.2 | Open | — | — | Create `eval/ui/static/css/` — base stylesheet. Minimal, functional design. Tables, cards, status badges, progress bars, form styling. |
-| E7.3 | Open | — | — | Create `eval/ui/static/js/` — lightweight JS for table sorting, filter forms, auto-refresh (polling), diff highlighting, and multi-select for comparisons. |
-| E7.4 | Open | — | — | Implement `eval/ui/templates/base.html` — layout with nav sidebar, content area, flash messages. |
-| E7.5 | Open | — | — | Implement dashboard page (`templates/evaluations/dashboard.html`) — active runs with progress bars, recent completions, failure alerts, machine utilization summary. Auto-refreshes via JS polling. |
-| E7.6 | Open | — | — | Implement evaluation pages — `list.html` (table with name, version, dataset, scorer count, last run, tags; create/archive actions), `detail.html` (header, version history, "New Run" trigger form, recent runs), `create.html` (form for new evaluation). |
-| E7.7 | Open | — | — | Implement dataset pages — `list.html` (name, version count, latest item count, source, tags), `detail.html` (version list, item preview table with pagination). |
-| E7.8 | Open | — | — | Implement target pages — `list.html` (name, model, provider, machine, runtime, key params; multi-select for diff), `detail.html` (full config display, clone button, run history). |
-| E7.9 | Open | — | — | Implement run pages — `list.html` (table with filters for status/evaluation/target/machine/date/model; checkbox select → "Compare Selected"), `detail.html` (status badge, summary cards, tabs for Results/Scorer Breakdown/Configuration/Artifacts/Traces; item rows expand to full detail), `live.html` (auto-refresh variant with progress bar and streaming item table). |
+| E7.1 | Completed | 2026-03-28 | 2026-03-28 | Create `eval/ui/__init__.py`, `eval/ui/server.py` — mount Jinja2 template engine and static file serving on the FastAPI app. Define base template with sidebar navigation: Dashboard, Evaluations, Datasets, Scorers, Targets, Machines, Runs, Reports. |
+| E7.2 | Completed | 2026-03-28 | 2026-03-28 | Create `eval/ui/static/css/` — base stylesheet. Minimal, functional design. Tables, cards, status badges, progress bars, form styling. |
+| E7.3 | Completed | 2026-03-28 | 2026-03-28 | Create `eval/ui/static/js/` — lightweight JS for table sorting, filter forms, auto-refresh (polling), diff highlighting, and multi-select for comparisons. |
+| E7.4 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval/ui/templates/base.html` — layout with nav sidebar, content area, flash messages. |
+| E7.5 | Completed | 2026-03-28 | 2026-03-28 | Implement dashboard page (`templates/dashboard.html`) — active runs with progress bars, recent completions, failure alerts, machine utilization summary. Auto-refreshes via JS polling. |
+| E7.6 | Completed | 2026-03-28 | 2026-03-28 | Implement evaluation pages — `list.html` (table with name, version, dataset, scorer count, last run, tags; create/archive actions), `detail.html` (header, version history, "New Run" trigger form, recent runs), `create.html` (form for new evaluation). |
+| E7.7 | Completed | 2026-03-28 | 2026-03-28 | Implement dataset pages — `list.html` (name, version count, latest item count, source, tags), `detail.html` (version list, item preview table with pagination). |
+| E7.8 | Completed | 2026-03-28 | 2026-03-28 | Implement target pages — `list.html` (name, model, provider, machine, runtime, key params; multi-select for diff), `detail.html` (full config display, clone button, run history). |
+| E7.9 | Completed | 2026-03-28 | 2026-03-28 | Implement run pages — `list.html` (table with filters for status/evaluation/target/machine/date/model; checkbox select → "Compare Selected"), `detail.html` (status badge, summary cards, tabs for Results/Scorer Breakdown/Configuration/Artifacts/Traces; item rows expand to full detail), `live.html` (auto-refresh variant with progress bar and streaming item table). |
 
 ### Phase E7 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** Created `ai_benchmark/eval/ui/` package with server.py (Jinja2 template engine, static file mounting, 15 route handlers for all entity pages), base.html layout with sidebar navigation, CSS stylesheet with tables/cards/badges/progress bars/forms/tabs, JS for table sorting/auto-refresh/tabs/multi-select comparisons. 14 Jinja2 templates: dashboard, evaluations (list/detail/create), datasets (list/detail), scorers (list), targets (list/detail), machines (list), runs (list/detail/live), comparisons (compare), reports (dashboard). Wired mount_ui() into FastAPI app factory. All 283 tests passing.
 - **Changes hosted at:** TBD
 - **Commit:** `Eval Phase E7: UI templates for dashboard, entity pages, and run views`
 

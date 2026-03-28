@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% set active_page = "scorers" %}
+{% block title %}Scorers{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Scorers</h1>
+</div>
+
+<div class="table-wrapper">
+    <table data-sortable>
+        <thead>
+            <tr>
+                <th data-sort="number">ID</th>
+                <th data-sort="string">Name</th>
+                <th data-sort="string">Type</th>
+                <th data-sort="date">Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in scorers %}
+            <tr>
+                <td>{{ s.id }}</td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.scorer_type }}</td>
+                <td>{{ s.created_at or "—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if not scorers %}
+<p class="text-muted text-center mt-3">No scorers defined yet.</p>
+{% endif %}
+{% endblock %}

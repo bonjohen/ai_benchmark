@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set active_page = "evaluations" %}
+{% block title %}Create Evaluation{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Create Evaluation</h1>
+    <a href="/eval/evaluations" class="btn btn-outline btn-sm">Back to List</a>
+</div>
+
+<div class="card">
+    <form method="POST" action="/api/eval/evaluations">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" class="form-control" required placeholder="e.g., Coding QA v1">
+            </div>
+            <div class="form-group">
+                <label for="owner">Owner</label>
+                <input type="text" id="owner" name="owner" class="form-control" placeholder="Optional">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" rows="3" placeholder="What does this evaluation measure?"></textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="execution_mode">Execution Mode</label>
+                <select id="execution_mode" name="execution_mode" class="form-control">
+                    <option value="sequential">Sequential</option>
+                    <option value="parallel">Parallel</option>
+                    <option value="matrix">Matrix</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="suite_name">Suite Name (optional)</label>
+                <input type="text" id="suite_name" name="suite_name" class="form-control" placeholder="Optional grouping">
+            </div>
+        </div>
+
+        <div class="form-group mt-2">
+            <button type="submit" class="btn btn-primary">Create Evaluation</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

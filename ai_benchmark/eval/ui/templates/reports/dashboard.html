@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% set active_page = "reports" %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Reports</h1>
+</div>
+
+<!-- Saved Presets -->
+<div class="card">
+    <div class="card-header">Saved Presets</div>
+    {% if presets %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in presets %}
+                <tr>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.description or "—" }}</td>
+                    <td><button class="btn btn-sm btn-outline">Run</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No saved presets yet. Create one using the API.</p>
+    {% endif %}
+</div>
+
+<!-- Custom Report Builder -->
+<div class="card">
+    <div class="card-header">Custom Report</div>
+    <form class="filter-bar" method="GET" action="/api/eval/reports/summary">
+        <div class="form-group">
+            <label for="group_by">Group By</label>
+            <select id="group_by" name="group_by" class="form-control">
+                <option value="evaluation">Evaluation</option>
+                <option value="model_family">Model Family</option>
+                <option value="machine">Machine</option>
+                <option value="hardware_class">Hardware Class</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="metric">Metric</label>
+            <select id="metric" name="metric" class="form-control">
+                <option value="pass_rate">Pass Rate</option>
+                <option value="avg_latency_ms">Avg Latency</option>
+                <option value="total_cost_usd">Total Cost</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="date_from">From</label>
+            <input type="date" id="date_from" name="date_from" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="date_to">To</label>
+            <input type="date" id="date_to" name="date_to" class="form-control">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Generate</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

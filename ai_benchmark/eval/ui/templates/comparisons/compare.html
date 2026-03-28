@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% set active_page = "runs" %}
+{% block title %}Compare Runs{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Compare Runs</h1>
+    <a href="/eval/runs" class="btn btn-outline btn-sm">Back to Runs</a>
+</div>
+
+{% if comparison %}
+<!-- Aggregate Metrics -->
+<div class="card">
+    <div class="card-header">Metric Deltas</div>
+    {% if comparison.metric_deltas %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    {% for run_id in comparison.run_ids %}
+                    <th>Run {{ run_id }}</th>
+                    {% endfor %}
+                    <th>Delta</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for name, vals in comparison.metric_deltas.items() %}
+                <tr>
+                    <td>{{ name }}</td>
+                    {% for v in vals.values %}
+                    <td>{{ "%.4f"|format(v) if v is not none else "—" }}</td>
+                    {% endfor %}
+                    <td>
+                        {% if vals.delta is defined %}
+                            {% if vals.delta > 0 %}<span class="text-success">+{{ "%.4f"|format(vals.delta) }}</span>
+                            {% elif vals.delta < 0 %}<span class="text-danger">{{ "%.4f"|format(vals.delta) }}</span>
+                            {% else %}0{% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No metric deltas available.</p>
+    {% endif %}
+</div>
+
+<!-- Item Diffs -->
+{% if comparison.item_diffs %}
+<div class="card">
+    <div class="card-header">Item Disagreements ({{ comparison.item_diffs|length }})</div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Item Index</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for diff in comparison.item_diffs %}
+                <tr>
+                    <td>{{ diff.item_index }}</td>
+                    <td class="text-mono">{{ diff }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card">
+    <div class="card-header">Select Runs to Compare</div>
+    <p class="text-muted">Select two or more runs from the <a href="/eval/runs">Runs page</a> using the checkboxes, then click "Compare Selected".</p>
+</div>
+{% endif %}
+{% endblock %}

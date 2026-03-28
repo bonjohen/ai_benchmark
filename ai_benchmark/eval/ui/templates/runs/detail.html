@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% set active_page = "runs" %}
+{% block title %}Run {{ run.id }}{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+    <div>
+        <h1>Run #{{ run.id }}</h1>
+        <span class="badge badge-{{ run.status }}">{{ run.status }}</span>
+        <dl class="detail-meta">
+            <dt>Trigger:</dt><dd>{{ run.trigger_type }}</dd>
+            <dt>Started:</dt><dd>{{ run.started_at or "—" }}</dd>
+            <dt>Completed:</dt><dd>{{ run.completed_at or "—" }}</dd>
+        </dl>
+    </div>
+    <div>
+        <a href="/eval/runs" class="btn btn-outline btn-sm">Back to Runs</a>
+        {% if run.status in ["running", "queued", "scoring"] %}
+        <a href="/eval/runs/{{ run.id }}/live" class="btn btn-sm btn-primary">Live View</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ run.total_items }}</div>
+        <div class="stat-label">Total Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value text-success">{{ run.completed_items }}</div>
+        <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value {% if run.failed_items > 0 %}text-danger{% endif %}">{{ run.failed_items }}</div>
+        <div class="stat-label">Failed</div>
+    </div>
+    {% for m in metrics %}
+    <div class="stat-card">
+        <div class="stat-value">{{ "%.4f"|format(m.metric_value) }}</div>
+        <div class="stat-label">{{ m.metric_name }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if run.error_message %}
+<div class="alert alert-danger">{{ run.error_message }}</div>
+{% endif %}
+
+<!-- Tabs -->
+<div class="tabs">
+    <div class="tab active" data-tab="tab-results">Results</div>
+    <div class="tab" data-tab="tab-metrics">Metrics</div>
+    <div class="tab" data-tab="tab-artifacts">Artifacts</div>
+</div>
+
+<!-- Results Tab -->
+<div id="tab-results" class="tab-content active">
+    {% if items %}
+    <div class="table-wrapper">
+        <table data-sortable>
+            <thead>
+                <tr>
+                    <th data-sort="number">Index</th>
+                    <th data-sort="string">Input (preview)</th>
+                    <th data-sort="string">Output (preview)</th>
+                    <th data-sort="string">Pass</th>
+                    <th data-sort="number">Latency (ms)</th>
+                    <th data-sort="string">Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.item_index }}</td>
+                    <td class="truncate">{{ item.input_text }}</td>
+                    <td class="truncate">{{ item.raw_output }}</td>
+                    <td>
+                        {% if item.overall_pass is none %}
+                            <span class="text-muted">—</span>
+                        {% elif item.overall_pass %}
+                            <span class="text-success">PASS</span>
+                        {% else %}
+                            <span class="text-danger">FAIL</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.latency_ms or "—" }}</td>
+                    <td class="truncate">{% if item.error_message %}<span class="text-danger">{{ item.error_message }}</span>{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No item results yet.</p>
+    {% endif %}
+</div>
+
+<!-- Metrics Tab -->
+<div id="tab-metrics" class="tab-content">
+    {% if metrics %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in metrics %}
+                <tr>
+                    <td>{{ m.metric_name }}</td>
+                    <td>{{ "%.4f"|format(m.metric_value) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No metrics computed yet.</p>
+    {% endif %}
+</div>
+
+<!-- Artifacts Tab -->
+<div id="tab-artifacts" class="tab-content">
+    {% if artifacts %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in artifacts %}
+                <tr>
+                    <td>{{ a.filename }}</td>
+                    <td>{{ a.artifact_type }}</td>
+                    <td>{{ a.size_bytes or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No artifacts.</p>
+    {% endif %}
+</div>
+{% endblock %}

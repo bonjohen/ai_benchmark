@@ -76,4 +76,8 @@ def create_app(settings: EvalSettings | None = None) -> FastAPI:
     app.include_router(comparisons.router, prefix="/api/eval/comparisons", tags=["comparisons"])
     app.include_router(reports.router, prefix="/api/eval/reports", tags=["reports"])
 
+    # Mount UI templates and static files
+    from ..ui.server import mount_ui
+    mount_ui(app)
+
     return app

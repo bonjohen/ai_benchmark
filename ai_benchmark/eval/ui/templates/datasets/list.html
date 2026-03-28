@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% set active_page = "datasets" %}
+{% block title %}Datasets{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Datasets</h1>
+</div>
+
+<div class="table-wrapper">
+    <table data-sortable>
+        <thead>
+            <tr>
+                <th data-sort="number">ID</th>
+                <th data-sort="string">Name</th>
+                <th data-sort="string">Source</th>
+                <th data-sort="string">Archived</th>
+                <th data-sort="date">Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in datasets %}
+            <tr>
+                <td><a href="/eval/datasets/{{ d.id }}">{{ d.id }}</a></td>
+                <td><a href="/eval/datasets/{{ d.id }}">{{ d.name }}</a></td>
+                <td>{{ d.source or "—" }}</td>
+                <td>{% if d.is_archived %}<span class="text-muted">archived</span>{% else %}active{% endif %}</td>
+                <td>{{ d.created_at or "—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if not datasets %}
+<p class="text-muted text-center mt-3">No datasets yet.</p>
+{% endif %}
+{% endblock %}
