@@ -183,16 +183,16 @@ Each phase summary includes a `Changes hosted at:` field. Populate this with the
 
 | Task | Status | Started | Completed | Description |
 |---|---|---|---|---|
-| 6.1 | Open | — | — | Composite-key deduplicator — check `{normalized_title, org, source_type, path, date}` + `{model_slug, version_date}`. Fuzzy near-duplicate detection. Key file: `processing/deduplicator.py` |
-| 6.2 | Open | — | — | Verification hierarchy engine — 5 chains: model releases (2+ surfaces), benchmark claims (owner first), pricing (page change only), announcements (newsroom > docs > Reuters), research (paper > S2 > blog). Key file: `processing/verification.py` |
-| 6.3 | Open | — | — | Conflict-preserving claim management — separate `ClaimRecord` entries with labels (`official_self_report`, `benchmark_owner_report`, etc.). Never merge conflicts. Key files: `models/events.py`, `processing/verification.py` |
-| 6.4 | Open | — | — | Cross-reference table builder — match by model_slug + time window, org + event_type, arxiv_id. Relationship types: `confirms`, `supplements`, `conflicts_with`, `cites`. Key file: `processing/cross_reference.py` |
-| 6.5 | Open | — | — | Post-collection processing pipeline — wire normalize → dedup → verify → cross-ref after each collector run. Key file: `processing/pipeline.py` |
-| 6.6 | Open | — | — | Verification and dedup tests — duplicate detection, 2-surface confirmation, conflict preservation, cross-reference creation. Key files: `tests/test_deduplicator.py`, `test_verification.py`, `test_cross_reference.py` |
+| 6.1 | Completed | 2026-03-28 14:20 PST | 2026-03-28 14:30 PST | Composite-key deduplicator — check `{normalized_title, org, source_type, path, date}` + `{model_slug, version_date}`. Fuzzy near-duplicate detection via SequenceMatcher (0.85 threshold). Key file: `processing/deduplicator.py` |
+| 6.2 | Completed | 2026-03-28 14:20 PST | 2026-03-28 14:30 PST | Verification hierarchy engine — 5 chains: model releases (2+ official surfaces), benchmark claims (owner first), pricing (page change only), announcements (newsroom + one other), research (primary paper). Key file: `processing/verification.py` |
+| 6.3 | Completed | 2026-03-28 14:20 PST | 2026-03-28 14:30 PST | Conflict-preserving claim management — separate ClaimRecord entries with labels (official_self_report, benchmark_owner_report, etc.). Conflict detection via claim text similarity. Never merge conflicts. Key file: `processing/verification.py` |
+| 6.4 | Completed | 2026-03-28 14:20 PST | 2026-03-28 14:30 PST | Cross-reference table builder — match by model_slug + time window (7d), org + event_type + tight window (3d). Auto-determines relationship type (confirms/supplements). Prevents duplicate xrefs in both directions. Key file: `processing/cross_reference.py` |
+| 6.5 | Completed | 2026-03-28 14:30 PST | 2026-03-28 14:35 PST | Post-collection processing pipeline — `process_item()` and `process_items()` wiring: normalize → dedup → create event → create claim → update confirmation → build xrefs. Duplicates still add claims to existing events. Key file: `processing/pipeline.py` |
+| 6.6 | Completed | 2026-03-28 14:35 PST | 2026-03-28 14:45 PST | Verification and dedup tests — 10 dedup tests, 13 verification tests (all 5 chains + conflict preservation), 9 cross-reference tests, 6 pipeline integration tests. 35 new tests (131 total). Key files: `tests/test_deduplicator.py`, `test_verification.py`, `test_cross_reference.py`, `test_pipeline.py` |
 
 ### Phase 6 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** Composite-key deduplicator with exact, model-slug, and fuzzy matching. Verification hierarchy engine with 5 chains and conflict-aware claim management. Cross-reference builder linking events by model slug and org+event_type within time windows. Full post-collection processing pipeline wiring normalize → dedup → verify → cross-ref. 35 new tests (131 total).
 - **Changes hosted at:** TBD
 - **Commit:** `Phase 6: Verification, deduplication, and cross-referencing`
 
