@@ -196,20 +196,20 @@ These are additions to the existing pipeline stack.
 
 | Task | Status | Started | Completed | Description |
 |---|---|---|---|---|
-| E6.1 | Open | — | — | Create `eval/cli/__init__.py` and `eval/cli/commands.py`. Register `eval` as a Click subgroup on the main `cli` group in `ai_benchmark/cli.py`. |
-| E6.2 | Open | — | — | Implement `eval run` command — `--evaluation <name_or_id>`, `--target <name_or_id>`, `--priority N`. Resolves names to IDs, calls `orchestrator.create_run()` + `orchestrator.execute_run()`, prints run ID and final status. |
-| E6.3 | Open | — | — | Implement `eval run-matrix` command — `--evaluation <name_or_id>`, `--targets <id,id,id>`, `--name "matrix name"`. Creates RunGroup + N runs, executes sequentially or in parallel per execution_mode. Prints group ID and per-run statuses. |
-| E6.4 | Open | — | — | Implement `eval status` command — `--run-id N` (single run detail), `--active` (all non-terminal runs), `--recent N` (last N completed runs). Tabular output with run ID, evaluation, target, status, progress, duration. |
-| E6.5 | Open | — | — | Implement `eval list` command — `--evaluations`, `--datasets`, `--scorers`, `--targets`, `--machines` flags (at least one required). Tabular output for each entity type with key fields. |
-| E6.6 | Open | — | — | Implement `eval compare` command — `--runs <id,id>`, `--format json|csv|text`. Calls comparison_service, prints metric deltas and item-level diff summary. Default format: text. |
-| E6.7 | Open | — | — | Implement `eval export` command — `--run <id>`, `--format json|csv|html`, `--output <path>`. Exports full run results to file. |
-| E6.8 | Open | — | — | Implement `eval rescore` command — `--run <id>`, `--scorer-config <json_path>`. Loads new scorer config from JSON file, calls rescore endpoint logic, prints updated metrics. |
-| E6.9 | Open | — | — | Implement `eval serve` command — `--host 0.0.0.0`, `--port 8080`. Starts uvicorn with the FastAPI app. Uses EvalSettings defaults. |
-| E6.10 | Open | — | — | CLI smoke tests — test `eval run`, `eval status`, `eval compare`, `eval export` against a test database using Click's `CliRunner`. |
+| E6.1 | Completed | 2026-03-28 | 2026-03-28 | Create `eval/cli/__init__.py` and `eval/cli/commands.py`. Register `eval` as a Click subgroup on the main `cli` group in `ai_benchmark/cli.py`. |
+| E6.2 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval run` command — `--evaluation <name_or_id>`, `--target <name_or_id>`, `--priority N`. Resolves names to IDs, calls `orchestrator.create_run()` + `orchestrator.execute_run()`, prints run ID and final status. |
+| E6.3 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval run-matrix` command — `--evaluation <name_or_id>`, `--targets <id,id,id>`, `--name "matrix name"`. Creates RunGroup + N runs, executes sequentially or in parallel per execution_mode. Prints group ID and per-run statuses. |
+| E6.4 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval status` command — `--run-id N` (single run detail), `--active` (all non-terminal runs), `--recent N` (last N completed runs). Tabular output with run ID, evaluation, target, status, progress, duration. |
+| E6.5 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval list` command — `--evaluations`, `--datasets`, `--scorers`, `--targets`, `--machines` flags (at least one required). Tabular output for each entity type with key fields. |
+| E6.6 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval compare` command — `--runs <id,id>`, `--format json|csv|text`. Calls comparison_service, prints metric deltas and item-level diff summary. Default format: text. |
+| E6.7 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval export` command — `--run <id>`, `--format json|csv|html`, `--output <path>`. Exports full run results to file. |
+| E6.8 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval rescore` command — `--run <id>`, `--scorer-config <json_path>`. Loads new scorer config from JSON file, calls rescore endpoint logic, prints updated metrics. |
+| E6.9 | Completed | 2026-03-28 | 2026-03-28 | Implement `eval serve` command — `--host 0.0.0.0`, `--port 8080`. Starts uvicorn with the FastAPI app. Uses EvalSettings defaults. |
+| E6.10 | Completed | 2026-03-28 | 2026-03-28 | CLI smoke tests — test `eval run`, `eval status`, `eval compare`, `eval export` against a test database using Click's `CliRunner`. |
 
 ### Phase E6 Summary
 
-- **Changes:** _(fill on completion)_
+- **Changes:** 9 Click subcommands under `eval` group (run, run-matrix, status, list, compare, export, rescore, serve), name-or-ID resolver helpers, registered on main CLI. 8 new tests.
 - **Changes hosted at:** TBD
 - **Commit:** `Eval Phase E6: CLI commands for eval run, status, compare, export, serve`
 

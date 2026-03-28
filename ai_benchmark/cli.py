@@ -241,5 +241,11 @@ def run(ctx: click.Context) -> None:
     asyncio.run(_run())
 
 
+# Register eval subcommands
+from .eval.cli.commands import eval_group  # noqa: E402
+
+cli.add_command(eval_group)
+
+
 if __name__ == "__main__":
     cli()
