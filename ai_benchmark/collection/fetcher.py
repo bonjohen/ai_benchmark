@@ -114,7 +114,7 @@ class Fetcher:
                 logger.warning("fetch_error", url=url, attempt=attempt + 1, error=str(e))
 
             if attempt < self.retry_attempts - 1:
-                backoff = self.retry_backoff_base ** attempt
+                backoff = self.retry_backoff_base**attempt
                 await asyncio.sleep(backoff)
 
         return FetchResult(

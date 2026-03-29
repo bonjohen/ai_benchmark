@@ -42,9 +42,14 @@ async def test_probe_domain_handles_errors():
 async def test_discover_new_paths_returns_unconfigured(db_session):
     """discover_new_paths returns only paths not already configured."""
     source = Source(
-        source_name="Test", category="test", organization="Test",
-        homepage_url="https://example.com", base_domain="example.com",
-        trust_rating=4.0, source_role="test", classification="primary",
+        source_name="Test",
+        category="test",
+        organization="Test",
+        homepage_url="https://example.com",
+        base_domain="example.com",
+        trust_rating=4.0,
+        source_role="test",
+        classification="primary",
     )
     db_session.add(source)
     await db_session.flush()

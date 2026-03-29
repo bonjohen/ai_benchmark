@@ -72,19 +72,21 @@ class HFForumsCollector(SourceCollector):
                 if link_href.startswith("http") and "huggingface.co/discuss" not in link_href:
                     outbound_links.append(link_href)
 
-            items.append(RawItem(
-                title=title,
-                url=href,
-                body="",  # minimal metadata only
-                item_type="forum_topic",
-                metadata={
-                    "source": "hf_forums",
-                    "author": author,
-                    "tags": tags,
-                    "outbound_links": outbound_links[:5],
-                    "activity": activity,
-                    "confidence_tier": self.CONFIDENCE_TIER,
-                },
-            ))
+            items.append(
+                RawItem(
+                    title=title,
+                    url=href,
+                    body="",  # minimal metadata only
+                    item_type="forum_topic",
+                    metadata={
+                        "source": "hf_forums",
+                        "author": author,
+                        "tags": tags,
+                        "outbound_links": outbound_links[:5],
+                        "activity": activity,
+                        "confidence_tier": self.CONFIDENCE_TIER,
+                    },
+                )
+            )
 
         return items

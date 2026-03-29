@@ -47,9 +47,8 @@ class RunOrchestrator:
             raise ValueError(f"TargetConfiguration {target_config_id} not found")
 
         # Count items in the dataset version
-        item_count_stmt = (
-            select(TestCase.id)
-            .where(TestCase.dataset_version_id == ev.dataset_version_id)
+        item_count_stmt = select(TestCase.id).where(
+            TestCase.dataset_version_id == ev.dataset_version_id
         )
         result = await session.execute(item_count_stmt)
         total_items = len(result.all())
@@ -106,9 +105,11 @@ class RunOrchestrator:
         )
 
         # Determine execution mode
-        eval_def = await session.get(
-            ev.evaluation.__class__, ev.evaluation_id
-        ) if ev.evaluation_id else None
+        eval_def = (
+            await session.get(ev.evaluation.__class__, ev.evaluation_id)
+            if ev.evaluation_id
+            else None
+        )
         execution_mode = (
             eval_def.execution_mode if eval_def else self.settings.default_execution_mode
         )
@@ -131,9 +132,7 @@ class RunOrchestrator:
     ) -> None:
         for idx, tc in enumerate(test_cases):
             try:
-                item_result = await executor.execute_item(
-                    session, run.id, tc, idx
-                )
+                item_result = await executor.execute_item(session, run.id, tc, idx)
                 if item_result.error_message:
                     run.failed_items += 1
                 else:
@@ -155,9 +154,7 @@ class RunOrchestrator:
         async def _run_item(idx: int, tc: TestCase) -> None:
             async with semaphore:
                 try:
-                    item_result = await executor.execute_item(
-                        session, run.id, tc, idx
-                    )
+                    item_result = await executor.execute_item(session, run.id, tc, idx)
                     if item_result.error_message:
                         run.failed_items += 1
                     else:
@@ -186,9 +183,7 @@ class RunOrchestrator:
 
         return await self.finalize_run(session, run_id)
 
-    async def _compute_basic_aggregates(
-        self, session: AsyncSession, run_id: int
-    ) -> None:
+    async def _compute_basic_aggregates(self, session: AsyncSession, run_id: int) -> None:
         """Compute basic latency/token/cost aggregates from item results."""
         from ..models.run import RunItemResult
 

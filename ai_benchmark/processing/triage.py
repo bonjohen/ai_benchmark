@@ -12,11 +12,32 @@ from ..sources.research.semantic_scholar import SemanticScholarClient
 
 # Keywords that indicate relevance to tracked models/benchmarks
 RELEVANCE_KEYWORDS = {
-    "benchmark", "leaderboard", "evaluation", "llm", "language model",
-    "gpt", "claude", "gemini", "llama", "mistral", "grok",
-    "openai", "anthropic", "google", "meta", "deepmind",
-    "swe-bench", "livebench", "humaneval", "arena", "gaia",
-    "agent", "reasoning", "coding", "safety", "alignment",
+    "benchmark",
+    "leaderboard",
+    "evaluation",
+    "llm",
+    "language model",
+    "gpt",
+    "claude",
+    "gemini",
+    "llama",
+    "mistral",
+    "grok",
+    "openai",
+    "anthropic",
+    "google",
+    "meta",
+    "deepmind",
+    "swe-bench",
+    "livebench",
+    "humaneval",
+    "arena",
+    "gaia",
+    "agent",
+    "reasoning",
+    "coding",
+    "safety",
+    "alignment",
 }
 
 

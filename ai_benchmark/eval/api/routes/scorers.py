@@ -38,8 +38,11 @@ async def create_scorer(
     session: AsyncSession = Depends(get_session),
 ):
     s = await scorer_service.create_scorer(
-        session, name=body.name, scorer_type=body.scorer_type,
-        description=body.description, tags=body.tags,
+        session,
+        name=body.name,
+        scorer_type=body.scorer_type,
+        description=body.description,
+        tags=body.tags,
     )
     result = _scorer_to_dict(s)
 
@@ -70,8 +73,11 @@ async def create_version(
     session: AsyncSession = Depends(get_session),
 ):
     sv = await scorer_service.create_version(
-        session, scorer_id=scorer_id, config=body.config,
-        implementation_ref=body.implementation_ref, notes=body.notes,
+        session,
+        scorer_id=scorer_id,
+        config=body.config,
+        implementation_ref=body.implementation_ref,
+        notes=body.notes,
     )
     result = _version_to_dict(sv)
 

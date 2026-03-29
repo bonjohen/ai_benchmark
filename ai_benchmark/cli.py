@@ -62,7 +62,9 @@ def check_config(catalog: Path | None) -> None:
     click.echo(f"Source catalog OK: {len(sources)} sources, {total_pages} pages")
 
     for s in sources:
-        click.echo(f"  [{s.classification}] {s.source_name} ({len(s.pages)} pages, trust={s.trust_rating})")
+        click.echo(
+            f"  [{s.classification}] {s.source_name} ({len(s.pages)} pages, trust={s.trust_rating})"
+        )
 
 
 @cli.command()
@@ -128,8 +130,14 @@ def status(ctx: click.Context) -> None:
 @click.option("--limit", default=20, help="Number of results.")
 @click.option("--format", "fmt", type=click.Choice(["text", "json", "csv"]), default="text")
 @click.pass_context
-def query(ctx: click.Context, org: str | None, event_type: str | None,
-          model: str | None, limit: int, fmt: str) -> None:
+def query(
+    ctx: click.Context,
+    org: str | None,
+    event_type: str | None,
+    model: str | None,
+    limit: int,
+    fmt: str,
+) -> None:
     """Search events in the knowledge base."""
     settings: PipelineSettings = ctx.obj["settings"]
 
@@ -156,7 +164,9 @@ def query(ctx: click.Context, org: str | None, event_type: str | None,
             click.echo(events_to_csv(results))
         else:
             for e in results:
-                click.echo(f"[{e.event_type}] {e.organization}: {e.title} ({e.published_date or 'no date'})")
+                click.echo(
+                    f"[{e.event_type}] {e.organization}: {e.title} ({e.published_date or 'no date'})"
+                )
 
         await engine.dispose()
 

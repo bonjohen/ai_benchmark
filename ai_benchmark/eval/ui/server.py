@@ -23,6 +23,7 @@ router = APIRouter()
 
 # ── Dashboard ────────────────────────────────────────────────────────────
 
+
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request, session: AsyncSession = Depends(get_session)):
     """Main dashboard — active runs, recent completions, alerts."""
@@ -41,41 +42,57 @@ async def dashboard(request: Request, session: AsyncSession = Depends(get_sessio
     recent_data = [_run_to_dict(r) for r in recent_runs]
     machine_data = [_machine_to_dict(m) for m in machines]
 
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
-        "active_runs": active_data,
-        "recent_runs": recent_data,
-        "machines": machine_data,
-    })
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {
+            "request": request,
+            "active_runs": active_data,
+            "recent_runs": recent_data,
+            "machines": machine_data,
+        },
+    )
 
 
 # ── Evaluations ──────────────────────────────────────────────────────────
 
+
 @router.get("/evaluations", response_class=HTMLResponse)
 async def evaluation_list(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import eval_service
+
     items = await eval_service.list_evaluations(session)
     data = [_eval_to_dict(e) for e in items]
-    return templates.TemplateResponse("evaluations/list.html", {
-        "request": request, "evaluations": data,
-    })
+    return templates.TemplateResponse(
+        "evaluations/list.html",
+        {
+            "request": request,
+            "evaluations": data,
+        },
+    )
 
 
 @router.get("/evaluations/create", response_class=HTMLResponse)
 async def evaluation_create_form(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import dataset_service, scorer_service
+
     datasets = await dataset_service.list_datasets(session)
     scorers = await scorer_service.list_scorers(session)
-    return templates.TemplateResponse("evaluations/create.html", {
-        "request": request,
-        "datasets": [{"id": d.id, "name": d.name} for d in datasets],
-        "scorers": [{"id": s.id, "name": s.name, "scorer_type": s.scorer_type} for s in scorers],
-    })
+    return templates.TemplateResponse(
+        "evaluations/create.html",
+        {
+            "request": request,
+            "datasets": [{"id": d.id, "name": d.name} for d in datasets],
+            "scorers": [
+                {"id": s.id, "name": s.name, "scorer_type": s.scorer_type} for s in scorers
+            ],
+        },
+    )
 
 
 @router.get("/evaluations/{eval_id}", response_class=HTMLResponse)
-async def evaluation_detail(request: Request, eval_id: int,
-                            session: AsyncSession = Depends(get_session)):
+async def evaluation_detail(
+    request: Request, eval_id: int, session: AsyncSession = Depends(get_session)
+):
     from sqlalchemy import select
 
     from ..models.evaluation import EvaluationVersion
@@ -94,32 +111,43 @@ async def evaluation_detail(request: Request, eval_id: int,
     versions = [_version_to_dict(v) for v in result.scalars().all()]
 
     runs = await run_service.list_runs(session, limit=20)
-    recent_runs = [_run_to_dict(r) for r in runs if r.evaluation_version_id in
-                   {v["id"] for v in versions}]
+    recent_runs = [
+        _run_to_dict(r) for r in runs if r.evaluation_version_id in {v["id"] for v in versions}
+    ]
 
-    return templates.TemplateResponse("evaluations/detail.html", {
-        "request": request,
-        "evaluation": _eval_to_dict(ev),
-        "versions": versions,
-        "recent_runs": recent_runs,
-    })
+    return templates.TemplateResponse(
+        "evaluations/detail.html",
+        {
+            "request": request,
+            "evaluation": _eval_to_dict(ev),
+            "versions": versions,
+            "recent_runs": recent_runs,
+        },
+    )
 
 
 # ── Datasets ─────────────────────────────────────────────────────────────
 
+
 @router.get("/datasets", response_class=HTMLResponse)
 async def dataset_list(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import dataset_service
+
     items = await dataset_service.list_datasets(session)
     data = [_dataset_to_dict(d) for d in items]
-    return templates.TemplateResponse("datasets/list.html", {
-        "request": request, "datasets": data,
-    })
+    return templates.TemplateResponse(
+        "datasets/list.html",
+        {
+            "request": request,
+            "datasets": data,
+        },
+    )
 
 
 @router.get("/datasets/{dataset_id}", response_class=HTMLResponse)
-async def dataset_detail(request: Request, dataset_id: int,
-                         session: AsyncSession = Depends(get_session)):
+async def dataset_detail(
+    request: Request, dataset_id: int, session: AsyncSession = Depends(get_session)
+):
     from sqlalchemy import select
 
     from ..models.dataset import DatasetVersion
@@ -137,48 +165,76 @@ async def dataset_detail(request: Request, dataset_id: int,
     result = await session.execute(stmt)
     versions = []
     for v in result.scalars().all():
-        versions.append({
-            "id": v.id, "version_number": v.version_number,
-            "item_count": v.item_count, "checksum": v.checksum,
-            "created_at": str(v.created_at) if v.created_at else None,
-        })
+        versions.append(
+            {
+                "id": v.id,
+                "version_number": v.version_number,
+                "item_count": v.item_count,
+                "checksum": v.checksum,
+                "created_at": str(v.created_at) if v.created_at else None,
+            }
+        )
 
-    return templates.TemplateResponse("datasets/detail.html", {
-        "request": request,
-        "dataset": _dataset_to_dict(ds),
-        "versions": versions,
-    })
+    return templates.TemplateResponse(
+        "datasets/detail.html",
+        {
+            "request": request,
+            "dataset": _dataset_to_dict(ds),
+            "versions": versions,
+        },
+    )
 
 
 # ── Scorers ──────────────────────────────────────────────────────────────
 
+
 @router.get("/scorers", response_class=HTMLResponse)
 async def scorer_list(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import scorer_service
+
     items = await scorer_service.list_scorers(session)
-    data = [{"id": s.id, "name": s.name, "scorer_type": s.scorer_type,
-             "created_at": str(s.created_at) if s.created_at else None} for s in items]
-    return templates.TemplateResponse("scorers/list.html", {
-        "request": request, "scorers": data,
-    })
+    data = [
+        {
+            "id": s.id,
+            "name": s.name,
+            "scorer_type": s.scorer_type,
+            "created_at": str(s.created_at) if s.created_at else None,
+        }
+        for s in items
+    ]
+    return templates.TemplateResponse(
+        "scorers/list.html",
+        {
+            "request": request,
+            "scorers": data,
+        },
+    )
 
 
 # ── Targets ──────────────────────────────────────────────────────────────
 
+
 @router.get("/targets", response_class=HTMLResponse)
 async def target_list(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import target_service
+
     items = await target_service.list_targets(session)
     data = [_target_to_dict(t) for t in items]
-    return templates.TemplateResponse("targets/list.html", {
-        "request": request, "targets": data,
-    })
+    return templates.TemplateResponse(
+        "targets/list.html",
+        {
+            "request": request,
+            "targets": data,
+        },
+    )
 
 
 @router.get("/targets/{target_id}", response_class=HTMLResponse)
-async def target_detail(request: Request, target_id: int,
-                        session: AsyncSession = Depends(get_session)):
+async def target_detail(
+    request: Request, target_id: int, session: AsyncSession = Depends(get_session)
+):
     from ..services import run_service, target_service
+
     t = await target_service.get_target(session, target_id)
     if t is None:
         return HTMLResponse("<h1>Not Found</h1>", status_code=404)
@@ -186,40 +242,54 @@ async def target_detail(request: Request, target_id: int,
     runs = await run_service.list_runs(session, limit=50)
     target_runs = [_run_to_dict(r) for r in runs if r.target_config_id == target_id]
 
-    return templates.TemplateResponse("targets/detail.html", {
-        "request": request,
-        "target": _target_to_dict(t),
-        "runs": target_runs,
-    })
+    return templates.TemplateResponse(
+        "targets/detail.html",
+        {
+            "request": request,
+            "target": _target_to_dict(t),
+            "runs": target_runs,
+        },
+    )
 
 
 # ── Machines ─────────────────────────────────────────────────────────────
 
+
 @router.get("/machines", response_class=HTMLResponse)
 async def machine_list(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import machine_service
+
     items = await machine_service.list_profiles(session)
     data = [_machine_to_dict(m) for m in items]
-    return templates.TemplateResponse("machines/list.html", {
-        "request": request, "machines": data,
-    })
+    return templates.TemplateResponse(
+        "machines/list.html",
+        {
+            "request": request,
+            "machines": data,
+        },
+    )
 
 
 # ── Runs ─────────────────────────────────────────────────────────────────
 
+
 @router.get("/runs", response_class=HTMLResponse)
 async def run_list(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import run_service
+
     runs = await run_service.list_runs(session, limit=50)
     data = [_run_to_dict(r) for r in runs]
-    return templates.TemplateResponse("runs/list.html", {
-        "request": request, "runs": data,
-    })
+    return templates.TemplateResponse(
+        "runs/list.html",
+        {
+            "request": request,
+            "runs": data,
+        },
+    )
 
 
 @router.get("/runs/{run_id}", response_class=HTMLResponse)
-async def run_detail(request: Request, run_id: int,
-                     session: AsyncSession = Depends(get_session)):
+async def run_detail(request: Request, run_id: int, session: AsyncSession = Depends(get_session)):
     from ..services import run_service
 
     run = await run_service.get_run(session, run_id)
@@ -232,32 +302,43 @@ async def run_detail(request: Request, run_id: int,
 
     item_data = []
     for i in items:
-        item_data.append({
-            "id": i.id, "item_index": i.item_index,
-            "input_text": (i.input_text or "")[:200],
-            "raw_output": (i.raw_output or "")[:200],
-            "overall_pass": i.overall_pass,
-            "latency_ms": i.latency_ms,
-            "error_message": i.error_message,
-        })
+        item_data.append(
+            {
+                "id": i.id,
+                "item_index": i.item_index,
+                "input_text": (i.input_text or "")[:200],
+                "raw_output": (i.raw_output or "")[:200],
+                "overall_pass": i.overall_pass,
+                "latency_ms": i.latency_ms,
+                "error_message": i.error_message,
+            }
+        )
 
-    metric_data = [{"metric_name": m.metric_name, "metric_value": m.metric_value}
-                   for m in metrics]
-    artifact_data = [{"id": a.id, "filename": a.filename, "artifact_type": a.artifact_type,
-                      "size_bytes": a.size_bytes} for a in artifacts]
+    metric_data = [{"metric_name": m.metric_name, "metric_value": m.metric_value} for m in metrics]
+    artifact_data = [
+        {
+            "id": a.id,
+            "filename": a.filename,
+            "artifact_type": a.artifact_type,
+            "size_bytes": a.size_bytes,
+        }
+        for a in artifacts
+    ]
 
-    return templates.TemplateResponse("runs/detail.html", {
-        "request": request,
-        "run": _run_to_dict(run),
-        "items": item_data,
-        "metrics": metric_data,
-        "artifacts": artifact_data,
-    })
+    return templates.TemplateResponse(
+        "runs/detail.html",
+        {
+            "request": request,
+            "run": _run_to_dict(run),
+            "items": item_data,
+            "metrics": metric_data,
+            "artifacts": artifact_data,
+        },
+    )
 
 
 @router.get("/runs/{run_id}/live", response_class=HTMLResponse)
-async def run_live(request: Request, run_id: int,
-                   session: AsyncSession = Depends(get_session)):
+async def run_live(request: Request, run_id: int, session: AsyncSession = Depends(get_session)):
     from ..services import run_service
 
     run = await run_service.get_run(session, run_id)
@@ -265,24 +346,34 @@ async def run_live(request: Request, run_id: int,
         return HTMLResponse("<h1>Not Found</h1>", status_code=404)
 
     items = await run_service.get_item_results(session, run_id, limit=100)
-    item_data = [{
-        "id": i.id, "item_index": i.item_index,
-        "overall_pass": i.overall_pass, "latency_ms": i.latency_ms,
-        "error_message": i.error_message,
-    } for i in items]
+    item_data = [
+        {
+            "id": i.id,
+            "item_index": i.item_index,
+            "overall_pass": i.overall_pass,
+            "latency_ms": i.latency_ms,
+            "error_message": i.error_message,
+        }
+        for i in items
+    ]
 
-    return templates.TemplateResponse("runs/live.html", {
-        "request": request,
-        "run": _run_to_dict(run),
-        "items": item_data,
-    })
+    return templates.TemplateResponse(
+        "runs/live.html",
+        {
+            "request": request,
+            "run": _run_to_dict(run),
+            "items": item_data,
+        },
+    )
 
 
 # ── Comparisons ──────────────────────────────────────────────────────────
 
+
 @router.get("/comparisons", response_class=HTMLResponse)
-async def comparison_page(request: Request, runs: str | None = None,
-                          session: AsyncSession = Depends(get_session)):
+async def comparison_page(
+    request: Request, runs: str | None = None, session: AsyncSession = Depends(get_session)
+):
     comparison = None
     run_details = []
 
@@ -299,15 +390,20 @@ async def comparison_page(request: Request, runs: str | None = None,
                 r = await run_service.get_run(session, rid)
                 if r:
                     items = await run_service.get_item_results(session, rid, limit=1000)
-                    run_details.append({
-                        "run": _run_to_dict(r),
-                        "items": [{
-                            "item_index": i.item_index,
-                            "raw_output": (i.raw_output or "")[:300],
-                            "overall_pass": i.overall_pass,
-                            "latency_ms": i.latency_ms,
-                        } for i in items],
-                    })
+                    run_details.append(
+                        {
+                            "run": _run_to_dict(r),
+                            "items": [
+                                {
+                                    "item_index": i.item_index,
+                                    "raw_output": (i.raw_output or "")[:300],
+                                    "overall_pass": i.overall_pass,
+                                    "latency_ms": i.latency_ms,
+                                }
+                                for i in items
+                            ],
+                        }
+                    )
 
             # Config diff
             target_ids = []
@@ -319,22 +415,27 @@ async def comparison_page(request: Request, runs: str | None = None,
                 config_diff = await comparison_service.diff_target_configs(session, target_ids)
                 comparison["config_diff"] = config_diff
 
-    return templates.TemplateResponse("comparisons/compare.html", {
-        "request": request,
-        "comparison": comparison,
-        "run_details": run_details,
-    })
+    return templates.TemplateResponse(
+        "comparisons/compare.html",
+        {
+            "request": request,
+            "comparison": comparison,
+            "run_details": run_details,
+        },
+    )
 
 
 # ── Reports ──────────────────────────────────────────────────────────────
+
 
 @router.get("/reports", response_class=HTMLResponse)
 async def reports_page(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import report_service, run_service
 
     presets = await report_service.list_presets(session)
-    preset_data = [{"id": p.id, "name": p.name, "description": getattr(p, "description", "")}
-                   for p in presets]
+    preset_data = [
+        {"id": p.id, "name": p.name, "description": getattr(p, "description", "")} for p in presets
+    ]
 
     # Gather chart data from recent runs
     runs = await run_service.list_runs(session, limit=50)
@@ -342,26 +443,32 @@ async def reports_page(request: Request, session: AsyncSession = Depends(get_ses
     for r in runs:
         metrics = await run_service.get_metrics(session, r.id)
         metric_dict = {m.metric_name: m.metric_value for m in metrics}
-        chart_data.append({
-            "run_id": r.id,
-            "status": r.status,
-            "target_config_id": r.target_config_id,
-            "pass_rate": metric_dict.get("pass_rate"),
-            "avg_latency_ms": metric_dict.get("avg_latency_ms"),
-            "total_cost_usd": metric_dict.get("total_cost_usd"),
-            "created_at": str(r.created_at) if r.created_at else None,
-        })
+        chart_data.append(
+            {
+                "run_id": r.id,
+                "status": r.status,
+                "target_config_id": r.target_config_id,
+                "pass_rate": metric_dict.get("pass_rate"),
+                "avg_latency_ms": metric_dict.get("avg_latency_ms"),
+                "total_cost_usd": metric_dict.get("total_cost_usd"),
+                "created_at": str(r.created_at) if r.created_at else None,
+            }
+        )
 
-    return templates.TemplateResponse("reports/dashboard.html", {
-        "request": request,
-        "presets": preset_data,
-        "chart_data": chart_data,
-    })
+    return templates.TemplateResponse(
+        "reports/dashboard.html",
+        {
+            "request": request,
+            "presets": preset_data,
+            "chart_data": chart_data,
+        },
+    )
 
 
 @router.get("/reports/export", response_class=HTMLResponse)
-async def report_export(request: Request, format: str = "json",
-                        session: AsyncSession = Depends(get_session)):
+async def report_export(
+    request: Request, format: str = "json", session: AsyncSession = Depends(get_session)
+):
     """Export recent run data as JSON/CSV/HTML download."""
     from ..services import report_service, run_service
 
@@ -388,6 +495,7 @@ async def report_export(request: Request, format: str = "json",
         filename = "eval_report.json"
 
     from fastapi.responses import Response
+
     return Response(
         content=content,
         media_type=media_type,
@@ -396,6 +504,7 @@ async def report_export(request: Request, format: str = "json",
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
+
 
 def _run_to_dict(r) -> dict:
     return {

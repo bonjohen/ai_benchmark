@@ -29,7 +29,9 @@ class TargetConfiguration(Base):
     tags: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON array
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now(), nullable=True)
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime, onupdate=func.now(), nullable=True
+    )
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
     machine_profile: Mapped[MachineProfile | None] = relationship(  # noqa: F821

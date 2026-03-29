@@ -61,11 +61,13 @@ class MetaCollector(SourceCollector):
                 continue
             title = title_el.get_text(strip=True)
             if title:
-                items.append(RawItem(
-                    title=title,
-                    body=section.get_text(strip=True),
-                    item_type="landing_section",
-                ))
+                items.append(
+                    RawItem(
+                        title=title,
+                        body=section.get_text(strip=True),
+                        item_type="landing_section",
+                    )
+                )
         return items
 
     async def collect_github(self, org: str = "meta-llama") -> list[RawItem]:
@@ -74,30 +76,34 @@ class MetaCollector(SourceCollector):
         try:
             repos = await self.gh_client.get_org_repos(org)
             for repo in repos[:20]:
-                items.append(RawItem(
-                    title=repo.get("full_name", ""),
-                    url=repo.get("html_url", ""),
-                    date_text=repo.get("updated_at", ""),
-                    body=repo.get("description", "") or "",
-                    item_type="github_repo",
-                    metadata={
-                        "stars": repo.get("stargazers_count", 0),
-                        "language": repo.get("language", ""),
-                    },
-                ))
+                items.append(
+                    RawItem(
+                        title=repo.get("full_name", ""),
+                        url=repo.get("html_url", ""),
+                        date_text=repo.get("updated_at", ""),
+                        body=repo.get("description", "") or "",
+                        item_type="github_repo",
+                        metadata={
+                            "stars": repo.get("stargazers_count", 0),
+                            "language": repo.get("language", ""),
+                        },
+                    )
+                )
 
             # Get releases for key repos
             for repo_name in ["llama-models", "llama", "PurpleLlama"]:
                 try:
                     releases = await self.gh_client.get_repo_releases(org, repo_name)
                     for rel in releases[:5]:
-                        items.append(RawItem(
-                            title=f"{repo_name}: {rel.get('name', rel.get('tag_name', ''))}",
-                            url=rel.get("html_url", ""),
-                            date_text=rel.get("published_at", ""),
-                            body=rel.get("body", "")[:500],
-                            item_type="github_release",
-                        ))
+                        items.append(
+                            RawItem(
+                                title=f"{repo_name}: {rel.get('name', rel.get('tag_name', ''))}",
+                                url=rel.get("html_url", ""),
+                                date_text=rel.get("published_at", ""),
+                                body=rel.get("body", "")[:500],
+                                item_type="github_release",
+                            )
+                        )
                 except Exception:
                     continue
 

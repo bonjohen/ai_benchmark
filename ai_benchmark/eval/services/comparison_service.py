@@ -30,16 +30,12 @@ async def compare_runs(
         # Load aggregate metrics
         stmt = select(RunAggregateMetric).where(RunAggregateMetric.run_id == run_id)
         result = await session.execute(stmt)
-        metrics_by_run[run_id] = {
-            m.metric_name: m.metric_value for m in result.scalars().all()
-        }
+        metrics_by_run[run_id] = {m.metric_name: m.metric_value for m in result.scalars().all()}
 
         # Load item results keyed by test_case_id
         stmt = select(RunItemResult).where(RunItemResult.run_id == run_id)
         result = await session.execute(stmt)
-        items_by_run[run_id] = {
-            item.test_case_id: item for item in result.scalars().all()
-        }
+        items_by_run[run_id] = {item.test_case_id: item for item in result.scalars().all()}
 
     # Compute metric deltas (relative to first run)
     all_metric_names = set()
@@ -107,9 +103,15 @@ async def diff_target_configs(
         targets.append(t)
 
     compare_fields = [
-        "model_name", "model_family", "provider", "endpoint_url",
-        "machine_profile_id", "runtime_backend", "prompt_wrapper",
-        "inference_params", "runtime_options",
+        "model_name",
+        "model_family",
+        "provider",
+        "endpoint_url",
+        "machine_profile_id",
+        "runtime_backend",
+        "prompt_wrapper",
+        "inference_params",
+        "runtime_options",
     ]
 
     diffs: dict[str, dict[int, Any]] = {}

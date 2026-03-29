@@ -26,7 +26,9 @@ class MachineProfile(Base):
     runtime_availability: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON list
     capacity_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now(), nullable=True)
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime, onupdate=func.now(), nullable=True
+    )
 
     snapshots: Mapped[list[MachineSnapshot]] = relationship(
         back_populates="machine_profile", cascade="all, delete-orphan"
@@ -43,7 +45,9 @@ class MachineSnapshot(Base):
     machine_profile_id: Mapped[int] = mapped_column(
         ForeignKey("machine_profiles.id"), nullable=False
     )
-    snapshot_data: Mapped[str] = mapped_column(Text, nullable=False)  # JSON: full profile copy + runtime metadata
+    snapshot_data: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # JSON: full profile copy + runtime metadata
     captured_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     machine_profile: Mapped[MachineProfile] = relationship(back_populates="snapshots")

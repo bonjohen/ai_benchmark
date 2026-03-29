@@ -87,7 +87,9 @@ async def process_item(
     if existing:
         # Still create a claim for the existing event (multiple sources corroborate)
         confidence_tier = confidence_tier_for_classification(
-            classification, organization=organization, source_type=source_type,
+            classification,
+            organization=organization,
+            source_type=source_type,
         )
         await create_claim(
             session,
@@ -114,7 +116,8 @@ async def process_item(
         event_type=event_type,
         model_slug=model_slug,
         benchmark_variant=item.metadata.get("benchmark_variant") or item.metadata.get("variant"),
-        evaluation_conditions=item.metadata.get("evaluation_conditions") or item.metadata.get("conditions"),
+        evaluation_conditions=item.metadata.get("evaluation_conditions")
+        or item.metadata.get("conditions"),
         observed_at=datetime.now(UTC),
         raw_content=item.body[:2000] if item.body else None,
     )
@@ -123,7 +126,9 @@ async def process_item(
 
     # 4. Create initial claim
     confidence_tier = confidence_tier_for_classification(
-        classification, organization=organization, source_type=source_type,
+        classification,
+        organization=organization,
+        source_type=source_type,
     )
     claim = await create_claim(
         session,
@@ -165,8 +170,13 @@ async def process_items(
     created: list[EventRecord] = []
     for item in items:
         event = await process_item(
-            session, item, source_id, page_id,
-            organization, source_type, classification,
+            session,
+            item,
+            source_id,
+            page_id,
+            organization,
+            source_type,
+            classification,
         )
         if event:
             created.append(event)

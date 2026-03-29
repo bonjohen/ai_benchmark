@@ -19,10 +19,12 @@ class LMArenaCollector(BenchmarkCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td")]
             if len(cells) >= 2:
-                entries.append(LeaderboardEntry(
-                    model=cells[0],
-                    score=cells[1],
-                    rank=len(entries) + 1,
-                    variant="arena_elo",
-                ))
+                entries.append(
+                    LeaderboardEntry(
+                        model=cells[0],
+                        score=cells[1],
+                        rank=len(entries) + 1,
+                        variant="arena_elo",
+                    )
+                )
         return entries

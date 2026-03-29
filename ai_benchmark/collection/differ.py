@@ -138,8 +138,12 @@ def extract_structural_changes(
     old_soup = BeautifulSoup(old_html, "lxml")
     new_soup = BeautifulSoup(new_html, "lxml")
 
-    old_items = {el.get_text(strip=True) for el in old_soup.select(item_selector) if el.get_text(strip=True)}
-    new_items = {el.get_text(strip=True) for el in new_soup.select(item_selector) if el.get_text(strip=True)}
+    old_items = {
+        el.get_text(strip=True) for el in old_soup.select(item_selector) if el.get_text(strip=True)
+    }
+    new_items = {
+        el.get_text(strip=True) for el in new_soup.select(item_selector) if el.get_text(strip=True)
+    }
 
     return {
         "added": sorted(new_items - old_items),

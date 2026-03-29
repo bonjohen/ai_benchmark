@@ -28,25 +28,25 @@ class SemanticScholarCollector(SourceCollector):
         for query in queries:
             results = await self.client.search_paper(query, limit=limit)
             for paper in results:
-                authors = ", ".join(
-                    a.get("name", "") for a in paper.get("authors", [])
-                )
+                authors = ", ".join(a.get("name", "") for a in paper.get("authors", []))
                 ext_ids = paper.get("externalIds", {}) or {}
                 arxiv_id = ext_ids.get("ArXiv", "")
-                items.append(RawItem(
-                    title=paper.get("title", ""),
-                    url=paper.get("url", ""),
-                    body=paper.get("abstract", "") or "",
-                    item_type="candidate_paper",
-                    metadata={
-                        "arxiv_id": arxiv_id,
-                        "authors": authors,
-                        "categories": "",
-                        "source": "semantic_scholar",
-                        "semantic_scholar_id": paper.get("paperId", ""),
-                        "citation_count": paper.get("citationCount", 0),
-                    },
-                ))
+                items.append(
+                    RawItem(
+                        title=paper.get("title", ""),
+                        url=paper.get("url", ""),
+                        body=paper.get("abstract", "") or "",
+                        item_type="candidate_paper",
+                        metadata={
+                            "arxiv_id": arxiv_id,
+                            "authors": authors,
+                            "categories": "",
+                            "source": "semantic_scholar",
+                            "semantic_scholar_id": paper.get("paperId", ""),
+                            "citation_count": paper.get("citationCount", 0),
+                        },
+                    )
+                )
         return items
 
 

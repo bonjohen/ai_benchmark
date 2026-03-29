@@ -25,11 +25,13 @@ class ArtificialAnalysisCollector(BenchmarkCollector):
         for section in soup.select("section, article, .content-block, p"):
             text = section.get_text(strip=True)
             if text and len(text) > 20:
-                items.append(RawItem(
-                    title=text[:200],
-                    body=text,
-                    item_type="methodology_description",
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        body=text,
+                        item_type="methodology_description",
+                    )
+                )
         return items
 
     def extract_leaderboard(self, html: str, page: PageConfig) -> list[LeaderboardEntry]:
@@ -38,10 +40,12 @@ class ArtificialAnalysisCollector(BenchmarkCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td")]
             if len(cells) >= 2:
-                entries.append(LeaderboardEntry(
-                    model=cells[0],
-                    score=cells[1],
-                    rank=len(entries) + 1,
-                    variant="performance",
-                ))
+                entries.append(
+                    LeaderboardEntry(
+                        model=cells[0],
+                        score=cells[1],
+                        rank=len(entries) + 1,
+                        variant="performance",
+                    )
+                )
         return entries

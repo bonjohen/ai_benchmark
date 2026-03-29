@@ -103,14 +103,16 @@ class ScorerRunner:
                 )
 
                 item_passed = scorer_result.score >= pass_threshold
-                item_scorer_results.append({
-                    "scorer_version_id": sv.id,
-                    "scorer_type": scorer_result.scorer_type,
-                    "score": scorer_result.score,
-                    "passed": item_passed,
-                    "weight": weight,
-                    "details": scorer_result.details,
-                })
+                item_scorer_results.append(
+                    {
+                        "scorer_version_id": sv.id,
+                        "scorer_type": scorer_result.scorer_type,
+                        "score": scorer_result.score,
+                        "passed": item_passed,
+                        "weight": weight,
+                        "details": scorer_result.details,
+                    }
+                )
 
                 weighted_pass_sum += weight * (1.0 if item_passed else 0.0)
                 total_weight += weight
@@ -139,11 +141,19 @@ class ScorerRunner:
         # Latency stats
         latencies = sorted(i.latency_ms for i in items if i.latency_ms)
         if latencies:
-            await self._upsert_metric(session, run_id, "avg_latency_ms", sum(latencies) / len(latencies))
-            await self._upsert_metric(session, run_id, "p50_latency_ms", latencies[len(latencies) // 2])
+            await self._upsert_metric(
+                session, run_id, "avg_latency_ms", sum(latencies) / len(latencies)
+            )
+            await self._upsert_metric(
+                session, run_id, "p50_latency_ms", latencies[len(latencies) // 2]
+            )
             if len(latencies) >= 20:
-                await self._upsert_metric(session, run_id, "p95_latency_ms", latencies[int(len(latencies) * 0.95)])
-                await self._upsert_metric(session, run_id, "p99_latency_ms", latencies[int(len(latencies) * 0.99)])
+                await self._upsert_metric(
+                    session, run_id, "p95_latency_ms", latencies[int(len(latencies) * 0.95)]
+                )
+                await self._upsert_metric(
+                    session, run_id, "p99_latency_ms", latencies[int(len(latencies) * 0.99)]
+                )
 
         # Token stats
         tokens = [i.total_tokens for i in items if i.total_tokens]
@@ -190,6 +200,4 @@ class ScorerRunner:
         if existing:
             existing.metric_value = value
         else:
-            session.add(RunAggregateMetric(
-                run_id=run_id, metric_name=name, metric_value=value
-            ))
+            session.add(RunAggregateMetric(run_id=run_id, metric_name=name, metric_value=value))

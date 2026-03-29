@@ -59,9 +59,7 @@ async def test_persist_skips_duplicates(db_session):
     db_session.add(source)
     await db_session.flush()
 
-    items = [
-        RawItem(title="Claude 4 Released", url="/news/claude-4", body="Introducing Claude 4")
-    ]
+    items = [RawItem(title="Claude 4 Released", url="/news/claude-4", body="Introducing Claude 4")]
 
     first = await persist_events(
         db_session, items, source.id, None, "Anthropic", "official company source"

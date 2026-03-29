@@ -59,9 +59,7 @@ async def list_evaluations(
     return evals
 
 
-async def get_evaluation(
-    session: AsyncSession, evaluation_id: int
-) -> EvaluationDefinition | None:
+async def get_evaluation(session: AsyncSession, evaluation_id: int) -> EvaluationDefinition | None:
     return await session.get(EvaluationDefinition, evaluation_id)
 
 

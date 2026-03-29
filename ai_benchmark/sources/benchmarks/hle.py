@@ -23,11 +23,13 @@ class HLECollector(BenchmarkCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td")]
             if len(cells) >= 2:
-                entries.append(LeaderboardEntry(
-                    model=cells[0],
-                    score=cells[1],
-                    rank=len(entries) + 1,
-                    variant="hle_public",
-                    conditions="2500 questions, automatic judging, confidence intervals",
-                ))
+                entries.append(
+                    LeaderboardEntry(
+                        model=cells[0],
+                        score=cells[1],
+                        rank=len(entries) + 1,
+                        variant="hle_public",
+                        conditions="2500 questions, automatic judging, confidence intervals",
+                    )
+                )
         return entries

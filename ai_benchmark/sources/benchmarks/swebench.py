@@ -35,11 +35,13 @@ class SWEBenchCollector(BenchmarkCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td")]
             if len(cells) >= 2:
-                entries.append(LeaderboardEntry(
-                    model=cells[0],
-                    score=cells[1],
-                    rank=len(entries) + 1,
-                    variant=variant,
-                    conditions=f"SWE-bench {variant}; contamination risk noted for public subsets",
-                ))
+                entries.append(
+                    LeaderboardEntry(
+                        model=cells[0],
+                        score=cells[1],
+                        rank=len(entries) + 1,
+                        variant=variant,
+                        conditions=f"SWE-bench {variant}; contamination risk noted for public subsets",
+                    )
+                )
         return entries

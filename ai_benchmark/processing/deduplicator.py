@@ -79,8 +79,7 @@ async def find_near_duplicates(
     result = await session.execute(stmt)
     candidates = list(result.scalars().all())
     return [
-        c for c in candidates
-        if is_near_duplicate(normalized_title, c.normalized_title, threshold)
+        c for c in candidates if is_near_duplicate(normalized_title, c.normalized_title, threshold)
     ]
 
 
@@ -96,8 +95,13 @@ async def is_duplicate(
     """Check all dedup strategies. Returns the existing record if duplicate, else None."""
     # 1. Exact composite key (including model_slug)
     exact = await find_exact_duplicate(
-        session, normalized_title, organization, source_type, canonical_path,
-        published_date, model_slug,
+        session,
+        normalized_title,
+        organization,
+        source_type,
+        canonical_path,
+        published_date,
+        model_slug,
     )
     if exact:
         return exact

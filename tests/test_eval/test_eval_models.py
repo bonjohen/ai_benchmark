@@ -44,17 +44,13 @@ async def _make_dataset(session: AsyncSession, name: str = "test-ds") -> Dataset
 async def _make_dataset_version(
     session: AsyncSession, dataset: Dataset, version: int = 1
 ) -> DatasetVersion:
-    dv = DatasetVersion(
-        dataset_id=dataset.id, version_number=version, item_count=0
-    )
+    dv = DatasetVersion(dataset_id=dataset.id, version_number=version, item_count=0)
     session.add(dv)
     await session.flush()
     return dv
 
 
-async def _make_test_case(
-    session: AsyncSession, dv: DatasetVersion, index: int = 0
-) -> TestCase:
+async def _make_test_case(session: AsyncSession, dv: DatasetVersion, index: int = 0) -> TestCase:
     tc = TestCase(
         dataset_version_id=dv.id,
         item_index=index,
@@ -86,27 +82,21 @@ async def _make_scorer_version(
     return sv
 
 
-async def _make_eval_def(
-    session: AsyncSession, name: str = "coding-eval"
-) -> EvaluationDefinition:
+async def _make_eval_def(session: AsyncSession, name: str = "coding-eval") -> EvaluationDefinition:
     ed = EvaluationDefinition(name=name, execution_mode="sequential")
     session.add(ed)
     await session.flush()
     return ed
 
 
-async def _make_machine(
-    session: AsyncSession, hostname: str = "dgx-spark-01"
-) -> MachineProfile:
+async def _make_machine(session: AsyncSession, hostname: str = "dgx-spark-01") -> MachineProfile:
     m = MachineProfile(hostname=hostname, hardware_class="dgx_spark")
     session.add(m)
     await session.flush()
     return m
 
 
-async def _make_snapshot(
-    session: AsyncSession, machine: MachineProfile
-) -> MachineSnapshot:
+async def _make_snapshot(session: AsyncSession, machine: MachineProfile) -> MachineSnapshot:
     snap = MachineSnapshot(
         machine_profile_id=machine.id,
         snapshot_data=json.dumps({"hostname": machine.hostname}),
@@ -145,7 +135,9 @@ async def _make_full_run_chain(session: AsyncSession):
         evaluation_id=eval_def.id,
         version_number=1,
         dataset_version_id=dv.id,
-        scorer_config=json.dumps([{"scorer_version_id": sv.id, "weight": 1.0, "pass_threshold": 0.5}]),
+        scorer_config=json.dumps(
+            [{"scorer_version_id": sv.id, "weight": 1.0, "pass_threshold": 0.5}]
+        ),
     )
     session.add(ev)
     await session.flush()
@@ -248,15 +240,11 @@ async def test_scorer_crud(db_session: AsyncSession):
 async def test_scorer_version_config_roundtrip(db_session: AsyncSession):
     s = await _make_scorer(db_session)
     config = {"case_sensitive": False, "strip_whitespace": True, "normalize_unicode": True}
-    sv = ScorerVersion(
-        scorer_id=s.id, version_number=1, config=json.dumps(config)
-    )
+    sv = ScorerVersion(scorer_id=s.id, version_number=1, config=json.dumps(config))
     db_session.add(sv)
     await db_session.flush()
 
-    result = await db_session.execute(
-        select(ScorerVersion).where(ScorerVersion.id == sv.id)
-    )
+    result = await db_session.execute(select(ScorerVersion).where(ScorerVersion.id == sv.id))
     loaded = result.scalar_one()
     assert json.loads(loaded.config) == config
 
@@ -301,16 +289,20 @@ async def test_evaluation_version_unique_constraint(db_session: AsyncSession):
     ed = await _make_eval_def(db_session)
 
     ev1 = EvaluationVersion(
-        evaluation_id=ed.id, version_number=1,
-        dataset_version_id=dv.id, scorer_config="[]",
+        evaluation_id=ed.id,
+        version_number=1,
+        dataset_version_id=dv.id,
+        scorer_config="[]",
     )
     db_session.add(ev1)
     await db_session.flush()
 
     with pytest.raises(IntegrityError):
         ev2 = EvaluationVersion(
-            evaluation_id=ed.id, version_number=1,
-            dataset_version_id=dv.id, scorer_config="[]",
+            evaluation_id=ed.id,
+            version_number=1,
+            dataset_version_id=dv.id,
+            scorer_config="[]",
         )
         db_session.add(ev2)
         await db_session.flush()
@@ -325,8 +317,10 @@ async def test_evaluation_scorer_config_roundtrip(db_session: AsyncSession):
         {"scorer_version_id": 2, "weight": 0.3, "pass_threshold": 0.5},
     ]
     ev = EvaluationVersion(
-        evaluation_id=ed.id, version_number=1,
-        dataset_version_id=dv.id, scorer_config=json.dumps(scorer_config),
+        evaluation_id=ed.id,
+        version_number=1,
+        dataset_version_id=dv.id,
+        scorer_config=json.dumps(scorer_config),
         preprocessing=json.dumps({"strip": True}),
         pass_criteria=json.dumps({"min_pass_rate": 0.9}),
     )
@@ -363,15 +357,11 @@ async def test_machine_snapshot_data_roundtrip(db_session: AsyncSession):
         "gpu_description": "NVIDIA Grace Blackwell",
         "runtime_version": "ollama 0.5.3",
     }
-    snap = MachineSnapshot(
-        machine_profile_id=m.id, snapshot_data=json.dumps(data)
-    )
+    snap = MachineSnapshot(machine_profile_id=m.id, snapshot_data=json.dumps(data))
     db_session.add(snap)
     await db_session.flush()
 
-    result = await db_session.execute(
-        select(MachineSnapshot).where(MachineSnapshot.id == snap.id)
-    )
+    result = await db_session.execute(select(MachineSnapshot).where(MachineSnapshot.id == snap.id))
     loaded = result.scalar_one()
     assert json.loads(loaded.snapshot_data) == data
 
@@ -387,9 +377,7 @@ async def test_machine_accelerator_details_json(db_session: AsyncSession):
     db_session.add(m)
     await db_session.flush()
 
-    result = await db_session.execute(
-        select(MachineProfile).where(MachineProfile.id == m.id)
-    )
+    result = await db_session.execute(select(MachineProfile).where(MachineProfile.id == m.id))
     loaded = result.scalar_one()
     assert json.loads(loaded.accelerator_details) == accel
     assert json.loads(loaded.runtime_availability) == ["ollama", "vllm"]
@@ -514,9 +502,7 @@ async def test_run_item_result_crud(db_session: AsyncSession):
     db_session.add(item)
     await db_session.flush()
 
-    result = await db_session.execute(
-        select(RunItemResult).where(RunItemResult.id == item.id)
-    )
+    result = await db_session.execute(select(RunItemResult).where(RunItemResult.id == item.id))
     loaded = result.scalar_one()
     assert loaded.overall_pass is True
     assert loaded.latency_ms == 150.5
@@ -632,8 +618,10 @@ async def test_evaluation_version_fk_requires_eval_def(db_session: AsyncSession)
     dv = await _make_dataset_version(db_session, ds)
     with pytest.raises(IntegrityError):
         ev = EvaluationVersion(
-            evaluation_id=9999, version_number=1,
-            dataset_version_id=dv.id, scorer_config="[]",
+            evaluation_id=9999,
+            version_number=1,
+            dataset_version_id=dv.id,
+            scorer_config="[]",
         )
         db_session.add(ev)
         await db_session.flush()
@@ -655,8 +643,10 @@ async def test_run_fk_requires_eval_version(db_session: AsyncSession):
 async def test_artifact_fk_requires_run(db_session: AsyncSession):
     with pytest.raises(IntegrityError):
         art = Artifact(
-            run_id=9999, artifact_type="log",
-            filename="log.txt", file_path="/tmp/log.txt",
+            run_id=9999,
+            artifact_type="log",
+            filename="log.txt",
+            file_path="/tmp/log.txt",
         )
         db_session.add(art)
         await db_session.flush()

@@ -22,7 +22,9 @@ async def list_targets(
     session: AsyncSession = Depends(get_session),
 ):
     targets = await target_service.list_targets(
-        session, model_name=model_name, provider=provider,
+        session,
+        model_name=model_name,
+        provider=provider,
         include_archived=include_archived,
     )
     return [_target_to_dict(t) for t in targets]
@@ -35,14 +37,18 @@ async def create_target(
 ):
     t = await target_service.create_target(
         session,
-        name=body.name, model_name=body.model_name, provider=body.provider,
+        name=body.name,
+        model_name=body.model_name,
+        provider=body.provider,
         inference_params=body.inference_params,
-        model_family=body.model_family, endpoint_url=body.endpoint_url,
+        model_family=body.model_family,
+        endpoint_url=body.endpoint_url,
         machine_profile_id=body.machine_profile_id,
         runtime_backend=body.runtime_backend,
         prompt_wrapper=body.prompt_wrapper,
         runtime_options=body.runtime_options,
-        tags=body.tags, notes=body.notes,
+        tags=body.tags,
+        notes=body.notes,
     )
     result = _target_to_dict(t)
 
@@ -90,7 +96,10 @@ async def clone_target(
     session: AsyncSession = Depends(get_session),
 ):
     t = await target_service.clone_target(
-        session, target_id, new_name=body.new_name, overrides=body.overrides,
+        session,
+        target_id,
+        new_name=body.new_name,
+        overrides=body.overrides,
     )
     result = _target_to_dict(t)
 

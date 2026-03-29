@@ -15,9 +15,22 @@ class ArxivCollector(SourceCollector):
 
     # Keywords to filter for relevance to tracked models/benchmarks
     RELEVANCE_KEYWORDS = [
-        "benchmark", "leaderboard", "evaluation", "language model", "llm",
-        "gpt", "claude", "gemini", "llama", "mistral", "grok",
-        "agent", "reasoning", "coding", "safety", "alignment",
+        "benchmark",
+        "leaderboard",
+        "evaluation",
+        "language model",
+        "llm",
+        "gpt",
+        "claude",
+        "gemini",
+        "llama",
+        "mistral",
+        "grok",
+        "agent",
+        "reasoning",
+        "coding",
+        "safety",
+        "alignment",
     ]
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
@@ -33,7 +46,11 @@ class ArxivCollector(SourceCollector):
                 continue
 
             title = title_el.get_text(strip=True).removeprefix("Title:").strip()
-            authors = authors_el.get_text(strip=True).removeprefix("Authors:").strip() if authors_el else ""
+            authors = (
+                authors_el.get_text(strip=True).removeprefix("Authors:").strip()
+                if authors_el
+                else ""
+            )
             arxiv_url = ""
             arxiv_id = ""
             if abstract_link:
@@ -47,12 +64,14 @@ class ArxivCollector(SourceCollector):
             if not any(kw in combined for kw in self.RELEVANCE_KEYWORDS):
                 continue
 
-            items.append(RawItem(
-                title=title,
-                url=arxiv_url,
-                body=authors,
-                item_type="candidate_paper",
-                metadata={"arxiv_id": arxiv_id, "authors": authors, "source": "arxiv"},
-            ))
+            items.append(
+                RawItem(
+                    title=title,
+                    url=arxiv_url,
+                    body=authors,
+                    item_type="candidate_paper",
+                    metadata={"arxiv_id": arxiv_id, "authors": authors, "source": "arxiv"},
+                )
+            )
 
         return items

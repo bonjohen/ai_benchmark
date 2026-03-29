@@ -85,6 +85,7 @@ class SourceCollector(abc.ABC):
 
         # Lazy import to avoid circular dependency
         from ..processing.quality_filter import is_low_value_page
+
         if is_low_value_page(diff, items, page):
             log.warning("low_value_page_filtered", count=len(items))
             return [], diff

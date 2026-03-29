@@ -179,8 +179,13 @@ async def test_find_exact_duplicate_with_model_slug(db_session: AsyncSession):
     await db_session.flush()
 
     found = await find_exact_duplicate(
-        db_session, "gpt-5 released", "OpenAI", "changelog",
-        "/news/gpt-5", "2026-03-28", model_slug="gpt-5",
+        db_session,
+        "gpt-5 released",
+        "OpenAI",
+        "changelog",
+        "/news/gpt-5",
+        "2026-03-28",
+        model_slug="gpt-5",
     )
     assert found is not None
     assert found.id == event.id
@@ -198,8 +203,13 @@ async def test_find_exact_duplicate_no_match_different_slug(db_session: AsyncSes
     await db_session.flush()
 
     found = await find_exact_duplicate(
-        db_session, "gpt-5 released", "OpenAI", "changelog",
-        "/news/gpt-5", "2026-03-28", model_slug="gpt-5-turbo",
+        db_session,
+        "gpt-5 released",
+        "OpenAI",
+        "changelog",
+        "/news/gpt-5",
+        "2026-03-28",
+        model_slug="gpt-5-turbo",
     )
     assert found is None
 
@@ -223,7 +233,13 @@ async def test_pipeline_populates_benchmark_variant(db_session: AsyncSession):
         },
     )
     event = await process_item(
-        db_session, item, source.id, None, "SWE-bench", "leaderboard", "secondary",
+        db_session,
+        item,
+        source.id,
+        None,
+        "SWE-bench",
+        "leaderboard",
+        "secondary",
     )
     assert event is not None
     assert event.benchmark_variant == "verified"

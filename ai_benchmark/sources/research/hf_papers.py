@@ -43,16 +43,18 @@ class HFPapersCollector(SourceCollector):
             if not any(kw in combined for kw in RELEVANCE_KEYWORDS):
                 continue
 
-            items.append(RawItem(
-                title=title,
-                url=href,
-                body=body_text,
-                item_type="candidate_paper",
-                metadata={
-                    "arxiv_id": arxiv_id,
-                    "upvotes": upvotes,
-                    "source": "hf_papers",
-                },
-            ))
+            items.append(
+                RawItem(
+                    title=title,
+                    url=href,
+                    body=body_text,
+                    item_type="candidate_paper",
+                    metadata={
+                        "arxiv_id": arxiv_id,
+                        "upvotes": upvotes,
+                        "source": "hf_papers",
+                    },
+                )
+            )
 
         return items

@@ -25,11 +25,13 @@ class TerminalBenchCollector(BenchmarkCollector):
         for section in soup.select("section, h2, h3, li, tr"):
             text = section.get_text(strip=True)
             if text and len(text) > 10:
-                items.append(RawItem(
-                    title=text[:200],
-                    body=text,
-                    item_type="registry_entry",
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        body=text,
+                        item_type="registry_entry",
+                    )
+                )
         return items
 
     def extract_leaderboard(self, html: str, page: PageConfig) -> list[LeaderboardEntry]:
@@ -38,10 +40,12 @@ class TerminalBenchCollector(BenchmarkCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td")]
             if len(cells) >= 2:
-                entries.append(LeaderboardEntry(
-                    model=cells[0],
-                    score=cells[1],
-                    rank=len(entries) + 1,
-                    variant="terminal_bench",
-                ))
+                entries.append(
+                    LeaderboardEntry(
+                        model=cells[0],
+                        score=cells[1],
+                        rank=len(entries) + 1,
+                        variant="terminal_bench",
+                    )
+                )
         return entries

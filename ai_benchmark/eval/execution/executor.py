@@ -92,9 +92,7 @@ class ItemExecutor:
         # Execute with retry
         result: GenerationResult | None = None
         for attempt in range(self.max_retries + 1):
-            result = await adapter.generate(
-                prompt, self.inference_params, self.runtime_options
-            )
+            result = await adapter.generate(prompt, self.inference_params, self.runtime_options)
             if result.error is None:
                 break
             result.retry_count = attempt

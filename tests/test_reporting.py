@@ -59,6 +59,7 @@ def _make_claim(session, event_id: int, **kwargs) -> ClaimRecord:
 
 # ─── Query tests ───
 
+
 @pytest.mark.asyncio
 async def test_get_events_no_filter(db_session):
     _make_event(db_session, title="A", canonical_path="/a")
@@ -159,12 +160,18 @@ async def test_count_events_by_type(db_session):
 
 # ─── Export tests ───
 
+
 def test_events_to_json():
     event = EventRecord(
-        id=1, source_id=1, title="GPT-5",
-        normalized_title="gpt-5", organization="OpenAI",
-        source_type="changelog", canonical_path="/test",
-        event_type="model_release", model_slug="gpt-5",
+        id=1,
+        source_id=1,
+        title="GPT-5",
+        normalized_title="gpt-5",
+        organization="OpenAI",
+        source_type="changelog",
+        canonical_path="/test",
+        event_type="model_release",
+        model_slug="gpt-5",
         published_date="2026-03-28",
         observed_at=datetime(2026, 3, 28, tzinfo=UTC),
     )
@@ -177,9 +184,13 @@ def test_events_to_json():
 
 def test_events_to_csv():
     event = EventRecord(
-        id=1, source_id=1, title="GPT-5",
-        normalized_title="gpt-5", organization="OpenAI",
-        source_type="changelog", canonical_path="/test",
+        id=1,
+        source_id=1,
+        title="GPT-5",
+        normalized_title="gpt-5",
+        organization="OpenAI",
+        source_type="changelog",
+        canonical_path="/test",
         event_type="model_release",
         observed_at=datetime(2026, 3, 28, tzinfo=UTC),
     )
@@ -191,8 +202,11 @@ def test_events_to_csv():
 
 def test_claims_to_json():
     claim = ClaimRecord(
-        id=1, event_id=1, claim_text="GPT-5 released",
-        source_type="changelog", source_name="OpenAI",
+        id=1,
+        event_id=1,
+        claim_text="GPT-5 released",
+        source_type="changelog",
+        source_name="OpenAI",
         confidence_tier="official_self_report",
         confirmation_status="confirmed",
         observed_at=datetime(2026, 3, 28, tzinfo=UTC),
@@ -205,8 +219,11 @@ def test_claims_to_json():
 
 def test_claims_to_csv():
     claim = ClaimRecord(
-        id=1, event_id=1, claim_text="GPT-5 released",
-        source_type="changelog", source_name="OpenAI",
+        id=1,
+        event_id=1,
+        claim_text="GPT-5 released",
+        source_type="changelog",
+        source_name="OpenAI",
         confidence_tier="official_self_report",
         confirmation_status="confirmed",
         observed_at=datetime(2026, 3, 28, tzinfo=UTC),

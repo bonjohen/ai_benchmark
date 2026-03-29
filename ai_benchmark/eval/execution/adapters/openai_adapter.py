@@ -44,13 +44,22 @@ class OpenAIAdapter(ModelAdapter):
             "messages": [{"role": "user", "content": prompt}],
         }
         # Map inference params
-        for key in ("temperature", "top_p", "max_tokens", "stop", "presence_penalty", "frequency_penalty"):
+        for key in (
+            "temperature",
+            "top_p",
+            "max_tokens",
+            "stop",
+            "presence_penalty",
+            "frequency_penalty",
+        ):
             if key in inference_params:
                 body[key] = inference_params[key]
 
         # System prompt from runtime_options
         if runtime_options.get("system_prompt"):
-            body["messages"].insert(0, {"role": "system", "content": runtime_options["system_prompt"]})
+            body["messages"].insert(
+                0, {"role": "system", "content": runtime_options["system_prompt"]}
+            )
 
         timeout = runtime_options.get("timeout", self.timeout)
         retries = runtime_options.get("retries", 2)

@@ -33,7 +33,14 @@ DATE_FORMATS = [
 
 # Event type classification keywords
 EVENT_TYPE_KEYWORDS: dict[str, list[str]] = {
-    "model_release": ["released", "launch", "introducing", "announcing", "now available", "new model"],
+    "model_release": [
+        "released",
+        "launch",
+        "introducing",
+        "announcing",
+        "now available",
+        "new model",
+    ],
     "pricing_change": ["pricing", "price", "cost", "rate", "per token", "per million"],
     "api_update": ["api", "endpoint", "sdk", "changelog", "feature"],
     "deprecation": ["deprecated", "deprecation", "sunset", "retiring", "end of life", "removed"],
@@ -51,9 +58,34 @@ def normalize_title(raw_title: str) -> str:
 
 # Words that signal end of a model name
 _STOP_WORDS = {
-    "is", "was", "are", "were", "with", "and", "the", "a", "an", "for",
-    "in", "on", "at", "to", "from", "by", "has", "have", "had", "now",
-    "will", "can", "may", "should", "would", "could", "been", "being",
+    "is",
+    "was",
+    "are",
+    "were",
+    "with",
+    "and",
+    "the",
+    "a",
+    "an",
+    "for",
+    "in",
+    "on",
+    "at",
+    "to",
+    "from",
+    "by",
+    "has",
+    "have",
+    "had",
+    "now",
+    "will",
+    "can",
+    "may",
+    "should",
+    "would",
+    "could",
+    "been",
+    "being",
 }
 
 

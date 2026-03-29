@@ -36,12 +36,14 @@ async def persist_events(
 
         # Check for existing event by composite key
         existing = await session.execute(
-            select(EventRecord).where(
+            select(EventRecord)
+            .where(
                 EventRecord.normalized_title == norm_title,
                 EventRecord.organization == organization,
                 EventRecord.source_type == source_type,
                 EventRecord.canonical_path == item.url,
-            ).limit(1)
+            )
+            .limit(1)
         )
         if existing.scalar_one_or_none() is not None:
             continue

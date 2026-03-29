@@ -28,11 +28,13 @@ class CohereCollector(SourceCollector):
         for entry in soup.select("section, h2, h3, li, .release-entry"):
             text = entry.get_text(strip=True)
             if text and len(text) > 10:
-                items.append(RawItem(
-                    title=text[:200],
-                    body=text,
-                    item_type="release_note",
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        body=text,
+                        item_type="release_note",
+                    )
+                )
         return items
 
     def _extract_blog(self, html: str) -> list[RawItem]:
@@ -44,12 +46,14 @@ class CohereCollector(SourceCollector):
                 continue
             title = title_el.get_text(strip=True)
             if title:
-                items.append(RawItem(
-                    title=title,
-                    url=str(article.get("href", "")),
-                    body=article.get_text(strip=True),
-                    item_type="blog_post",
-                ))
+                items.append(
+                    RawItem(
+                        title=title,
+                        url=str(article.get("href", "")),
+                        body=article.get_text(strip=True),
+                        item_type="blog_post",
+                    )
+                )
         return items
 
     def _extract_pricing(self, html: str) -> list[RawItem]:
@@ -58,12 +62,14 @@ class CohereCollector(SourceCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td, th")]
             if len(cells) >= 2:
-                items.append(RawItem(
-                    title=cells[0],
-                    body=" | ".join(cells),
-                    item_type="pricing_row",
-                    model_hint=cells[0] if cells[0] else None,
-                ))
+                items.append(
+                    RawItem(
+                        title=cells[0],
+                        body=" | ".join(cells),
+                        item_type="pricing_row",
+                        model_hint=cells[0] if cells[0] else None,
+                    )
+                )
         return items
 
     def _extract_model_docs(self, html: str) -> list[RawItem]:
@@ -72,9 +78,11 @@ class CohereCollector(SourceCollector):
         for section in soup.select("tr, .model-card, section, h3"):
             text = section.get_text(strip=True)
             if text and len(text) > 5:
-                items.append(RawItem(
-                    title=text[:200],
-                    body=text,
-                    item_type="model_entry",
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        body=text,
+                        item_type="model_entry",
+                    )
+                )
         return items

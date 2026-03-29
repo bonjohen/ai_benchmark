@@ -69,12 +69,20 @@ async def test_model_release_confirmed_with_2_official(db_session):
     await db_session.flush()
 
     await create_claim(
-        db_session, event, "GPT-5 on launch page",
-        "launch_page", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 on launch page",
+        "launch_page",
+        "OpenAI",
+        "official_self_report",
     )
     await create_claim(
-        db_session, event, "GPT-5 in model catalog",
-        "model_catalog", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 in model catalog",
+        "model_catalog",
+        "OpenAI",
+        "official_self_report",
     )
 
     assert await check_confirmation(db_session, event) is True
@@ -86,8 +94,12 @@ async def test_model_release_not_confirmed_with_1_official(db_session):
     await db_session.flush()
 
     await create_claim(
-        db_session, event, "GPT-5 on launch page",
-        "launch_page", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 on launch page",
+        "launch_page",
+        "OpenAI",
+        "official_self_report",
     )
 
     assert await check_confirmation(db_session, event) is False
@@ -99,8 +111,12 @@ async def test_benchmark_confirmed_with_owner(db_session):
     await db_session.flush()
 
     await create_claim(
-        db_session, event, "Model X scores 95% on SWE-bench",
-        "leaderboard", "SWE-bench", "benchmark_owner_report",
+        db_session,
+        event,
+        "Model X scores 95% on SWE-bench",
+        "leaderboard",
+        "SWE-bench",
+        "benchmark_owner_report",
     )
 
     assert await check_confirmation(db_session, event) is True
@@ -112,8 +128,12 @@ async def test_benchmark_not_confirmed_without_owner(db_session):
     await db_session.flush()
 
     await create_claim(
-        db_session, event, "Model X claims 95% on SWE-bench",
-        "blog", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "Model X claims 95% on SWE-bench",
+        "blog",
+        "OpenAI",
+        "official_self_report",
     )
 
     assert await check_confirmation(db_session, event) is False
@@ -125,8 +145,12 @@ async def test_pricing_confirmed_with_pricing_page(db_session):
     await db_session.flush()
 
     await create_claim(
-        db_session, event, "New pricing: $5/1M tokens",
-        "pricing_page", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "New pricing: $5/1M tokens",
+        "pricing_page",
+        "OpenAI",
+        "official_self_report",
     )
 
     assert await check_confirmation(db_session, event) is True
@@ -138,8 +162,12 @@ async def test_pricing_not_confirmed_from_blog(db_session):
     await db_session.flush()
 
     await create_claim(
-        db_session, event, "Pricing rumored to change",
-        "blog", "TechCrunch", "news_discovery",
+        db_session,
+        event,
+        "Pricing rumored to change",
+        "blog",
+        "TechCrunch",
+        "news_discovery",
     )
 
     assert await check_confirmation(db_session, event) is False
@@ -151,12 +179,20 @@ async def test_update_confirmation_status_confirmed(db_session):
     await db_session.flush()
 
     await create_claim(
-        db_session, event, "GPT-5 on launch page",
-        "launch_page", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 on launch page",
+        "launch_page",
+        "OpenAI",
+        "official_self_report",
     )
     await create_claim(
-        db_session, event, "GPT-5 in docs",
-        "developer_docs", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 in docs",
+        "developer_docs",
+        "OpenAI",
+        "official_self_report",
     )
 
     status = await update_confirmation_status(db_session, event)
@@ -179,16 +215,28 @@ async def test_claims_never_merged(db_session):
     await db_session.flush()
 
     claim1 = await create_claim(
-        db_session, event, "GPT-5 released March 28",
-        "newsroom", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 released March 28",
+        "newsroom",
+        "OpenAI",
+        "official_self_report",
     )
     claim2 = await create_claim(
-        db_session, event, "GPT-5 available in API",
-        "changelog", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 available in API",
+        "changelog",
+        "OpenAI",
+        "official_self_report",
     )
     claim3 = await create_claim(
-        db_session, event, "OpenAI launches GPT-5",
-        "news", "Reuters", "reputable_news_report",
+        db_session,
+        event,
+        "OpenAI launches GPT-5",
+        "news",
+        "Reuters",
+        "reputable_news_report",
     )
 
     assert claim1.id != claim2.id != claim3.id
@@ -204,12 +252,20 @@ async def test_model_release_confirmed_chain_ordering(db_session):
 
     # launch_page is rank 1 (top 3), developer_docs is rank 2
     await create_claim(
-        db_session, event, "GPT-5 on launch page",
-        "launch_page", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 on launch page",
+        "launch_page",
+        "OpenAI",
+        "official_self_report",
     )
     await create_claim(
-        db_session, event, "GPT-5 in developer docs",
-        "developer_docs", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 in developer docs",
+        "developer_docs",
+        "OpenAI",
+        "official_self_report",
     )
     assert await check_confirmation(db_session, event) is True
 
@@ -222,12 +278,20 @@ async def test_model_release_not_confirmed_low_rank_only(db_session):
 
     # system_card is rank 7, release_notes is rank 6 — neither in top 3
     await create_claim(
-        db_session, event, "GPT-5 in system card",
-        "system_card", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 in system card",
+        "system_card",
+        "OpenAI",
+        "official_self_report",
     )
     await create_claim(
-        db_session, event, "GPT-5 in release notes",
-        "release_notes", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "GPT-5 in release notes",
+        "release_notes",
+        "OpenAI",
+        "official_self_report",
     )
     assert await check_confirmation(db_session, event) is False
 
@@ -239,12 +303,20 @@ async def test_conflict_detection_numerical_disagreement(db_session):
     await db_session.flush()
 
     await create_claim(
-        db_session, event, "Model X scores 95% on SWE-bench",
-        "leaderboard", "SWE-bench", "benchmark_owner_report",
+        db_session,
+        event,
+        "Model X scores 95% on SWE-bench",
+        "leaderboard",
+        "SWE-bench",
+        "benchmark_owner_report",
     )
     await create_claim(
-        db_session, event, "Model X scores 80% on SWE-bench",
-        "blog", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "Model X scores 80% on SWE-bench",
+        "blog",
+        "OpenAI",
+        "official_self_report",
     )
 
     status = await update_confirmation_status(db_session, event)
@@ -272,8 +344,12 @@ async def test_page_title_propagated_to_claim(db_session):
     await db_session.flush()
 
     claim = await create_claim(
-        db_session, event, "Test claim",
-        "changelog", "OpenAI", "official_self_report",
+        db_session,
+        event,
+        "Test claim",
+        "changelog",
+        "OpenAI",
+        "official_self_report",
         page_title="Model changelog",
     )
     assert claim.page_title == "Model changelog"

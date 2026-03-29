@@ -54,15 +54,17 @@ async def test_collect_via_api_returns_raw_items():
     config = _make_config()
     collector = SemanticScholarCollector(config)
 
-    mock_results = [{
-        "title": "LLM Evaluation Framework",
-        "url": "https://semanticscholar.org/paper/123",
-        "abstract": "We present a framework for evaluating language models.",
-        "authors": [{"name": "Alice"}, {"name": "Bob"}],
-        "paperId": "s2_123",
-        "externalIds": {"ArXiv": "2603.12345"},
-        "citationCount": 42,
-    }]
+    mock_results = [
+        {
+            "title": "LLM Evaluation Framework",
+            "url": "https://semanticscholar.org/paper/123",
+            "abstract": "We present a framework for evaluating language models.",
+            "authors": [{"name": "Alice"}, {"name": "Bob"}],
+            "paperId": "s2_123",
+            "externalIds": {"ArXiv": "2603.12345"},
+            "citationCount": 42,
+        }
+    ]
 
     with patch.object(collector.client, "search_paper", new_callable=AsyncMock) as mock_search:
         mock_search.return_value = mock_results

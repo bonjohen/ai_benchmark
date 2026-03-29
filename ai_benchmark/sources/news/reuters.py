@@ -39,16 +39,18 @@ class ReutersCollector(SourceCollector):
             date_el = article.select_one("time, [data-testid='Label'], .date")
             date_text = date_el.get_text(strip=True) if date_el else None
 
-            items.append(RawItem(
-                title=title,
-                url=href,
-                date_text=date_text,
-                body=article.get_text(strip=True)[:500],
-                item_type="news_article",
-                metadata={
-                    "source": "reuters",
-                    "confidence_tier": self.CONFIDENCE_TIER,
-                },
-            ))
+            items.append(
+                RawItem(
+                    title=title,
+                    url=href,
+                    date_text=date_text,
+                    body=article.get_text(strip=True)[:500],
+                    item_type="news_article",
+                    metadata={
+                        "source": "reuters",
+                        "confidence_tier": self.CONFIDENCE_TIER,
+                    },
+                )
+            )
 
         return items

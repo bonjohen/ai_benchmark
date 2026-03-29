@@ -92,11 +92,11 @@ class ModelJudgeScorer(BaseScorer):
             )
 
         # Parse judge response
-        raw_score, reasoning = self._parse_judge_response(
-            result.output_text, scale_min, scale_max
-        )
+        raw_score, reasoning = self._parse_judge_response(result.output_text, scale_min, scale_max)
 
-        normalized = (raw_score - scale_min) / (scale_max - scale_min) if scale_max > scale_min else 0.0
+        normalized = (
+            (raw_score - scale_min) / (scale_max - scale_min) if scale_max > scale_min else 0.0
+        )
 
         return ScorerResult(
             scorer_type=self.scorer_type,

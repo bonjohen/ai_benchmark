@@ -60,11 +60,11 @@ class ClaimRecord(Base):
     source_name: Mapped[str] = mapped_column(String(200))
     page_title: Mapped[str | None] = mapped_column(String(500), nullable=True)
     observed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    confidence_tier: Mapped[str] = mapped_column(String(50))  # official_self_report, benchmark_owner_report, etc.
+    confidence_tier: Mapped[str] = mapped_column(
+        String(50)
+    )  # official_self_report, benchmark_owner_report, etc.
 
-    snapshot_id: Mapped[int | None] = mapped_column(
-        ForeignKey("snapshots.id"), nullable=True
-    )
+    snapshot_id: Mapped[int | None] = mapped_column(ForeignKey("snapshots.id"), nullable=True)
 
     confirmation_status: Mapped[str] = mapped_column(
         String(50), default="unconfirmed"

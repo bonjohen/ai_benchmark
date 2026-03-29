@@ -38,17 +38,19 @@ class BenchmarkCollector(SourceCollector):
         entries = self.extract_leaderboard(html, page)
         items: list[RawItem] = []
         for entry in entries:
-            items.append(RawItem(
-                title=f"{self.benchmark_family}: {entry.model} = {entry.score}",
-                body=f"Rank: {entry.rank}, Variant: {entry.variant}, Conditions: {entry.conditions}",
-                item_type="benchmark_entry",
-                model_hint=entry.model,
-                metadata={
-                    "score": entry.score,
-                    "rank": entry.rank,
-                    "variant": entry.variant,
-                    "benchmark_variant": entry.variant,
-                    "evaluation_conditions": entry.conditions,
-                },
-            ))
+            items.append(
+                RawItem(
+                    title=f"{self.benchmark_family}: {entry.model} = {entry.score}",
+                    body=f"Rank: {entry.rank}, Variant: {entry.variant}, Conditions: {entry.conditions}",
+                    item_type="benchmark_entry",
+                    model_hint=entry.model,
+                    metadata={
+                        "score": entry.score,
+                        "rank": entry.rank,
+                        "variant": entry.variant,
+                        "benchmark_variant": entry.variant,
+                        "evaluation_conditions": entry.conditions,
+                    },
+                )
+            )
         return items

@@ -38,9 +38,7 @@ class Dataset(Base):
 
 class DatasetVersion(Base):
     __tablename__ = "dataset_versions"
-    __table_args__ = (
-        UniqueConstraint("dataset_id", "version_number", name="uq_dataset_version"),
-    )
+    __table_args__ = (UniqueConstraint("dataset_id", "version_number", name="uq_dataset_version"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     dataset_id: Mapped[int] = mapped_column(ForeignKey("datasets.id"), nullable=False)
@@ -58,9 +56,7 @@ class DatasetVersion(Base):
 
 class TestCase(Base):
     __tablename__ = "test_cases"
-    __table_args__ = (
-        Index("ix_test_cases_version_index", "dataset_version_id", "item_index"),
-    )
+    __table_args__ = (Index("ix_test_cases_version_index", "dataset_version_id", "item_index"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     dataset_version_id: Mapped[int] = mapped_column(

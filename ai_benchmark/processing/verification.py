@@ -22,23 +22,38 @@ from ..models.events import ClaimRecord, EventRecord
 # Source type ordering for each verification chain
 VERIFICATION_CHAINS: dict[str, list[str]] = {
     "model_release": [
-        "launch_page", "developer_docs", "model_catalog",
-        "pricing_page", "changelog", "release_notes", "system_card",
+        "launch_page",
+        "developer_docs",
+        "model_catalog",
+        "pricing_page",
+        "changelog",
+        "release_notes",
+        "system_card",
     ],
     "benchmark_result": [
-        "benchmark_owner_leaderboard", "benchmark_owner_report",
-        "vendor_blog", "vendor_newsroom", "news_outlet",
+        "benchmark_owner_leaderboard",
+        "benchmark_owner_report",
+        "vendor_blog",
+        "vendor_newsroom",
+        "news_outlet",
     ],
     "pricing_change": [
         "pricing_page",
     ],
     "announcement": [
-        "newsroom", "developer_docs", "product_page",
-        "reuters", "news_outlet", "community",
+        "newsroom",
+        "developer_docs",
+        "product_page",
+        "reuters",
+        "news_outlet",
+        "community",
     ],
     "research_claim": [
-        "primary_paper", "arxiv", "semantic_scholar",
-        "vendor_blog", "news_outlet",
+        "primary_paper",
+        "arxiv",
+        "semantic_scholar",
+        "vendor_blog",
+        "news_outlet",
     ],
 }
 
@@ -175,7 +190,7 @@ async def update_confirmation_status(
     # Check for conflicts using numerical value disagreement
     has_conflict = False
     for i, claim_a in enumerate(claims):
-        for claim_b in claims[i + 1:]:
+        for claim_b in claims[i + 1 :]:
             if detect_claim_conflict(claim_a, claim_b):
                 has_conflict = True
                 break

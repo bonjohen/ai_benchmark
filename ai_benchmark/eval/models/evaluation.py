@@ -23,7 +23,9 @@ class EvaluationDefinition(Base):
         String(50), nullable=False, default="sequential"
     )  # sequential | parallel | matrix
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now(), nullable=True)
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime, onupdate=func.now(), nullable=True
+    )
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
     versions: Mapped[list[EvaluationVersion]] = relationship(
@@ -34,9 +36,7 @@ class EvaluationDefinition(Base):
 class EvaluationVersion(Base):
     __tablename__ = "evaluation_versions"
     __table_args__ = (
-        UniqueConstraint(
-            "evaluation_id", "version_number", name="uq_evaluation_version"
-        ),
+        UniqueConstraint("evaluation_id", "version_number", name="uq_evaluation_version"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)

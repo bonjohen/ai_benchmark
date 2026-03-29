@@ -209,10 +209,6 @@ async def get_metrics(session: AsyncSession, run_id: int) -> list[RunAggregateMe
 async def list_artifacts(session: AsyncSession, run_id: int):
     from ..models.artifact import Artifact
 
-    stmt = (
-        select(Artifact)
-        .where(Artifact.run_id == run_id)
-        .order_by(Artifact.created_at)
-    )
+    stmt = select(Artifact).where(Artifact.run_id == run_id).order_by(Artifact.created_at)
     result = await session.execute(stmt)
     return list(result.scalars().all())

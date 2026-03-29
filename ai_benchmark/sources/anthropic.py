@@ -39,12 +39,14 @@ class AnthropicCollector(SourceCollector):
             title = title_el.get_text(strip=True)
             if not title:
                 continue
-            items.append(RawItem(
-                title=title,
-                url=str(article.get("href", "")),
-                body=article.get_text(strip=True),
-                item_type="news_post",
-            ))
+            items.append(
+                RawItem(
+                    title=title,
+                    url=str(article.get("href", "")),
+                    body=article.get_text(strip=True),
+                    item_type="news_post",
+                )
+            )
         return items
 
     def _extract_system_cards(self, html: str) -> list[RawItem]:
@@ -53,12 +55,14 @@ class AnthropicCollector(SourceCollector):
         for card in soup.select("a[href*='system-card'], .card, li"):
             text = card.get_text(strip=True)
             if text and len(text) > 10:
-                items.append(RawItem(
-                    title=text[:200],
-                    url=str(card.get("href", "")),
-                    body=text,
-                    item_type="system_card",
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        url=str(card.get("href", "")),
+                        body=text,
+                        item_type="system_card",
+                    )
+                )
         return items
 
     def _extract_release_notes(self, html: str) -> list[RawItem]:
@@ -67,11 +71,13 @@ class AnthropicCollector(SourceCollector):
         for entry in soup.select("section, .changelog-entry, div.entry, li"):
             text = entry.get_text(strip=True)
             if text and len(text) > 10:
-                items.append(RawItem(
-                    title=text[:200],
-                    body=text,
-                    item_type="release_note",
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        body=text,
+                        item_type="release_note",
+                    )
+                )
         return items
 
     def _extract_pricing(self, html: str) -> list[RawItem]:
@@ -80,12 +86,14 @@ class AnthropicCollector(SourceCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td, th")]
             if len(cells) >= 2:
-                items.append(RawItem(
-                    title=cells[0],
-                    body=" | ".join(cells),
-                    item_type="pricing_row",
-                    model_hint=cells[0] if cells[0] else None,
-                ))
+                items.append(
+                    RawItem(
+                        title=cells[0],
+                        body=" | ".join(cells),
+                        item_type="pricing_row",
+                        model_hint=cells[0] if cells[0] else None,
+                    )
+                )
         return items
 
     def _extract_models(self, html: str) -> list[RawItem]:
@@ -94,9 +102,11 @@ class AnthropicCollector(SourceCollector):
         for section in soup.select("tr, .model-card, section, h3"):
             text = section.get_text(strip=True)
             if text and len(text) > 5:
-                items.append(RawItem(
-                    title=text[:200],
-                    body=text,
-                    item_type="model_entry",
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        body=text,
+                        item_type="model_entry",
+                    )
+                )
         return items

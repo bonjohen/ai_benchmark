@@ -37,9 +37,7 @@ class Run(Base):
     __tablename__ = "runs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    run_group_id: Mapped[int | None] = mapped_column(
-        ForeignKey("run_groups.id"), nullable=True
-    )
+    run_group_id: Mapped[int | None] = mapped_column(ForeignKey("run_groups.id"), nullable=True)
     evaluation_version_id: Mapped[int] = mapped_column(
         ForeignKey("evaluation_versions.id"), nullable=False
     )
@@ -68,7 +66,9 @@ class Run(Base):
     skipped_items: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now(), nullable=True)
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime, onupdate=func.now(), nullable=True
+    )
 
     run_group: Mapped[RunGroup | None] = relationship(back_populates="runs")
     evaluation_version: Mapped[EvaluationVersion] = relationship(  # noqa: F821
@@ -127,9 +127,7 @@ class RunItemResult(Base):
 
 class RunAggregateMetric(Base):
     __tablename__ = "run_aggregate_metrics"
-    __table_args__ = (
-        UniqueConstraint("run_id", "metric_name", name="uq_run_metric"),
-    )
+    __table_args__ = (UniqueConstraint("run_id", "metric_name", name="uq_run_metric"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     run_id: Mapped[int] = mapped_column(ForeignKey("runs.id"), nullable=False)

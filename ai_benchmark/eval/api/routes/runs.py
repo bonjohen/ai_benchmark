@@ -33,9 +33,13 @@ async def list_runs(
     session: AsyncSession = Depends(get_session),
 ):
     runs = await run_service.list_runs(
-        session, status=status, evaluation_id=evaluation_id,
-        target_id=target_id, model_name=model_name,
-        limit=limit, offset=offset,
+        session,
+        status=status,
+        evaluation_id=evaluation_id,
+        target_id=target_id,
+        model_name=model_name,
+        limit=limit,
+        offset=offset,
     )
     return [_run_to_dict(r) for r in runs]
 
@@ -68,6 +72,7 @@ async def create_batch(
 ):
     # Look up dataset_version_id from evaluation version
     from ...models.evaluation import EvaluationVersion
+
     ev = await session.get(EvaluationVersion, body.evaluation_version_id)
     if ev is None:
         raise HTTPException(404, f"EvaluationVersion {body.evaluation_version_id} not found")
@@ -106,7 +111,11 @@ async def list_items(
     session: AsyncSession = Depends(get_session),
 ):
     items = await run_service.get_item_results(
-        session, run_id, passed=passed, limit=limit, offset=offset,
+        session,
+        run_id,
+        passed=passed,
+        limit=limit,
+        offset=offset,
     )
     return [_item_to_dict(i) for i in items]
 
@@ -138,8 +147,16 @@ async def list_artifacts(
     session: AsyncSession = Depends(get_session),
 ):
     artifacts = await run_service.list_artifacts(session, run_id)
-    return [{"id": a.id, "run_id": a.run_id, "artifact_type": a.artifact_type,
-             "file_path": a.file_path, "created_at": str(a.created_at)} for a in artifacts]
+    return [
+        {
+            "id": a.id,
+            "run_id": a.run_id,
+            "artifact_type": a.artifact_type,
+            "file_path": a.file_path,
+            "created_at": str(a.created_at),
+        }
+        for a in artifacts
+    ]
 
 
 @router.post("/{run_id}/cancel", response_model=RunResponse)
@@ -194,6 +211,7 @@ async def rescore_run(
 
     # Update the evaluation version scorer config and re-score
     from ...models.evaluation import EvaluationVersion
+
     ev = await session.get(EvaluationVersion, run.evaluation_version_id)
     if ev:
         ev.scorer_config = json.dumps(body.scorer_config)

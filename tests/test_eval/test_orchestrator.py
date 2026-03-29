@@ -150,9 +150,7 @@ class TestExecuteRun:
             target_config_id=full_chain["target"].id,
         )
 
-        with patch(
-            "ai_benchmark.eval.execution.executor.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.execution.executor.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.return_value = _mock_generate_success()
             mock_resolve.return_value = mock_adapter
@@ -184,9 +182,7 @@ class TestExecuteRun:
                 return _mock_generate_error()
             return _mock_generate_success()
 
-        with patch(
-            "ai_benchmark.eval.execution.executor.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.execution.executor.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.side_effect = _side_effect
             mock_resolve.return_value = mock_adapter
@@ -211,9 +207,7 @@ class TestExecuteRun:
             target_config_id=full_chain["target"].id,
         )
 
-        with patch(
-            "ai_benchmark.eval.execution.executor.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.execution.executor.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.return_value = _mock_generate_error()
             mock_resolve.return_value = mock_adapter
@@ -243,9 +237,7 @@ class TestAggregateMetrics:
             target_config_id=full_chain["target"].id,
         )
 
-        with patch(
-            "ai_benchmark.eval.execution.executor.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.execution.executor.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.return_value = _mock_generate_success()
             mock_resolve.return_value = mock_adapter
@@ -255,9 +247,7 @@ class TestAggregateMetrics:
 
             from sqlalchemy import select
 
-            stmt = select(RunAggregateMetric).where(
-                RunAggregateMetric.run_id == run.id
-            )
+            stmt = select(RunAggregateMetric).where(RunAggregateMetric.run_id == run.id)
             result = await db_session.execute(stmt)
             metrics = {m.metric_name: m.metric_value for m in result.scalars().all()}
 

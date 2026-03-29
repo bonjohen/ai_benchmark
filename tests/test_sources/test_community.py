@@ -55,6 +55,7 @@ def _make_source(org: str) -> SourceConfig:
 
 # ─── HF Forums ───
 
+
 def test_hf_forums_extracts_topics():
     collector = HFForumsCollector(_make_source("Hugging Face Forums"))
     page = PageConfig(canonical_url="https://discuss.huggingface.co", page_type="forum")
@@ -94,6 +95,7 @@ def test_hf_forums_confidence_tier():
 
 
 # ─── HF Leaderboard Docs ───
+
 
 def test_hf_leaderboard_docs_extracts_spaces():
     collector = HFLeaderboardDocsCollector(_make_source("Hugging Face Leaderboard Docs"))

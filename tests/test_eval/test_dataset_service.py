@@ -22,7 +22,10 @@ async def db_session(db_engine_fk) -> AsyncSession:
 
 async def test_create_dataset(db_session: AsyncSession):
     ds = await dataset_service.create_dataset(
-        db_session, name="coding-eval", description="Coding tasks", source="manual",
+        db_session,
+        name="coding-eval",
+        description="Coding tasks",
+        source="manual",
         tags=["coding", "python"],
     )
     assert ds.id is not None

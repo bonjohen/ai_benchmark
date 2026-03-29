@@ -43,7 +43,9 @@ class LocalAdapter(ModelAdapter):
                 body[key] = inference_params[key]
 
         if runtime_options.get("system_prompt"):
-            body["messages"].insert(0, {"role": "system", "content": runtime_options["system_prompt"]})
+            body["messages"].insert(
+                0, {"role": "system", "content": runtime_options["system_prompt"]}
+            )
 
         timeout = runtime_options.get("timeout", self.timeout)
 

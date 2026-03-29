@@ -50,9 +50,7 @@ async def discover_new_paths(session: AsyncSession, fetcher: Fetcher) -> list[tu
     Returns a list of (domain, path) tuples not yet configured as pages.
     """
     # Get all unique base domains
-    result = await session.execute(
-        select(Source.base_domain).distinct()
-    )
+    result = await session.execute(select(Source.base_domain).distinct())
     domains = [row[0] for row in result.all()]
 
     # Get all configured canonical URLs

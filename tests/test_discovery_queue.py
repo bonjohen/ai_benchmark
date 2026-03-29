@@ -119,8 +119,13 @@ async def test_process_item_creates_follow_ups(db_session):
     )
 
     event = await process_item(
-        db_session, item, source.id, None,
-        "OpenAI", "changelog", "primary",
+        db_session,
+        item,
+        source.id,
+        None,
+        "OpenAI",
+        "changelog",
+        "primary",
     )
     assert event is not None
 

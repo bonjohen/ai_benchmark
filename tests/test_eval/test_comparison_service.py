@@ -49,8 +49,10 @@ async def _setup_two_runs(session: AsyncSession):
     session.add(ed)
     await session.flush()
     ev = EvaluationVersion(
-        evaluation_id=ed.id, version_number=1,
-        dataset_version_id=dv.id, scorer_config="[]",
+        evaluation_id=ed.id,
+        version_number=1,
+        dataset_version_id=dv.id,
+        scorer_config="[]",
     )
     session.add(ev)
     await session.flush()
@@ -73,41 +75,71 @@ async def _setup_two_runs(session: AsyncSession):
 
     # Two runs
     run1 = Run(
-        evaluation_version_id=ev.id, target_config_id=t1.id,
-        dataset_version_id=dv.id, status="completed", total_items=2,
+        evaluation_version_id=ev.id,
+        target_config_id=t1.id,
+        dataset_version_id=dv.id,
+        status="completed",
+        total_items=2,
     )
     run2 = Run(
-        evaluation_version_id=ev.id, target_config_id=t2.id,
-        dataset_version_id=dv.id, status="completed", total_items=2,
+        evaluation_version_id=ev.id,
+        target_config_id=t2.id,
+        dataset_version_id=dv.id,
+        status="completed",
+        total_items=2,
     )
     session.add_all([run1, run2])
     await session.flush()
 
     # Item results for run1 (both pass)
     for tc, output, passed in [(tc1, "a1", True), (tc2, "a2", True)]:
-        session.add(RunItemResult(
-            run_id=run1.id, test_case_id=tc.id, item_index=tc.item_index,
-            input_sent=tc.input_text, raw_output=output,
-            scorer_results="[]", overall_pass=passed,
-        ))
+        session.add(
+            RunItemResult(
+                run_id=run1.id,
+                test_case_id=tc.id,
+                item_index=tc.item_index,
+                input_sent=tc.input_text,
+                raw_output=output,
+                scorer_results="[]",
+                overall_pass=passed,
+            )
+        )
 
     # Item results for run2 (one pass, one fail)
-    session.add(RunItemResult(
-        run_id=run2.id, test_case_id=tc1.id, item_index=0,
-        input_sent="q1", raw_output="a1",
-        scorer_results="[]", overall_pass=True,
-    ))
-    session.add(RunItemResult(
-        run_id=run2.id, test_case_id=tc2.id, item_index=1,
-        input_sent="q2", raw_output="wrong",
-        scorer_results="[]", overall_pass=False,
-    ))
+    session.add(
+        RunItemResult(
+            run_id=run2.id,
+            test_case_id=tc1.id,
+            item_index=0,
+            input_sent="q1",
+            raw_output="a1",
+            scorer_results="[]",
+            overall_pass=True,
+        )
+    )
+    session.add(
+        RunItemResult(
+            run_id=run2.id,
+            test_case_id=tc2.id,
+            item_index=1,
+            input_sent="q2",
+            raw_output="wrong",
+            scorer_results="[]",
+            overall_pass=False,
+        )
+    )
     await session.flush()
 
     # Aggregate metrics
-    session.add(RunAggregateMetric(run_id=run1.id, metric_name="overall_accuracy", metric_value=1.0))
-    session.add(RunAggregateMetric(run_id=run1.id, metric_name="avg_latency_ms", metric_value=100.0))
-    session.add(RunAggregateMetric(run_id=run2.id, metric_name="overall_accuracy", metric_value=0.5))
+    session.add(
+        RunAggregateMetric(run_id=run1.id, metric_name="overall_accuracy", metric_value=1.0)
+    )
+    session.add(
+        RunAggregateMetric(run_id=run1.id, metric_name="avg_latency_ms", metric_value=100.0)
+    )
+    session.add(
+        RunAggregateMetric(run_id=run2.id, metric_name="overall_accuracy", metric_value=0.5)
+    )
     session.add(RunAggregateMetric(run_id=run2.id, metric_name="avg_latency_ms", metric_value=80.0))
     await session.flush()
 

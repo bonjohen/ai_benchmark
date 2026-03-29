@@ -39,16 +39,18 @@ class HFLeaderboardDocsCollector(SourceCollector):
             likes_el = card.select_one(".likes, [data-likes]")
             likes = likes_el.get_text(strip=True) if likes_el else "0"
 
-            items.append(RawItem(
-                title=title,
-                url=href,
-                body=card.get_text(strip=True)[:300],
-                item_type="leaderboard_space",
-                metadata={
-                    "source": "hf_leaderboard_docs",
-                    "likes": likes,
-                    "confidence_tier": self.CONFIDENCE_TIER,
-                },
-            ))
+            items.append(
+                RawItem(
+                    title=title,
+                    url=href,
+                    body=card.get_text(strip=True)[:300],
+                    item_type="leaderboard_space",
+                    metadata={
+                        "source": "hf_leaderboard_docs",
+                        "likes": likes,
+                        "confidence_tier": self.CONFIDENCE_TIER,
+                    },
+                )
+            )
 
         return items

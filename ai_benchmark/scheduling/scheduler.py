@@ -49,11 +49,14 @@ class SourceHealthTracker:
         return state.get("consecutive_failures", 0) >= MAX_CONSECUTIVE_FAILURES
 
     def get_status(self, organization: str) -> dict[str, Any]:
-        return self._state.get(organization, {
-            "last_success_at": None,
-            "last_failure_at": None,
-            "consecutive_failures": 0,
-        })
+        return self._state.get(
+            organization,
+            {
+                "last_success_at": None,
+                "last_failure_at": None,
+                "consecutive_failures": 0,
+            },
+        )
 
     def get_all_statuses(self) -> dict[str, dict[str, Any]]:
         return dict(self._state)
@@ -90,16 +93,12 @@ class PipelineScheduler:
 
         try:
             sources = load_source_catalog()
-            source_config = next(
-                (s for s in sources if s.organization == organization), None
-            )
+            source_config = next((s for s in sources if s.organization == organization), None)
             if not source_config:
                 log.error("source_not_found")
                 return
 
-            collector = get_collector(
-                source_config, github_token=self.settings.github_token
-            )
+            collector = get_collector(source_config, github_token=self.settings.github_token)
             snapshot_mgr = SnapshotManager(self._session_factory)
 
             all_items = []
@@ -115,8 +114,10 @@ class PipelineScheduler:
             if all_items:
                 async with self._session_factory() as session, session.begin():
                     await process_items(
-                        session, all_items,
-                        source_id=0, page_id=None,
+                        session,
+                        all_items,
+                        source_id=0,
+                        page_id=None,
                         organization=organization,
                         source_type=source_config.classification,
                         classification=source_config.classification,

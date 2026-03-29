@@ -57,6 +57,7 @@ def _make_source(org: str) -> SourceConfig:
 
 # ─── arXiv collector ───
 
+
 def test_arxiv_extracts_relevant_papers():
     collector = ArxivCollector(_make_source("arXiv"))
     page = PageConfig(canonical_url="https://arxiv.org/list/cs.AI/recent", page_type="recent")
@@ -92,6 +93,7 @@ def test_arxiv_handles_empty_html():
 
 # ─── HF Papers collector ───
 
+
 def test_hf_papers_extracts_articles():
     collector = HFPapersCollector(_make_source("Hugging Face Papers"))
     page = PageConfig(canonical_url="https://huggingface.co/papers", page_type="papers")
@@ -110,7 +112,9 @@ def test_hf_papers_extracts_metadata():
 
 # ─── Registry integration ───
 
+
 def test_research_collectors_in_registry():
     from ai_benchmark.sources.registry import COLLECTOR_CLASSES
+
     assert "arXiv" in COLLECTOR_CLASSES
     assert "Hugging Face Papers" in COLLECTOR_CLASSES

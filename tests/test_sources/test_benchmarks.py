@@ -71,6 +71,7 @@ def _make_benchmark_source(org: str) -> SourceConfig:
 
 # ─── Leaderboard extraction (shared HTML) ───
 
+
 def test_artificial_analysis_leaderboard():
     collector = ArtificialAnalysisCollector(_make_benchmark_source("Artificial Analysis"))
     page = PageConfig(canonical_url="https://example.com/leaderboard", page_type="leaderboard")
@@ -129,6 +130,7 @@ def test_hle_leaderboard():
 
 # ─── SWE-bench variant detection ───
 
+
 def test_swebench_variant_detection():
     collector = SWEBenchCollector(_make_benchmark_source("SWE-bench"))
     verified_page = PageConfig(
@@ -139,9 +141,7 @@ def test_swebench_variant_detection():
     assert entries[0].variant == "verified"
     assert "contamination risk" in entries[0].conditions
 
-    lite_page = PageConfig(
-        canonical_url="https://swebench.com/lite", page_type="leaderboard"
-    )
+    lite_page = PageConfig(canonical_url="https://swebench.com/lite", page_type="leaderboard")
     entries = collector.extract_leaderboard(SWEBENCH_VERIFIED_HTML, lite_page)
     assert entries[0].variant == "lite"
 
@@ -154,6 +154,7 @@ def test_swebench_unknown_variant():
 
 
 # ─── GAIA org page extraction ───
+
 
 def test_gaia_org_page():
     collector = GAIACollector(_make_benchmark_source("GAIA"))
@@ -173,6 +174,7 @@ def test_gaia_leaderboard_fallback():
 
 # ─── Terminal-Bench registry ───
 
+
 def test_terminal_bench_registry():
     collector = TerminalBenchCollector(_make_benchmark_source("Terminal-Bench"))
     page = PageConfig(canonical_url="https://example.com/registry", page_type="registry")
@@ -191,6 +193,7 @@ def test_terminal_bench_leaderboard():
 
 # ─── Base class: leaderboard → RawItem conversion ───
 
+
 def test_benchmark_base_extract_items_converts_entries():
     collector = LMArenaCollector(_make_benchmark_source("LMArena"))
     page = PageConfig(canonical_url="https://example.com/leaderboard", page_type="leaderboard")
@@ -203,8 +206,10 @@ def test_benchmark_base_extract_items_converts_entries():
 
 # ─── Registry integration ───
 
+
 def test_benchmark_collectors_in_registry():
     from ai_benchmark.sources.registry import COLLECTOR_CLASSES
+
     assert "Artificial Analysis" in COLLECTOR_CLASSES
     assert "LMArena" in COLLECTOR_CLASSES
     assert "LiveBench" in COLLECTOR_CLASSES

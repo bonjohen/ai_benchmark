@@ -76,6 +76,7 @@ async def get_cross_refs(
 
     if event_id is not None:
         from sqlalchemy import or_
+
         stmt = stmt.where(
             or_(
                 CrossReference.record_a_id == event_id,
@@ -105,6 +106,7 @@ async def get_recent_changes(
 ) -> list[EventRecord]:
     """Get events observed in the last N hours."""
     from datetime import timedelta, timezone
+
     cutoff = datetime.now(UTC) - timedelta(hours=hours)
     stmt = (
         select(EventRecord)
@@ -118,9 +120,8 @@ async def get_recent_changes(
 
 async def count_events_by_org(session: AsyncSession) -> dict[str, int]:
     """Count events grouped by organization."""
-    stmt = (
-        select(EventRecord.organization, func.count(EventRecord.id))
-        .group_by(EventRecord.organization)
+    stmt = select(EventRecord.organization, func.count(EventRecord.id)).group_by(
+        EventRecord.organization
     )
     result = await session.execute(stmt)
     return {row[0]: row[1] for row in result.all()}
@@ -128,9 +129,8 @@ async def count_events_by_org(session: AsyncSession) -> dict[str, int]:
 
 async def count_events_by_type(session: AsyncSession) -> dict[str, int]:
     """Count events grouped by event type."""
-    stmt = (
-        select(EventRecord.event_type, func.count(EventRecord.id))
-        .group_by(EventRecord.event_type)
+    stmt = select(EventRecord.event_type, func.count(EventRecord.id)).group_by(
+        EventRecord.event_type
     )
     result = await session.execute(stmt)
     return {row[0]: row[1] for row in result.all()}

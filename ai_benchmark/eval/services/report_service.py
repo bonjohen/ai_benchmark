@@ -22,7 +22,10 @@ _presets: dict[str, dict[str, Any]] = {
     },
     "quantization_comparison": {
         "name": "Quantization Comparison",
-        "config": {"group_by": "model_family", "metrics": ["overall_accuracy", "avg_latency_ms", "total_cost_usd"]},
+        "config": {
+            "group_by": "model_family",
+            "metrics": ["overall_accuracy", "avg_latency_ms", "total_cost_usd"],
+        },
     },
     "standard_laptop_viability": {
         "name": "Standard Laptop Viability",
@@ -140,10 +143,10 @@ def export_html(data: dict, title: str = "Evaluation Report") -> str:
         for group_name, runs in data["groups"].items():
             rows_html += f"<h3>{group_name}</h3><ul>"
             for run in runs:
-                metrics_str = ", ".join(
-                    f"{k}: {v:.4f}" for k, v in run.get("metrics", {}).items()
+                metrics_str = ", ".join(f"{k}: {v:.4f}" for k, v in run.get("metrics", {}).items())
+                rows_html += (
+                    f"<li>Run {run['run_id']} — {run.get('model_name', '?')} — {metrics_str}</li>"
                 )
-                rows_html += f"<li>Run {run['run_id']} — {run.get('model_name', '?')} — {metrics_str}</li>"
             rows_html += "</ul>"
 
     return f"""<!DOCTYPE html>

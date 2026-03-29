@@ -59,7 +59,9 @@ def run_eval(ctx: click.Context, evaluation: str, target: str, priority: int):
             click.echo(f"Run {run.id} created (status: {run.status})")
 
             run = await orch.execute_run(session, run.id)
-            click.echo(f"Execution done: {run.completed_items} completed, {run.failed_items} failed")
+            click.echo(
+                f"Execution done: {run.completed_items} completed, {run.failed_items} failed"
+            )
 
             run = await orch.score_run(session, run.id)
             click.echo(f"Run {run.id} finalized (status: {run.status})")
@@ -95,6 +97,7 @@ def run_matrix(ctx: click.Context, evaluation: str, targets: str, name: str | No
             ev_id = await _resolve_eval(session, evaluation)
             # Get dataset_version_id from eval version
             from ..models.evaluation import EvaluationVersion
+
             ev = await session.get(EvaluationVersion, ev_id)
 
             rg, runs = await run_service.create_batch(
@@ -164,13 +167,21 @@ def eval_status(ctx: click.Context, run_id: int | None, active: bool, recent: in
 @click.option("--targets", is_flag=True, help="List targets.")
 @click.option("--machines", is_flag=True, help="List machines.")
 @click.pass_context
-def eval_list(ctx: click.Context, evaluations: bool, datasets: bool,
-              scorers: bool, targets: bool, machines: bool):
+def eval_list(
+    ctx: click.Context,
+    evaluations: bool,
+    datasets: bool,
+    scorers: bool,
+    targets: bool,
+    machines: bool,
+):
     """List evaluation entities."""
     settings = ctx.obj["settings"]
 
     if not any([evaluations, datasets, scorers, targets, machines]):
-        click.echo("Specify at least one: --evaluations, --datasets, --scorers, --targets, --machines")
+        click.echo(
+            "Specify at least one: --evaluations, --datasets, --scorers, --targets, --machines"
+        )
         return
 
     async def _list():
@@ -180,6 +191,7 @@ def eval_list(ctx: click.Context, evaluations: bool, datasets: bool,
         async with session_factory() as session:
             if evaluations:
                 from ..services import eval_service
+
                 items = await eval_service.list_evaluations(session)
                 click.echo(f"\nEvaluations ({len(items)}):")
                 for e in items:
@@ -187,6 +199,7 @@ def eval_list(ctx: click.Context, evaluations: bool, datasets: bool,
 
             if datasets:
                 from ..services import dataset_service
+
                 items = await dataset_service.list_datasets(session)
                 click.echo(f"\nDatasets ({len(items)}):")
                 for d in items:
@@ -194,6 +207,7 @@ def eval_list(ctx: click.Context, evaluations: bool, datasets: bool,
 
             if scorers:
                 from ..services import scorer_service
+
                 items = await scorer_service.list_scorers(session)
                 click.echo(f"\nScorers ({len(items)}):")
                 for s in items:
@@ -201,6 +215,7 @@ def eval_list(ctx: click.Context, evaluations: bool, datasets: bool,
 
             if targets:
                 from ..services import target_service
+
                 items = await target_service.list_targets(session)
                 click.echo(f"\nTargets ({len(items)}):")
                 for t in items:
@@ -208,6 +223,7 @@ def eval_list(ctx: click.Context, evaluations: bool, datasets: bool,
 
             if machines:
                 from ..services import machine_service
+
                 items = await machine_service.list_profiles(session)
                 click.echo(f"\nMachines ({len(items)}):")
                 for m in items:
@@ -240,6 +256,7 @@ def eval_compare(ctx: click.Context, runs: str, fmt: str):
                 click.echo(json.dumps(result, indent=2, default=str))
             elif fmt == "csv":
                 from ..services import report_service
+
                 rows = result.get("metric_deltas", {})
                 click.echo(report_service.export_csv([rows] if rows else []))
             else:
@@ -319,8 +336,12 @@ def eval_export(ctx: click.Context, run_id: int, fmt: str, output_path: Path | N
 
 @eval_group.command("rescore")
 @click.option("--run", "run_id", type=int, required=True, help="Run ID to rescore.")
-@click.option("--scorer-config", type=click.Path(exists=True, path_type=Path), required=True,
-              help="Path to JSON scorer config file.")
+@click.option(
+    "--scorer-config",
+    type=click.Path(exists=True, path_type=Path),
+    required=True,
+    help="Path to JSON scorer config file.",
+)
 @click.pass_context
 def eval_rescore(ctx: click.Context, run_id: int, scorer_config: Path):
     """Rescore a run with new scorer configuration."""
@@ -379,6 +400,7 @@ def eval_serve(host: str, port: int):
 
 
 # ── Helpers ──
+
 
 async def _resolve_eval(session, name_or_id: str) -> int:
     """Resolve evaluation name or ID to the latest version ID."""
@@ -441,13 +463,17 @@ def _print_run_table(runs):
 
 
 def _print_run_row(r):
-    click.echo(f"{r.id:>5} {r.status:<20} {r.total_items:>8} {r.completed_items:>10} {r.failed_items:>8}")
+    click.echo(
+        f"{r.id:>5} {r.status:<20} {r.total_items:>8} {r.completed_items:>10} {r.failed_items:>8}"
+    )
 
 
 def _print_run_detail(r):
     click.echo(f"Run {r.id}")
     click.echo(f"  Status: {r.status}")
-    click.echo(f"  Items: {r.total_items} total, {r.completed_items} completed, {r.failed_items} failed")
+    click.echo(
+        f"  Items: {r.total_items} total, {r.completed_items} completed, {r.failed_items} failed"
+    )
     click.echo(f"  Trigger: {r.trigger_type}")
     if r.started_at:
         click.echo(f"  Started: {r.started_at}")

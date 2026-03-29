@@ -28,14 +28,14 @@ class Scorer(Base):
 
 class ScorerVersion(Base):
     __tablename__ = "scorer_versions"
-    __table_args__ = (
-        UniqueConstraint("scorer_id", "version_number", name="uq_scorer_version"),
-    )
+    __table_args__ = (UniqueConstraint("scorer_id", "version_number", name="uq_scorer_version"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     scorer_id: Mapped[int] = mapped_column(ForeignKey("scorers.id"), nullable=False)
     version_number: Mapped[int] = mapped_column(Integer, nullable=False)
-    config: Mapped[str] = mapped_column(Text, nullable=False)  # JSON: scorer-type-specific parameters
+    config: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # JSON: scorer-type-specific parameters
     implementation_ref: Mapped[str | None] = mapped_column(String(500), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

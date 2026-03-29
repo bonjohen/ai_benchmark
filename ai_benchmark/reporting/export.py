@@ -32,17 +32,33 @@ def events_to_csv(events: list[EventRecord]) -> str:
     """Serialize events to CSV string."""
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "id", "title", "organization", "source_type", "event_type",
-        "model_slug", "published_date", "observed_at", "canonical_path",
-    ])
+    writer.writerow(
+        [
+            "id",
+            "title",
+            "organization",
+            "source_type",
+            "event_type",
+            "model_slug",
+            "published_date",
+            "observed_at",
+            "canonical_path",
+        ]
+    )
     for e in events:
-        writer.writerow([
-            e.id, e.title, e.organization, e.source_type, e.event_type,
-            e.model_slug, e.published_date,
-            e.observed_at.isoformat() if e.observed_at else "",
-            e.canonical_path,
-        ])
+        writer.writerow(
+            [
+                e.id,
+                e.title,
+                e.organization,
+                e.source_type,
+                e.event_type,
+                e.model_slug,
+                e.published_date,
+                e.observed_at.isoformat() if e.observed_at else "",
+                e.canonical_path,
+            ]
+        )
     return output.getvalue()
 
 
@@ -68,14 +84,29 @@ def claims_to_csv(claims: list[ClaimRecord]) -> str:
     """Serialize claims to CSV string."""
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "id", "event_id", "claim_text", "source_type", "source_name",
-        "confidence_tier", "confirmation_status", "observed_at",
-    ])
+    writer.writerow(
+        [
+            "id",
+            "event_id",
+            "claim_text",
+            "source_type",
+            "source_name",
+            "confidence_tier",
+            "confirmation_status",
+            "observed_at",
+        ]
+    )
     for c in claims:
-        writer.writerow([
-            c.id, c.event_id, c.claim_text, c.source_type, c.source_name,
-            c.confidence_tier, c.confirmation_status,
-            c.observed_at.isoformat() if c.observed_at else "",
-        ])
+        writer.writerow(
+            [
+                c.id,
+                c.event_id,
+                c.claim_text,
+                c.source_type,
+                c.source_name,
+                c.confidence_tier,
+                c.confirmation_status,
+                c.observed_at.isoformat() if c.observed_at else "",
+            ]
+        )
     return output.getvalue()

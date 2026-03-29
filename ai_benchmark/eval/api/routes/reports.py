@@ -19,7 +19,8 @@ async def generate_summary(
     session: AsyncSession = Depends(get_session),
 ):
     result = await report_service.generate_summary(
-        session, group_by=body.group_by or "evaluation",
+        session,
+        group_by=body.group_by or "evaluation",
     )
 
     if body.format == "csv":

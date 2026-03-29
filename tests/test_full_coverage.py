@@ -8,16 +8,32 @@ from ai_benchmark.sources.registry import COLLECTOR_CLASSES, list_registered_org
 # 22 sources, 22 collectors (Semantic Scholar now has a collector class).
 ALL_ORGANIZATIONS = [
     # Official vendors (7)
-    "OpenAI", "Anthropic", "Google", "xAI", "Mistral AI", "Cohere", "Meta",
+    "OpenAI",
+    "Anthropic",
+    "Google",
+    "xAI",
+    "Mistral AI",
+    "Cohere",
+    "Meta",
     # Benchmarks (7)
-    "Artificial Analysis", "LMArena", "LiveBench", "SWE-bench",
-    "GAIA", "HLE", "Terminal-Bench",
+    "Artificial Analysis",
+    "LMArena",
+    "LiveBench",
+    "SWE-bench",
+    "GAIA",
+    "HLE",
+    "Terminal-Bench",
     # Research (3 collectors)
-    "arXiv", "Hugging Face Papers", "Semantic Scholar",
+    "arXiv",
+    "Hugging Face Papers",
+    "Semantic Scholar",
     # News (2)
-    "Reuters", "TechCrunch",
+    "Reuters",
+    "TechCrunch",
     # Community (3)
-    "Hugging Face Forums", "GitHub", "Hugging Face Leaderboard Docs",
+    "Hugging Face Forums",
+    "GitHub",
+    "Hugging Face Leaderboard Docs",
 ]
 
 

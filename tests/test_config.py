@@ -33,7 +33,9 @@ def test_source_classifications():
     sources = load_source_catalog()
     valid = {"primary", "secondary", "discovery-only"}
     for s in sources:
-        assert s.classification in valid, f"{s.source_name} has invalid classification: {s.classification}"
+        assert s.classification in valid, (
+            f"{s.source_name} has invalid classification: {s.classification}"
+        )
 
 
 def test_all_sources_have_pages():

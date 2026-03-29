@@ -63,9 +63,7 @@ def get_collector(source_config: SourceConfig, **kwargs) -> SourceCollector:
     """Instantiate the appropriate collector for a source config."""
     cls = COLLECTOR_CLASSES.get(source_config.organization)
     if cls is None:
-        raise ValueError(
-            f"No collector registered for organization: {source_config.organization}"
-        )
+        raise ValueError(f"No collector registered for organization: {source_config.organization}")
     if cls in (MetaCollector, GitHubDiscoveryCollector):
         return cls(source_config, github_token=kwargs.get("github_token"))
     return cls(source_config)

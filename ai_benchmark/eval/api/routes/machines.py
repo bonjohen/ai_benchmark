@@ -27,7 +27,9 @@ async def list_machines(
     session: AsyncSession = Depends(get_session),
 ):
     machines = await machine_service.list_profiles(
-        session, hardware_class=hardware_class, hostname=hostname,
+        session,
+        hardware_class=hardware_class,
+        hostname=hostname,
     )
     return [_machine_to_dict(m) for m in machines]
 

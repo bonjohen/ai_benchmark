@@ -40,8 +40,11 @@ async def create_dataset(
     session: AsyncSession = Depends(get_session),
 ):
     d = await dataset_service.create_dataset(
-        session, name=body.name, description=body.description,
-        source=body.source, tags=body.tags,
+        session,
+        name=body.name,
+        description=body.description,
+        source=body.source,
+        tags=body.tags,
     )
     result = _ds_to_dict(d)
 
@@ -73,7 +76,10 @@ async def create_version(
 ):
     items = [item.model_dump() for item in body.items]
     dv = await dataset_service.create_version(
-        session, dataset_id=dataset_id, items=items, notes=body.notes,
+        session,
+        dataset_id=dataset_id,
+        items=items,
+        notes=body.notes,
     )
     result = _version_to_dict(dv)
 
@@ -114,7 +120,12 @@ async def list_items(
     if dv is None:
         raise HTTPException(404, "Dataset version not found")
     items = await dataset_service.list_items(
-        session, dv.id, limit=limit, offset=offset, tag=tag, difficulty=difficulty,
+        session,
+        dv.id,
+        limit=limit,
+        offset=offset,
+        tag=tag,
+        difficulty=difficulty,
     )
     return [_item_to_dict(i) for i in items]
 
@@ -133,9 +144,12 @@ async def filter_items(
     if dv is None:
         raise HTTPException(404, "Dataset version not found")
     return await dataset_service.filter_items(
-        session, dv.id,
-        tags=body.tags, task_families=body.task_families,
-        min_tokens=body.min_tokens, max_tokens=body.max_tokens,
+        session,
+        dv.id,
+        tags=body.tags,
+        task_families=body.task_families,
+        min_tokens=body.min_tokens,
+        max_tokens=body.max_tokens,
     )
 
 

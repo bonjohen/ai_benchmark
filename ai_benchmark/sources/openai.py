@@ -39,12 +39,14 @@ class OpenAICollector(SourceCollector):
             text = entry.get_text(strip=True)
             if not text or len(text) < 10:
                 continue
-            items.append(RawItem(
-                title=text[:200],
-                body=text,
-                item_type="changelog_entry",
-                url=page_url_from_entry(entry),
-            ))
+            items.append(
+                RawItem(
+                    title=text[:200],
+                    body=text,
+                    item_type="changelog_entry",
+                    url=page_url_from_entry(entry),
+                )
+            )
         return items
 
     def _extract_newsroom(self, html: str) -> list[RawItem]:
@@ -56,12 +58,14 @@ class OpenAICollector(SourceCollector):
                 continue
             title = title_el.get_text(strip=True)
             href = article.get("href", "")
-            items.append(RawItem(
-                title=title,
-                url=str(href),
-                body=article.get_text(strip=True),
-                item_type="news_post",
-            ))
+            items.append(
+                RawItem(
+                    title=title,
+                    url=str(href),
+                    body=article.get_text(strip=True),
+                    item_type="news_post",
+                )
+            )
         return items
 
     def _extract_pricing(self, html: str) -> list[RawItem]:
@@ -70,12 +74,14 @@ class OpenAICollector(SourceCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td, th")]
             if len(cells) >= 2:
-                items.append(RawItem(
-                    title=cells[0],
-                    body=" | ".join(cells),
-                    item_type="pricing_row",
-                    model_hint=cells[0] if cells[0] else None,
-                ))
+                items.append(
+                    RawItem(
+                        title=cells[0],
+                        body=" | ".join(cells),
+                        item_type="pricing_row",
+                        model_hint=cells[0] if cells[0] else None,
+                    )
+                )
         return items
 
     def _extract_system_cards(self, html: str) -> list[RawItem]:
@@ -88,12 +94,14 @@ class OpenAICollector(SourceCollector):
             else:
                 title = link.get_text(strip=True)[:200]
             if title and len(title) > 5:
-                items.append(RawItem(
-                    title=title,
-                    url=str(link.get("href", "")),
-                    body=link.get_text(strip=True),
-                    item_type="system_card",
-                ))
+                items.append(
+                    RawItem(
+                        title=title,
+                        url=str(link.get("href", "")),
+                        body=link.get_text(strip=True),
+                        item_type="system_card",
+                    )
+                )
         return items
 
     def _extract_models(self, html: str) -> list[RawItem]:
@@ -102,11 +110,13 @@ class OpenAICollector(SourceCollector):
         for section in soup.select("tr, .model-card, section"):
             text = section.get_text(strip=True)
             if text and len(text) > 5:
-                items.append(RawItem(
-                    title=text[:200],
-                    body=text,
-                    item_type="model_entry",
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        body=text,
+                        item_type="model_entry",
+                    )
+                )
         return items
 
 

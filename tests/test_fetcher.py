@@ -60,8 +60,6 @@ async def test_fetch_many():
     with respx.mock:
         respx.get("https://example.com/a").mock(return_value=httpx.Response(200, text="A"))
         respx.get("https://example.com/b").mock(return_value=httpx.Response(200, text="B"))
-        results = await fetcher.fetch_many(
-            ["https://example.com/a", "https://example.com/b"]
-        )
+        results = await fetcher.fetch_many(["https://example.com/a", "https://example.com/b"])
     assert len(results) == 2
     assert all(r.ok for r in results)

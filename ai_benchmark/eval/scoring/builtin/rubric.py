@@ -53,9 +53,7 @@ class RubricScorer(BaseScorer):
             for dim in dimensions:
                 dim_name = dim.get("name", "unknown")
                 dim_keywords = [
-                    k.strip().lower()
-                    for k in dim.get("description", "").split(",")
-                    if k.strip()
+                    k.strip().lower() for k in dim.get("description", "").split(",") if k.strip()
                 ]
                 if dim_keywords:
                     output_lower = output.lower()
@@ -69,13 +67,18 @@ class RubricScorer(BaseScorer):
             # Weighted average
             total_weight = sum(d.get("weight", 1.0) for d in dimensions)
             if total_weight > 0:
-                raw_score = sum(
-                    dimension_scores.get(d.get("name", ""), 0) * d.get("weight", 1.0)
-                    for d in dimensions
-                ) / total_weight
+                raw_score = (
+                    sum(
+                        dimension_scores.get(d.get("name", ""), 0) * d.get("weight", 1.0)
+                        for d in dimensions
+                    )
+                    / total_weight
+                )
 
         # Normalize to 0-1 for the ScorerResult score field
-        normalized = (raw_score - scale_min) / (scale_max - scale_min) if scale_max > scale_min else 0.0
+        normalized = (
+            (raw_score - scale_min) / (scale_max - scale_min) if scale_max > scale_min else 0.0
+        )
 
         return ScorerResult(
             scorer_type=self.scorer_type,

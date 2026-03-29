@@ -36,9 +36,7 @@ async def find_related_by_model(
     if event.observed_at:
         window_start = event.observed_at - timedelta(days=time_window_days)
         window_end = event.observed_at + timedelta(days=time_window_days)
-        stmt = stmt.where(
-            EventRecord.observed_at.between(window_start, window_end)
-        )
+        stmt = stmt.where(EventRecord.observed_at.between(window_start, window_end))
     result = await session.execute(stmt)
     return list(result.scalars().all())
 
@@ -57,9 +55,7 @@ async def find_related_by_org_event_type(
     if event.observed_at:
         window_start = event.observed_at - timedelta(days=time_window_days)
         window_end = event.observed_at + timedelta(days=time_window_days)
-        stmt = stmt.where(
-            EventRecord.observed_at.between(window_start, window_end)
-        )
+        stmt = stmt.where(EventRecord.observed_at.between(window_start, window_end))
     result = await session.execute(stmt)
     return list(result.scalars().all())
 
@@ -133,18 +129,22 @@ async def xref_exists(
     record_b_id: int,
 ) -> bool:
     """Check if a cross-reference already exists between two records (in either direction)."""
-    stmt = select(CrossReference).where(
-        or_(
-            and_(
-                CrossReference.record_a_id == record_a_id,
-                CrossReference.record_b_id == record_b_id,
-            ),
-            and_(
-                CrossReference.record_a_id == record_b_id,
-                CrossReference.record_b_id == record_a_id,
-            ),
+    stmt = (
+        select(CrossReference)
+        .where(
+            or_(
+                and_(
+                    CrossReference.record_a_id == record_a_id,
+                    CrossReference.record_b_id == record_b_id,
+                ),
+                and_(
+                    CrossReference.record_a_id == record_b_id,
+                    CrossReference.record_b_id == record_a_id,
+                ),
+            )
         )
-    ).limit(1)
+        .limit(1)
+    )
     result = await session.execute(stmt)
     return result.scalar_one_or_none() is not None
 

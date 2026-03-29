@@ -107,7 +107,9 @@ async def capture_snapshot(
         "ram_gb": m.ram_gb,
         "storage_summary": m.storage_summary,
         "os_description": m.os_description,
-        "runtime_availability": json.loads(m.runtime_availability) if m.runtime_availability else None,
+        "runtime_availability": json.loads(m.runtime_availability)
+        if m.runtime_availability
+        else None,
         "runtime_version": runtime_version,
         "model_server_version": model_server_version,
         "env_vars": env_vars,

@@ -109,9 +109,7 @@ class TestFuzzyMatch:
     @pytest.mark.asyncio
     async def test_token_overlap(self):
         scorer = FuzzyMatchScorer({"method": "token_overlap", "threshold": 0.5})
-        r = await scorer.score(
-            output="the quick brown fox", expected="the brown fox jumps"
-        )
+        r = await scorer.score(output="the quick brown fox", expected="the brown fox jumps")
         # 3 of 4 expected tokens present
         assert r.score == pytest.approx(0.75)
         assert r.passed is True
@@ -224,22 +222,22 @@ class TestModelJudge:
     async def test_judge_with_mock(self):
         from ai_benchmark.eval.execution.adapters.base import GenerationResult
 
-        scorer = ModelJudgeScorer({
-            "judge_provider": "openai",
-            "judge_model": "gpt-4o",
-            "scale_min": 0,
-            "scale_max": 5,
-            "pass_threshold": 3,
-        })
+        scorer = ModelJudgeScorer(
+            {
+                "judge_provider": "openai",
+                "judge_model": "gpt-4o",
+                "scale_min": 0,
+                "scale_max": 5,
+                "pass_threshold": 3,
+            }
+        )
 
         mock_result = GenerationResult(
             output_text='{"score": 4, "reasoning": "Good answer"}',
             latency_ms=100,
         )
 
-        with patch(
-            "ai_benchmark.eval.scoring.builtin.model_judge.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.scoring.builtin.model_judge.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.return_value = mock_result
             mock_resolve.return_value = mock_adapter
@@ -260,9 +258,7 @@ class TestModelJudge:
         scorer = ModelJudgeScorer({"judge_provider": "openai"})
         mock_result = GenerationResult(output_text="", error="Timeout")
 
-        with patch(
-            "ai_benchmark.eval.scoring.builtin.model_judge.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.scoring.builtin.model_judge.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.return_value = mock_result
             mock_resolve.return_value = mock_adapter
@@ -289,12 +285,16 @@ class TestScorerRunnerIntegration:
         await db_session.flush()
 
         tc1 = TestCase(
-            dataset_version_id=dv.id, item_index=0,
-            input_text="Q1", expected_output="correct",
+            dataset_version_id=dv.id,
+            item_index=0,
+            input_text="Q1",
+            expected_output="correct",
         )
         tc2 = TestCase(
-            dataset_version_id=dv.id, item_index=1,
-            input_text="Q2", expected_output="right",
+            dataset_version_id=dv.id,
+            item_index=1,
+            input_text="Q2",
+            expected_output="right",
         )
         db_session.add_all([tc1, tc2])
         await db_session.flush()
@@ -304,7 +304,8 @@ class TestScorerRunnerIntegration:
         await db_session.flush()
 
         sv = ScorerVersion(
-            scorer_id=scorer_obj.id, version_number=1,
+            scorer_id=scorer_obj.id,
+            version_number=1,
             config=json.dumps({"case_sensitive": False, "strip_whitespace": True}),
         )
         db_session.add(sv)
@@ -315,40 +316,56 @@ class TestScorerRunnerIntegration:
         await db_session.flush()
 
         ev = EvaluationVersion(
-            evaluation_id=ed.id, version_number=1,
+            evaluation_id=ed.id,
+            version_number=1,
             dataset_version_id=dv.id,
-            scorer_config=json.dumps([
-                {"scorer_version_id": sv.id, "weight": 1.0, "pass_threshold": 0.5}
-            ]),
+            scorer_config=json.dumps(
+                [{"scorer_version_id": sv.id, "weight": 1.0, "pass_threshold": 0.5}]
+            ),
         )
         db_session.add(ev)
         await db_session.flush()
 
         target = TargetConfiguration(
-            name="scorer-target", model_name="test", provider="openai",
+            name="scorer-target",
+            model_name="test",
+            provider="openai",
             inference_params="{}",
         )
         db_session.add(target)
         await db_session.flush()
 
         run = Run(
-            evaluation_version_id=ev.id, target_config_id=target.id,
-            dataset_version_id=dv.id, status="scoring", total_items=2,
+            evaluation_version_id=ev.id,
+            target_config_id=target.id,
+            dataset_version_id=dv.id,
+            status="scoring",
+            total_items=2,
         )
         db_session.add(run)
         await db_session.flush()
 
         # Item 1: matches expected
         item1 = RunItemResult(
-            run_id=run.id, test_case_id=tc1.id, item_index=0,
-            input_sent="Q1", raw_output="correct",
-            scorer_results="[]", latency_ms=50, total_tokens=10,
+            run_id=run.id,
+            test_case_id=tc1.id,
+            item_index=0,
+            input_sent="Q1",
+            raw_output="correct",
+            scorer_results="[]",
+            latency_ms=50,
+            total_tokens=10,
         )
         # Item 2: doesn't match
         item2 = RunItemResult(
-            run_id=run.id, test_case_id=tc2.id, item_index=1,
-            input_sent="Q2", raw_output="wrong",
-            scorer_results="[]", latency_ms=75, total_tokens=15,
+            run_id=run.id,
+            test_case_id=tc2.id,
+            item_index=1,
+            input_sent="Q2",
+            raw_output="wrong",
+            scorer_results="[]",
+            latency_ms=75,
+            total_tokens=15,
         )
         db_session.add_all([item1, item2])
         await db_session.flush()
@@ -383,8 +400,10 @@ class TestScorerRunnerIntegration:
         cases = []
         for i in range(3):
             tc = TestCase(
-                dataset_version_id=dv.id, item_index=i,
-                input_text=f"Q{i}", expected_output=f"A{i}",
+                dataset_version_id=dv.id,
+                item_index=i,
+                input_text=f"Q{i}",
+                expected_output=f"A{i}",
             )
             db_session.add(tc)
             cases.append(tc)
@@ -395,22 +414,29 @@ class TestScorerRunnerIntegration:
         await db_session.flush()
 
         ev = EvaluationVersion(
-            evaluation_id=ed.id, version_number=1,
-            dataset_version_id=dv.id, scorer_config="[]",
+            evaluation_id=ed.id,
+            version_number=1,
+            dataset_version_id=dv.id,
+            scorer_config="[]",
         )
         db_session.add(ev)
         await db_session.flush()
 
         target = TargetConfiguration(
-            name="agg-target", model_name="test", provider="openai",
+            name="agg-target",
+            model_name="test",
+            provider="openai",
             inference_params="{}",
         )
         db_session.add(target)
         await db_session.flush()
 
         run = Run(
-            evaluation_version_id=ev.id, target_config_id=target.id,
-            dataset_version_id=dv.id, status="scoring", total_items=3,
+            evaluation_version_id=ev.id,
+            target_config_id=target.id,
+            dataset_version_id=dv.id,
+            status="scoring",
+            total_items=3,
         )
         db_session.add(run)
         await db_session.flush()
@@ -418,8 +444,11 @@ class TestScorerRunnerIntegration:
         # Create 3 items: 2 pass, 1 fail
         for i, tc in enumerate(cases):
             item = RunItemResult(
-                run_id=run.id, test_case_id=tc.id, item_index=i,
-                input_sent=f"Q{i}", raw_output=f"A{i}",
+                run_id=run.id,
+                test_case_id=tc.id,
+                item_index=i,
+                input_sent=f"Q{i}",
+                raw_output=f"A{i}",
                 scorer_results="[]",
                 overall_pass=(i < 2),
                 latency_ms=50.0 + i * 10,
@@ -432,9 +461,8 @@ class TestScorerRunnerIntegration:
         await runner.compute_aggregates(db_session, run.id)
 
         from sqlalchemy import select
-        stmt = select(RunAggregateMetric).where(
-            RunAggregateMetric.run_id == run.id
-        )
+
+        stmt = select(RunAggregateMetric).where(RunAggregateMetric.run_id == run.id)
         result = await db_session.execute(stmt)
         metrics = {m.metric_name: m.metric_value for m in result.scalars().all()}
 

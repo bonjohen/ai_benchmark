@@ -47,7 +47,9 @@ def is_low_value_page(
 
     # Trivial change on stable page
     if diff and diff.change_ratio is not None and diff.change_ratio < 0.01 and times_polled > 5:
-        logger.debug("low_value_trivial_change", page=page.canonical_url, change_ratio=diff.change_ratio)
+        logger.debug(
+            "low_value_trivial_change", page=page.canonical_url, change_ratio=diff.change_ratio
+        )
         return True
 
     # All titles too short (garbage extraction)

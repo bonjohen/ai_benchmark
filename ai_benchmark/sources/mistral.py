@@ -37,11 +37,13 @@ class MistralCollector(SourceCollector):
                     item_type = "model_release"
                 elif "API UPDATED" in text_upper or "API" in text_upper:
                     item_type = "api_update"
-                items.append(RawItem(
-                    title=text[:200],
-                    body=text,
-                    item_type=item_type,
-                ))
+                items.append(
+                    RawItem(
+                        title=text[:200],
+                        body=text,
+                        item_type=item_type,
+                    )
+                )
         return items
 
     def _extract_news(self, html: str) -> list[RawItem]:
@@ -53,12 +55,14 @@ class MistralCollector(SourceCollector):
                 continue
             title = title_el.get_text(strip=True)
             if title:
-                items.append(RawItem(
-                    title=title,
-                    url=str(article.get("href", "")),
-                    body=article.get_text(strip=True),
-                    item_type="news_post",
-                ))
+                items.append(
+                    RawItem(
+                        title=title,
+                        url=str(article.get("href", "")),
+                        body=article.get_text(strip=True),
+                        item_type="news_post",
+                    )
+                )
         return items
 
     def _extract_pricing(self, html: str) -> list[RawItem]:
@@ -67,10 +71,12 @@ class MistralCollector(SourceCollector):
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td, th")]
             if len(cells) >= 2:
-                items.append(RawItem(
-                    title=cells[0],
-                    body=" | ".join(cells),
-                    item_type="pricing_row",
-                    model_hint=cells[0] if cells[0] else None,
-                ))
+                items.append(
+                    RawItem(
+                        title=cells[0],
+                        body=" | ".join(cells),
+                        item_type="pricing_row",
+                        model_hint=cells[0] if cells[0] else None,
+                    )
+                )
         return items

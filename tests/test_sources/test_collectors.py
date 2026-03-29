@@ -19,6 +19,7 @@ from ai_benchmark.sources.registry import get_collector, list_registered_organiz
 
 # ─── Normalizer tests ───
 
+
 def test_normalize_title():
     assert normalize_title("  GPT-5  Released  ") == "gpt-5 released"
     assert normalize_title("HELLO\t WORLD") == "hello world"
@@ -169,6 +170,7 @@ def test_mistral_changelog_labels():
 
 
 # ─── Registry tests ───
+
 
 def test_registered_organizations():
     orgs = list_registered_organizations()

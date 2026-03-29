@@ -41,17 +41,19 @@ class TechCrunchCollector(SourceCollector):
             author_el = article.select_one(".river-byline__authors a, [rel='author']")
             author = author_el.get_text(strip=True) if author_el else None
 
-            items.append(RawItem(
-                title=title,
-                url=href,
-                date_text=date_text,
-                body=article.get_text(strip=True)[:500],
-                item_type="news_article",
-                metadata={
-                    "source": "techcrunch",
-                    "author": author,
-                    "confidence_tier": self.CONFIDENCE_TIER,
-                },
-            ))
+            items.append(
+                RawItem(
+                    title=title,
+                    url=href,
+                    date_text=date_text,
+                    body=article.get_text(strip=True)[:500],
+                    item_type="news_article",
+                    metadata={
+                        "source": "techcrunch",
+                        "author": author,
+                        "confidence_tier": self.CONFIDENCE_TIER,
+                    },
+                )
+            )
 
         return items

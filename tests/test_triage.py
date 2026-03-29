@@ -152,11 +152,13 @@ async def test_enrich_candidate_no_arxiv_searches_by_title(db_session):
     )
 
     mock_client = AsyncMock()
-    mock_client.search_paper.return_value = [{
-        "title": "Agent Safety Alignment Study for LLM Systems",
-        "abstract": "A comprehensive evaluation of safety alignment techniques for language model agents.",
-        "paperId": "ghi789",
-    }]
+    mock_client.search_paper.return_value = [
+        {
+            "title": "Agent Safety Alignment Study for LLM Systems",
+            "abstract": "A comprehensive evaluation of safety alignment techniques for language model agents.",
+            "paperId": "ghi789",
+        }
+    ]
 
     result = await enrich_candidate(db_session, paper, mock_client)
     assert result.status == "enriched"
@@ -271,6 +273,7 @@ async def test_route_research_item_creates_candidate(db_session):
     await route_research_item(db_session, item)
 
     from sqlalchemy import select
+
     result = await db_session.execute(select(CandidatePaper))
     papers = result.scalars().all()
     assert len(papers) == 1
@@ -289,10 +292,15 @@ async def test_hf_papers_relevance_filtering():
     from ai_benchmark.sources.research.hf_papers import HFPapersCollector
 
     config = SourceConfig(
-        source_name="HF Papers", category="research",
-        organization="Hugging Face Papers", homepage_url="https://huggingface.co/papers",
-        base_domain="huggingface.co", trust_rating=4.0,
-        source_role="research", classification="discovery-only", pages=[],
+        source_name="HF Papers",
+        category="research",
+        organization="Hugging Face Papers",
+        homepage_url="https://huggingface.co/papers",
+        base_domain="huggingface.co",
+        trust_rating=4.0,
+        source_role="research",
+        classification="discovery-only",
+        pages=[],
     )
     collector = HFPapersCollector(config)
 
@@ -315,9 +323,12 @@ async def test_hf_papers_relevance_filtering():
 async def test_enrich_pending_candidates_promotes(db_session):
     """enrich_pending_candidates processes pending papers and promotes relevant ones."""
     paper = await ingest_candidate(
-        db_session, title="LLM Safety Alignment Benchmark",
-        arxiv_id="2603.88888", authors="Author",
-        categories="cs.AI", abstract_url=None,
+        db_session,
+        title="LLM Safety Alignment Benchmark",
+        arxiv_id="2603.88888",
+        authors="Author",
+        categories="cs.AI",
+        abstract_url=None,
         discovered_via="arxiv",
     )
     await db_session.flush()
@@ -343,9 +354,12 @@ async def test_enrich_pending_candidates_promotes(db_session):
 async def test_retry_limit_skips_exhausted_candidates(db_session):
     """Candidates with retry_count >= 3 are skipped by get_pending_candidates."""
     paper = await ingest_candidate(
-        db_session, title="Failing Paper",
-        arxiv_id="2603.99990", authors="Author",
-        categories="cs.AI", abstract_url=None,
+        db_session,
+        title="Failing Paper",
+        arxiv_id="2603.99990",
+        authors="Author",
+        categories="cs.AI",
+        abstract_url=None,
         discovered_via="arxiv",
     )
     paper.retry_count = 3

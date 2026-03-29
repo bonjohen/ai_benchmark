@@ -81,11 +81,13 @@ class TestAdapterRegistry:
     def test_resolve_openai_returns_correct_type(self):
         adapter = resolve_adapter("openai", api_key="test-key", model_name="gpt-4o")
         from ai_benchmark.eval.execution.adapters.openai_adapter import OpenAIAdapter
+
         assert isinstance(adapter, OpenAIAdapter)
 
     def test_resolve_anthropic_returns_correct_type(self):
         adapter = resolve_adapter("anthropic", api_key="test-key")
         from ai_benchmark.eval.execution.adapters.anthropic_adapter import AnthropicAdapter
+
         assert isinstance(adapter, AnthropicAdapter)
 
 
@@ -95,9 +97,7 @@ class TestAdapterRegistry:
 class TestPromptBuilding:
     def test_plain_input(self):
         executor = ItemExecutor(provider="openai")
-        tc = TestCase(
-            dataset_version_id=1, item_index=0, input_text="Hello world"
-        )
+        tc = TestCase(dataset_version_id=1, item_index=0, input_text="Hello world")
         assert executor._build_prompt(tc) == "Hello world"
 
     def test_prompt_template_replaces_input(self):
@@ -105,9 +105,7 @@ class TestPromptBuilding:
             provider="openai",
             prompt_template="Answer this: {{input}}",
         )
-        tc = TestCase(
-            dataset_version_id=1, item_index=0, input_text="What is 2+2?"
-        )
+        tc = TestCase(dataset_version_id=1, item_index=0, input_text="What is 2+2?")
         assert executor._build_prompt(tc) == "Answer this: What is 2+2?"
 
     def test_prompt_template_replaces_context_and_expected(self):
@@ -133,9 +131,7 @@ class TestPromptBuilding:
             prompt_template="Q: {{input}}",
             prompt_wrapper="[SYSTEM]\n{{prompt}}\n[/SYSTEM]",
         )
-        tc = TestCase(
-            dataset_version_id=1, item_index=0, input_text="Hi"
-        )
+        tc = TestCase(dataset_version_id=1, item_index=0, input_text="Hi")
         result = executor._build_prompt(tc)
         assert result == "[SYSTEM]\nQ: Hi\n[/SYSTEM]"
 
@@ -157,9 +153,7 @@ class TestItemExecution:
             total_tokens=15,
         )
 
-        with patch(
-            "ai_benchmark.eval.execution.executor.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.execution.executor.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.return_value = mock_result
             mock_resolve.return_value = mock_adapter
@@ -205,9 +199,7 @@ class TestItemExecution:
             await db_session.flush()
 
             executor = ItemExecutor(provider="openai", model_name="gpt-4o")
-            item_result = await executor.execute_item(
-                db_session, run.id, cases[0], 0
-            )
+            item_result = await executor.execute_item(db_session, run.id, cases[0], 0)
 
             assert item_result.raw_output == "Answer 0"
             assert item_result.latency_ms == 42.5
@@ -226,9 +218,7 @@ class TestItemExecution:
             error="HTTP 500: Internal Server Error",
         )
 
-        with patch(
-            "ai_benchmark.eval.execution.executor.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.execution.executor.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.return_value = mock_result
             mock_resolve.return_value = mock_adapter
@@ -273,9 +263,7 @@ class TestItemExecution:
             await db_session.flush()
 
             executor = ItemExecutor(provider="openai", max_retries=0)
-            item_result = await executor.execute_item(
-                db_session, run.id, cases[0], 0
-            )
+            item_result = await executor.execute_item(db_session, run.id, cases[0], 0)
 
             assert item_result.error_message == "HTTP 500: Internal Server Error"
             assert item_result.raw_output == ""
@@ -285,16 +273,10 @@ class TestItemExecution:
         """Adapter fails then succeeds → retry_count recorded."""
         ds, dv, cases = dataset_chain
 
-        fail_result = GenerationResult(
-            output_text="", latency_ms=50.0, error="Timeout"
-        )
-        success_result = GenerationResult(
-            output_text="OK", latency_ms=80.0
-        )
+        fail_result = GenerationResult(output_text="", latency_ms=50.0, error="Timeout")
+        success_result = GenerationResult(output_text="OK", latency_ms=80.0)
 
-        with patch(
-            "ai_benchmark.eval.execution.executor.resolve_adapter"
-        ) as mock_resolve:
+        with patch("ai_benchmark.eval.execution.executor.resolve_adapter") as mock_resolve:
             mock_adapter = AsyncMock()
             mock_adapter.generate.side_effect = [fail_result, success_result]
             mock_resolve.return_value = mock_adapter
@@ -339,9 +321,7 @@ class TestItemExecution:
             await db_session.flush()
 
             executor = ItemExecutor(provider="openai", max_retries=2)
-            item_result = await executor.execute_item(
-                db_session, run.id, cases[0], 0
-            )
+            item_result = await executor.execute_item(db_session, run.id, cases[0], 0)
 
             assert item_result.raw_output == "OK"
             assert item_result.error_message is None

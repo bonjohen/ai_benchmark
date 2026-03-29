@@ -133,9 +133,7 @@ async def clone_target(
         runtime_options=json.dumps(overrides["runtime_options"])
         if "runtime_options" in overrides
         else source.runtime_options,
-        tags=json.dumps(overrides["tags"])
-        if "tags" in overrides
-        else source.tags,
+        tags=json.dumps(overrides["tags"]) if "tags" in overrides else source.tags,
         notes=overrides.get("notes", source.notes),
     )
     session.add(t)

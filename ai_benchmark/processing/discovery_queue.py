@@ -31,9 +31,7 @@ class DiscoveryQueue:
         if self._initialized:
             return
         result = await session.execute(
-            select(EventRecord.model_slug)
-            .where(EventRecord.model_slug.is_not(None))
-            .distinct()
+            select(EventRecord.model_slug).where(EventRecord.model_slug.is_not(None)).distinct()
         )
         self._known_slugs = {row[0] for row in result.all()}
         self._initialized = True
