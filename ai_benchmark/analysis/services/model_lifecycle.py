@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 
 from ...models.events import ClaimRecord, CrossReference, EventRecord
 from ..types import (
@@ -37,12 +37,20 @@ async def list_tracked_models(
     offset: int = 0,
 ) -> list[ModelSummary]:
     """All distinct model_slugs with event counts and date ranges."""
+    # Use published_date when available, fall back to observed_at formatted as date
+    effective_date = case(
+        (
+            EventRecord.published_date.is_not(None),
+            EventRecord.published_date,
+        ),
+        else_=func.strftime("%Y-%m-%d", EventRecord.observed_at),
+    )
     stmt = (
         select(
             EventRecord.model_slug,
             EventRecord.organization,
-            func.min(EventRecord.published_date).label("first_seen"),
-            func.max(EventRecord.published_date).label("latest_activity"),
+            func.min(effective_date).label("first_seen"),
+            func.max(effective_date).label("latest_activity"),
             func.count(EventRecord.id).label("event_count"),
         )
         .where(EventRecord.model_slug.is_not(None))
@@ -138,7 +146,7 @@ async def build_model_profile(
 
     organization = events[0].organization
     event_types = [e.event_type for e in events]
-    published_dates = [e.published_date for e in events if e.published_date]
+    published_dates = [e.published_date or e.observed_at.strftime("%Y-%m-%d") for e in events]
 
     # Build timeline
     milestones = await get_model_timeline(session, model_slug)

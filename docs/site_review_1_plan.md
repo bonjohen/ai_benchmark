@@ -75,17 +75,17 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 3.1     | Open   |               |                  | Modify `list_tracked_models()` in `analysis/services/model_lifecycle.py` to COALESCE `published_date` with formatted `observed_at` for first_seen and latest_activity |
-| 3.2     | Open   |               |                  | Modify `build_model_profile()` in `analysis/services/model_lifecycle.py` to fall back to `observed_at.strftime("%Y-%m-%d")` when `published_date` is None |
-| 3.3     | Open   |               |                  | Run `pytest tests/test_analysis/` to verify no regressions |
-| 3.4     | Open   |               |                  | Run `ruff check` and `ruff format --check` on modified files |
-| 3.5     | Open   |               |                  | Stage all Phase 3 changes |
-| 3.6     | Open   |               |                  | Commit all Phase 3 changes |
+| 3.1     | Completed | 2026-03-29 03:38 PM | 2026-03-29 03:40 PM | Modify `list_tracked_models()` in `analysis/services/model_lifecycle.py` to COALESCE `published_date` with formatted `observed_at` for first_seen and latest_activity |
+| 3.2     | Completed | 2026-03-29 03:40 PM | 2026-03-29 03:40 PM | Modify `build_model_profile()` in `analysis/services/model_lifecycle.py` to fall back to `observed_at.strftime("%Y-%m-%d")` when `published_date` is None |
+| 3.3     | Completed | 2026-03-29 03:41 PM | 2026-03-29 03:42 PM | Run `pytest tests/test_analysis/` to verify no regressions — 213 passed |
+| 3.4     | Completed | 2026-03-29 03:40 PM | 2026-03-29 03:41 PM | Run `ruff check` and `ruff format --check` on modified files |
+| 3.5     | Completed | 2026-03-29 03:42 PM | 2026-03-29 03:42 PM | Stage all Phase 3 changes |
+| 3.6     | Completed | 2026-03-29 03:42 PM | 2026-03-29 03:42 PM | Commit all Phase 3 changes |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** `list_tracked_models()` uses SQLAlchemy `case()` to COALESCE `published_date` with `strftime("%Y-%m-%d", observed_at)`. `build_model_profile()` uses `e.published_date or e.observed_at.strftime("%Y-%m-%d")` for all events.
+- **Changes hosted at:** `ai_benchmark/analysis/services/model_lifecycle.py`
 - **Commit:** `Site review 1: fall back to observed_at for missing published_date`
 
 ## Phase 4: Slug Display Prettification
