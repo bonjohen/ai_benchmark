@@ -311,3 +311,145 @@ def analyze_competitive(
         await engine.dispose()
 
     asyncio.run(_run())
+
+
+@analyze_group.command("research")
+@click.option("--days", default=90, help="Lookback window in days.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_research(ctx: click.Context, days: int, output_format: str) -> None:
+    """Show research pulse: trends, citations, paper-to-product links."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.research_pulse import get_research_trends
+
+            trends = await get_research_trends(session, window_days=days)
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(trends))
+            elif output_format == "markdown":
+                from .formatters.markdown import research_trends_to_markdown
+
+                click.echo(research_trends_to_markdown(trends))
+            else:
+                click.echo(f"Research Pulse ({trends.window_days} days)")
+                click.echo(
+                    f"  Papers: {trends.total_papers} total "
+                    f"({trends.promoted_count} promoted, "
+                    f"{trends.rejected_count} rejected, "
+                    f"{trends.pending_count} pending)"
+                )
+                if trends.citation_leaders:
+                    click.echo("\nCitation Leaders:")
+                    for p in trends.citation_leaders[:10]:
+                        click.echo(f"  {p.title[:60]:<60} {p.citation_count:>6} citations")
+                if trends.topic_counts:
+                    click.echo("\nTrending Topics:")
+                    sorted_topics = sorted(trends.topic_counts.items(), key=lambda x: -x[1])
+                    for topic, count in sorted_topics[:15]:
+                        click.echo(f"  {topic}: {count}")
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+@analyze_group.command("anomalies")
+@click.option("--days", default=7, help="Lookback window in days.")
+@click.option(
+    "--severity",
+    type=click.Choice(["info", "notable", "critical"]),
+    default=None,
+    help="Filter by severity.",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown", "csv"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_anomalies(
+    ctx: click.Context, days: int, severity: str | None, output_format: str
+) -> None:
+    """Detect anomalies and show insights."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.anomaly_detector import detect_anomalies, get_recent_insights
+
+            # Run detection
+            new_insights = await detect_anomalies(session, window_days=days)
+            await session.commit()
+
+            # Get all recent insights (including previously detected)
+            insights = await get_recent_insights(session, limit=50, severity=severity)
+
+            if not insights:
+                click.echo("No anomalies detected.")
+                return
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json([_insight_to_dict(i) for i in insights]))
+            elif output_format == "markdown":
+                from .formatters.markdown import insights_to_markdown
+
+                click.echo(insights_to_markdown(insights))
+            elif output_format == "csv":
+                from .formatters.csv_export import insights_to_csv
+
+                click.echo(insights_to_csv(insights))
+            else:
+                if new_insights:
+                    click.echo(f"Detected {len(new_insights)} new insight(s).\n")
+                severity_icons = {
+                    "critical": "!!!",
+                    "notable": "!!",
+                    "info": "i",
+                }
+                for insight in insights:
+                    icon = severity_icons.get(insight.severity, "")
+                    click.echo(f"  [{icon}] {insight.title}")
+                    click.echo(f"       {insight.description}")
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+def _insight_to_dict(insight) -> dict:
+    """Convert an AnalysisInsight ORM object to a plain dict."""
+    return {
+        "id": insight.id,
+        "insight_type": insight.insight_type,
+        "severity": insight.severity,
+        "title": insight.title,
+        "description": insight.description,
+        "related_model_slug": insight.related_model_slug,
+        "related_org": insight.related_org,
+        "detected_at": str(insight.detected_at) if insight.detected_at else None,
+    }

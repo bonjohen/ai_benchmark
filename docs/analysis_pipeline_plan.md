@@ -121,22 +121,22 @@ Open  ──>  Started  ──>  Completed
 
 | # | Status | Started (PST) | Completed (PST) | Description |
 |---|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Create `ai_benchmark/analysis/services/research_pulse.py` — `get_research_trends`, `get_citation_leaders`, `detect_paper_to_product` per PDR §5.4 |
-| 4.2 | Open | | | Create `ai_benchmark/analysis/services/anomaly_detector.py` — `detect_anomalies` with 6 rules + `get_recent_insights` per PDR §5.5 |
-| 4.3 | Open | | | Add formatters — `research_trends_to_markdown`, `insights_to_markdown`, `insights_to_csv` |
-| 4.4 | Open | | | Add CLI subcommands — `analyze research`, `analyze anomalies` with options |
-| 4.5 | Open | | | Create `tests/test_analysis/test_research_pulse.py` — citation leaders, topic counts, paper-to-product tests |
-| 4.6 | Open | | | Create `tests/test_analysis/test_anomaly_detector.py` — each rule tested, idempotency verified |
-| 4.7 | Open | | | Run `pytest` — all tests pass |
-| 4.8 | Open | | | Run `ruff check` + `ruff format --check` — clean |
-| 4.9 | Open | | | Stage all Phase 4 changes |
-| 4.10 | Open | | | Commit: "Add research pulse and anomaly detection services" |
+| 4.1 | Completed | 2026-03-29 07:15 PM | 2026-03-29 07:20 PM | Create `ai_benchmark/analysis/services/research_pulse.py` — `get_research_trends`, `get_citation_leaders`, `detect_paper_to_product` per PDR §5.4 |
+| 4.2 | Completed | 2026-03-29 07:15 PM | 2026-03-29 07:20 PM | Create `ai_benchmark/analysis/services/anomaly_detector.py` — `detect_anomalies` with 6 rules + `get_recent_insights` per PDR §5.5 |
+| 4.3 | Completed | 2026-03-29 06:30 PM | 2026-03-29 06:35 PM | Add formatters — `research_trends_to_markdown`, `insights_to_markdown`, `insights_to_csv` (already created in Phase 2) |
+| 4.4 | Completed | 2026-03-29 07:20 PM | 2026-03-29 07:25 PM | Add CLI subcommands — `analyze research`, `analyze anomalies` with options |
+| 4.5 | Completed | 2026-03-29 07:25 PM | 2026-03-29 07:30 PM | Create `tests/test_analysis/test_research_pulse.py` — citation leaders, topic counts, paper-to-product tests |
+| 4.6 | Completed | 2026-03-29 07:25 PM | 2026-03-29 07:30 PM | Create `tests/test_analysis/test_anomaly_detector.py` — each rule tested, idempotency verified |
+| 4.7 | Completed | 2026-03-29 07:30 PM | 2026-03-29 07:32 PM | Run `pytest` — 773 passed, 0 failures |
+| 4.8 | Completed | 2026-03-29 07:30 PM | 2026-03-29 07:32 PM | Run `ruff check` + `ruff format --check` — clean |
+| 4.9 | Completed | 2026-03-29 07:32 PM | 2026-03-29 07:33 PM | Stage all Phase 4 changes |
+| 4.10 | Completed | 2026-03-29 07:33 PM | 2026-03-29 07:33 PM | Commit: "Add research pulse and anomaly detection services" |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `ai_benchmark/analysis/services/research_pulse.py` (get_research_trends, get_citation_leaders with EnrichedPaper queries, detect_paper_to_product matching org + time, _count_topics from relevance_tags), `ai_benchmark/analysis/services/anomaly_detector.py` (detect_anomalies with 6 rules: new_org, rapid_iteration, benchmark_record, conflict_detected, price_drop, new_model; get_recent_insights with severity/type filters; idempotent via _already_exists check). Added 2 CLI subcommands (analyze research, analyze anomalies). 21 new tests (10 research + 11 anomaly), 773 total passing.
 - **Changes hosted at:** TBD
-- **Commit:** TBD
+- **Commit:** `Add research pulse and anomaly detection services`
 
 ## Phase 5: Digest + API + Integration
 
