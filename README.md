@@ -134,8 +134,8 @@ ai_benchmark/eval/
   models/         18 SQLAlchemy tables (datasets, scorers, evaluations, targets,
                   machines, runners, runs, item results, metrics, artifacts,
                   traces, annotations)
-  services/       9 async CRUD services (dataset, scorer, eval, machine, target,
-                  runner, run, comparison, report)
+  services/       10 async service modules (dataset, scorer, eval, machine, target,
+                  runner, run, comparison, report, compatibility + seed)
   execution/      RunOrchestrator, ItemExecutor, 12 model adapters
     adapters/     OpenAI, Anthropic, Local (legacy), GenericHTTP,
                   Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang,
@@ -173,7 +173,9 @@ OpenVINO GenAI) as a first-class experimental variable. Results are
 Target hardware: DGX Spark 128 GB, Apple Silicon M4 MBP 64 GB, Mac mini 24 GB,
 RTX 4070 desktop, ASUS Vivobook S 15 (Intel NPU), GTX 1060 laptop, Raspberry Pi edge.
 
-**Status**: Phase 1 complete — skeleton, naming conventions, placeholder adapters.
+**Status**: Phase 3 complete — runner/machine registry with compatibility rules,
+seed data for all 8 runners and 7 machines, snapshot capture, requested vs actual
+machine tracking.
 
 ### Design Documents
 
@@ -197,7 +199,7 @@ RTX 4070 desktop, ASUS Vivobook S 15 (Intel NPU), GTX 1060 laptop, Raspberry Pi 
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all 342 tests
+pytest                       # Run all 366 tests
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint

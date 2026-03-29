@@ -48,9 +48,12 @@ class Run(Base):
     target_config_id: Mapped[int] = mapped_column(
         ForeignKey("target_configurations.id"), nullable=False
     )
+    requested_machine_profile_id: Mapped[int | None] = mapped_column(
+        ForeignKey("machine_profiles.id"), nullable=True
+    )  # machine originally requested (from target config)
     machine_snapshot_id: Mapped[int | None] = mapped_column(
         ForeignKey("machine_snapshots.id"), nullable=True
-    )
+    )  # actual machine snapshot captured at execution time
     dataset_version_id: Mapped[int] = mapped_column(
         ForeignKey("dataset_versions.id"), nullable=False
     )
@@ -93,6 +96,9 @@ class Run(Base):
     )
     target_config: Mapped[TargetConfiguration] = relationship(  # noqa: F821
         back_populates="runs"
+    )
+    requested_machine: Mapped[MachineProfile | None] = relationship(  # noqa: F821
+        foreign_keys=[requested_machine_profile_id]
     )
     machine_snapshot: Mapped[MachineSnapshot | None] = relationship()  # noqa: F821
     item_results: Mapped[list[RunItemResult]] = relationship(
