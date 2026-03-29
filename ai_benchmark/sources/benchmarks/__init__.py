@@ -43,6 +43,12 @@ class BenchmarkCollector(SourceCollector):
                 body=f"Rank: {entry.rank}, Variant: {entry.variant}, Conditions: {entry.conditions}",
                 item_type="benchmark_entry",
                 model_hint=entry.model,
-                metadata={"score": entry.score, "rank": entry.rank, "variant": entry.variant},
+                metadata={
+                    "score": entry.score,
+                    "rank": entry.rank,
+                    "variant": entry.variant,
+                    "benchmark_variant": entry.variant,
+                    "evaluation_conditions": entry.conditions,
+                },
             ))
         return items

@@ -19,6 +19,7 @@ class EventRecord(Base):
             "source_type",
             "canonical_path",
             "published_date",
+            "model_slug",
             name="uq_event_composite_key",
         ),
     )
@@ -37,6 +38,8 @@ class EventRecord(Base):
     event_type: Mapped[str] = mapped_column(String(50))  # model_release, pricing_change, etc.
     model_slug: Mapped[str | None] = mapped_column(String(200), nullable=True)
     version: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    benchmark_variant: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    evaluation_conditions: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     observed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     raw_content: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -59,11 +62,16 @@ class ClaimRecord(Base):
     observed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     confidence_tier: Mapped[str] = mapped_column(String(50))  # official_self_report, benchmark_owner_report, etc.
 
+    snapshot_id: Mapped[int | None] = mapped_column(
+        ForeignKey("snapshots.id"), nullable=True
+    )
+
     confirmation_status: Mapped[str] = mapped_column(
         String(50), default="unconfirmed"
     )  # unconfirmed, confirmed, conflicted
 
     event: Mapped[EventRecord | None] = relationship(back_populates="claims")
+    snapshot: Mapped["Snapshot | None"] = relationship()
 
 
 class CrossReference(Base):

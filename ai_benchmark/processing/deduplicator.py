@@ -17,8 +17,9 @@ async def find_exact_duplicate(
     source_type: str,
     canonical_path: str,
     published_date: str | None,
+    model_slug: str | None = None,
 ) -> EventRecord | None:
-    """Check for an exact composite-key duplicate."""
+    """Check for an exact composite-key duplicate (includes model_slug)."""
     stmt = select(EventRecord).where(
         EventRecord.normalized_title == normalized_title,
         EventRecord.organization == organization,
@@ -27,6 +28,10 @@ async def find_exact_duplicate(
     )
     if published_date:
         stmt = stmt.where(EventRecord.published_date == published_date)
+    if model_slug:
+        stmt = stmt.where(EventRecord.model_slug == model_slug)
+    else:
+        stmt = stmt.where(EventRecord.model_slug.is_(None))
     stmt = stmt.limit(1)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
@@ -89,9 +94,10 @@ async def is_duplicate(
     model_slug: str | None,
 ) -> EventRecord | None:
     """Check all dedup strategies. Returns the existing record if duplicate, else None."""
-    # 1. Exact composite key
+    # 1. Exact composite key (including model_slug)
     exact = await find_exact_duplicate(
-        session, normalized_title, organization, source_type, canonical_path, published_date
+        session, normalized_title, organization, source_type, canonical_path,
+        published_date, model_slug,
     )
     if exact:
         return exact

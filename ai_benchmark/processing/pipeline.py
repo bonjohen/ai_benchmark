@@ -84,6 +84,8 @@ async def process_item(
         published_date=published_date,
         event_type=event_type,
         model_slug=model_slug,
+        benchmark_variant=item.metadata.get("benchmark_variant") or item.metadata.get("variant"),
+        evaluation_conditions=item.metadata.get("evaluation_conditions") or item.metadata.get("conditions"),
         observed_at=datetime.now(timezone.utc),
         raw_content=item.body[:2000] if item.body else None,
     )
