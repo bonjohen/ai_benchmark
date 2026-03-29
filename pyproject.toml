@@ -50,6 +50,10 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "TCH"]
 
+[tool.ruff.lint.per-file-ignores]
+"ai_benchmark/eval/api/routes/*.py" = ["B008"]
+"ai_benchmark/eval/ui/server.py" = ["B008"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

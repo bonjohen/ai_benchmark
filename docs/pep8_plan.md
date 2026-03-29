@@ -78,11 +78,11 @@ Suppress 58 B008 violations. FastAPI's `Depends()` in function parameter default
 
 | No. | Status | Started (PST) | Completed (PST) | Description                                                                                                                                          |
 | --: | ------ | ------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  40 | Open   |               |                 | Add `"B008"` to the `[tool.ruff.lint.per-file-ignores]` section in `pyproject.toml` for `ai_benchmark/eval/api/routes/*.py` — this is the idiomatic FastAPI pattern and should not trigger warnings. |
-|  41 | Open   |               |                 | Verify `ruff check --select B008` reports zero violations after the per-file-ignore is applied.                                                      |
-|  42 | Open   |               |                 | Stage all Phase 5 changes.                                                                                                                           |
-|  43 | Open   |               |                 | Commit all Phase 5 changes with a phase-complete commit message.                                                                                     |
-|  44 | Open   |               |                 | Immediately begin Phase 6.                                                                                                                           |
+|  40 | Completed | 2026-03-28 06:07 PM | 2026-03-28 06:08 PM | Add `"B008"` per-file-ignores for `eval/api/routes/*.py` and `eval/ui/server.py` (also uses Depends pattern). |
+|  41 | Completed | 2026-03-28 06:08 PM | 2026-03-28 06:08 PM | Verify `ruff check --select B008` reports zero violations after per-file-ignores applied.                                                            |
+|  42 | Completed | 2026-03-28 06:08 PM | 2026-03-28 06:08 PM | Stage all Phase 5 changes.                                                                                                                           |
+|  43 | Completed | 2026-03-28 06:08 PM | 2026-03-28 06:08 PM | Commit all Phase 5 changes with a phase-complete commit message.                                                                                     |
+|  44 | Completed | 2026-03-28 06:08 PM | 2026-03-28 06:08 PM | Immediately begin Phase 6.                                                                                                                           |
 
 ## Phase 6 — Manual Code Quality Fixes (SIM/F/B)
 
