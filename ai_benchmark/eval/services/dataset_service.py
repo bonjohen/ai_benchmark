@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import random
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select
@@ -195,3 +196,131 @@ async def filter_items(
         matching_ids.append(item.id)
 
     return matching_ids
+
+
+async def create_subset(
+    session: AsyncSession,
+    *,
+    dataset_version_id: int,
+    max_items: int | None = None,
+    tags: list[str] | None = None,
+    task_families: list[str] | None = None,
+    seed: int | None = None,
+    notes: str | None = None,
+) -> DatasetVersion:
+    """Create a new dataset version from a subset of items.
+
+    Useful for smoke tests or focused evaluation sets.
+    Applies tag/task_family filters first, then samples down to max_items.
+    """
+    dv = await session.get(DatasetVersion, dataset_version_id)
+    if dv is None:
+        raise ValueError(f"DatasetVersion {dataset_version_id} not found")
+
+    stmt = (
+        select(TestCase)
+        .where(TestCase.dataset_version_id == dataset_version_id)
+        .order_by(TestCase.item_index)
+    )
+    result = await session.execute(stmt)
+    items = list(result.scalars().all())
+
+    # Filter by metadata
+    if tags or task_families:
+        filtered = []
+        for item in items:
+            if not item.metadata_json:
+                continue
+            meta = json.loads(item.metadata_json)
+            if tags and not set(tags).intersection(meta.get("tags", [])):
+                continue
+            if task_families and meta.get("task_family") not in task_families:
+                continue
+            filtered.append(item)
+        items = filtered
+
+    # Sample if needed
+    if max_items and len(items) > max_items:
+        rng = random.Random(seed)
+        items = rng.sample(items, max_items)
+        items.sort(key=lambda tc: tc.item_index)
+
+    # Build item dicts for create_version
+    new_items = []
+    for item in items:
+        d: dict[str, Any] = {"input_text": item.input_text}
+        if item.expected_output:
+            d["expected_output"] = item.expected_output
+        if item.context:
+            d["context"] = item.context
+        if item.metadata_json:
+            d["metadata"] = json.loads(item.metadata_json)
+        new_items.append(d)
+
+    subset_notes = notes or f"Subset of version {dataset_version_id}"
+    if max_items:
+        subset_notes += f" (max_items={max_items})"
+    if tags:
+        subset_notes += f" (tags={tags})"
+
+    return await create_version(
+        session,
+        dataset_id=dv.dataset_id,
+        items=new_items,
+        notes=subset_notes,
+    )
+
+
+async def preview_version(
+    session: AsyncSession,
+    dataset_version_id: int,
+    *,
+    limit: int = 5,
+) -> dict[str, Any]:
+    """Return a summary preview of a dataset version for validation."""
+    dv = await session.get(DatasetVersion, dataset_version_id)
+    if dv is None:
+        raise ValueError(f"DatasetVersion {dataset_version_id} not found")
+
+    stmt = (
+        select(TestCase)
+        .where(TestCase.dataset_version_id == dataset_version_id)
+        .order_by(TestCase.item_index)
+    )
+    result = await session.execute(stmt)
+    items = list(result.scalars().all())
+
+    # Collect metadata statistics
+    task_families: set[str] = set()
+    difficulties: set[str] = set()
+    has_expected = 0
+    for item in items:
+        if item.expected_output:
+            has_expected += 1
+        if item.metadata_json:
+            meta = json.loads(item.metadata_json)
+            if "task_family" in meta:
+                task_families.add(meta["task_family"])
+            if "difficulty" in meta:
+                difficulties.add(meta["difficulty"])
+
+    sample = [
+        {
+            "index": item.item_index,
+            "input_text": item.input_text[:200],
+            "has_expected": item.expected_output is not None,
+        }
+        for item in items[:limit]
+    ]
+
+    return {
+        "dataset_version_id": dv.id,
+        "dataset_id": dv.dataset_id,
+        "version_number": dv.version_number,
+        "item_count": dv.item_count,
+        "checksum": dv.checksum,
+        "items_with_expected_output": has_expected,
+        "task_families": sorted(task_families),
+        "difficulties": sorted(difficulties),
+        "sample_items": sample,
+    }

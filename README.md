@@ -134,13 +134,13 @@ ai_benchmark/eval/
   models/         18 SQLAlchemy tables (datasets, scorers, evaluations, targets,
                   machines, runners, runs, item results, metrics, artifacts,
                   traces, annotations)
-  services/       10 async service modules (dataset, scorer, eval, machine, target,
-                  runner, run, comparison, report, compatibility + seed)
+  services/       12 async service modules (dataset, scorer, eval, machine, target,
+                  runner, run, comparison, report, compatibility, seed, validation)
   execution/      RunOrchestrator, ItemExecutor, 12 model adapters
     adapters/     OpenAI, Anthropic, Local (legacy), GenericHTTP,
                   Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang,
                   TensorRT-LLM, OpenVINO GenAI
-  scoring/        ScorerRunner + 7 built-in scorers (exact_match, fuzzy_match,
+  scoring/        ScorerRunner + 8 built-in scorers (exact_match, fuzzy_match,
                   rubric, format_validator, latency_cost, safety, model_judge)
   api/            FastAPI with 44 REST endpoints under /api/eval/
   ui/             Jinja2 templates: dashboard, entity pages, run detail/live,
@@ -199,7 +199,7 @@ machine tracking.
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all 366 tests
+pytest                       # Run all 388 tests
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint
