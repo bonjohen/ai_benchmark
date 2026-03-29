@@ -56,16 +56,16 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 2.1     | Open   |               |                  | Add `a.stat-card-link` CSS rule in `style.css` (no underline, inherit color, display block) |
-| 2.2     | Open   |               |                  | Wrap overview.html stat cards: Models→`/eval/analysis/models`, Orgs→`/eval/analysis/models`, Claims→`/eval/analysis/verification`, Confirmed→`/eval/analysis/verification`, Conflicted→`/eval/analysis/verification` |
-| 2.3     | Open   |               |                  | Verify overview page renders with clickable cards and correct link targets |
-| 2.4     | Open   |               |                  | Stage all Phase 2 changes |
-| 2.5     | Open   |               |                  | Commit all Phase 2 changes |
+| 2.1     | Completed | 2026-03-29 03:34 PM | 2026-03-29 03:35 PM | Add `a.stat-card-link` CSS rule in `style.css` (no underline, inherit color, display block) |
+| 2.2     | Completed | 2026-03-29 03:35 PM | 2026-03-29 03:36 PM | Wrap overview.html stat cards: Models→`/eval/analysis/models`, Orgs→`/eval/analysis/models`, Claims→`/eval/analysis/verification`, Confirmed→`/eval/analysis/verification`, Conflicted→`/eval/analysis/verification` |
+| 2.3     | Completed | 2026-03-29 03:36 PM | 2026-03-29 03:36 PM | Verify overview page renders with clickable cards and correct link targets |
+| 2.4     | Completed | 2026-03-29 03:36 PM | 2026-03-29 03:36 PM | Stage all Phase 2 changes |
+| 2.5     | Completed | 2026-03-29 03:36 PM | 2026-03-29 03:37 PM | Commit all Phase 2 changes |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added `a.stat-card-link` CSS class with hover border/shadow effect. Wrapped 5 overview stat cards (Models, Orgs, Claims, Confirmed, Conflicted) in links to models and verification pages.
+- **Changes hosted at:** `ai_benchmark/eval/ui/static/css/style.css`, `ai_benchmark/eval/ui/templates/analysis/overview.html`
 - **Commit:** `Site review 1: make overview stat cards clickable links`
 
 ## Phase 3: Date Fallback

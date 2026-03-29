@@ -9,22 +9,28 @@
 
 <!-- Summary Cards -->
 <div class="card-grid">
-    <div class="stat-card">
-        <div class="stat-value">{{ stats.total_models }}</div>
-        <div class="stat-label">Tracked Models</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value">{{ stats.total_orgs }}</div>
-        <div class="stat-label">Organizations</div>
-    </div>
+    <a href="/eval/analysis/models" class="stat-card-link">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_models }}</div>
+            <div class="stat-label">Tracked Models</div>
+        </div>
+    </a>
+    <a href="/eval/analysis/models" class="stat-card-link">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_orgs }}</div>
+            <div class="stat-label">Organizations</div>
+        </div>
+    </a>
     <div class="stat-card">
         <div class="stat-value">{{ stats.total_events }}</div>
         <div class="stat-label">Events Collected</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-value">{{ stats.total_claims }}</div>
-        <div class="stat-label">Claims</div>
-    </div>
+    <a href="/eval/analysis/verification" class="stat-card-link">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_claims }}</div>
+            <div class="stat-label">Claims</div>
+        </div>
+    </a>
     <div class="stat-card">
         <div class="stat-value">{{ stats.total_benchmarks }}</div>
         <div class="stat-label">Benchmarks</div>
@@ -34,14 +40,18 @@
 <!-- Verification Summary -->
 <h2 class="section-heading">Verification Health</h2>
 <div class="card-grid">
-    <div class="stat-card">
-        <div class="stat-value">{{ "%.1f"|format(verification.confirmation_rate) }}%</div>
-        <div class="stat-label">Confirmed</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value {% if verification.conflict_rate > 10 %}text-danger{% endif %}">{{ "%.1f"|format(verification.conflict_rate) }}%</div>
-        <div class="stat-label">Conflicted</div>
-    </div>
+    <a href="/eval/analysis/verification" class="stat-card-link">
+        <div class="stat-card">
+            <div class="stat-value">{{ "%.1f"|format(verification.confirmation_rate) }}%</div>
+            <div class="stat-label">Confirmed</div>
+        </div>
+    </a>
+    <a href="/eval/analysis/verification" class="stat-card-link">
+        <div class="stat-card">
+            <div class="stat-value {% if verification.conflict_rate > 10 %}text-danger{% endif %}">{{ "%.1f"|format(verification.conflict_rate) }}%</div>
+            <div class="stat-label">Conflicted</div>
+        </div>
+    </a>
     {% for tier, count in verification.tier_distribution.items() %}
     <div class="stat-card">
         <div class="stat-value">{{ count }}</div>

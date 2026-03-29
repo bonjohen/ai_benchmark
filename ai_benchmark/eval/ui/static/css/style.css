@@ -519,6 +519,27 @@ textarea.form-control { resize: vertical; min-height: 80px; }
     color: var(--text);
 }
 
+/* ── Clickable Stat Cards ── */
+
+a.stat-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+a.stat-card-link:hover {
+    text-decoration: none;
+}
+
+a.stat-card-link .stat-card {
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+a.stat-card-link:hover .stat-card {
+    border-color: var(--primary);
+    box-shadow: 0 1px 4px rgba(13,110,253,0.15);
+}
+
 /* ── Metadata Grid (model detail) ── */
 
 .metadata-grid {
