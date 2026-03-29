@@ -1,0 +1,832 @@
+# AI Benchmark — Analysis Pipeline Graph
+# Transforms collection data through 13 analysis services into intelligence
+# products for the web UI, REST API, and CLI.
+
+[graph]
+name = "Analysis Pipeline"
+classification = "analysis"
+description = "Transforms EventRecord, ClaimRecord, CrossReference, and research tables into intelligence products"
+table_count = 5
+service_count = 13
+product_count = 13
+consumer_count = 6
+
+# ════════════════════════════════════════════
+#  Control Nodes
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "START"
+type = "control"
+label = "Analysis Start"
+
+[[nodes]]
+id = "END"
+type = "control"
+label = "Analysis End"
+
+# ════════════════════════════════════════════
+#  Input Table Nodes (produced by Pipeline 1)
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "tbl.event_records"
+type = "table"
+label = "EventRecord"
+db_table = "event_records"
+pipeline = "collection"
+description = "Model releases, benchmark results, pricing changes, announcements"
+
+[[nodes]]
+id = "tbl.claim_records"
+type = "table"
+label = "ClaimRecord"
+db_table = "claim_records"
+pipeline = "collection"
+description = "Per-source fact claims with confidence tier and confirmation status"
+
+[[nodes]]
+id = "tbl.cross_references"
+type = "table"
+label = "CrossReference"
+db_table = "cross_references"
+pipeline = "collection"
+description = "Inter-event links: confirms, supplements, conflicts_with, cites"
+
+[[nodes]]
+id = "tbl.candidate_papers"
+type = "table"
+label = "CandidatePaper"
+db_table = "candidate_papers"
+pipeline = "collection"
+description = "Research paper candidates from arXiv, HF Papers"
+
+[[nodes]]
+id = "tbl.enriched_papers"
+type = "table"
+label = "EnrichedPaper"
+db_table = "enriched_papers"
+pipeline = "collection"
+description = "Enriched research metadata with citations, tags, venue"
+
+# ════════════════════════════════════════════
+#  Tier 1 Service Nodes — Base Services
+#  (read directly from DB tables)
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "svc.model_lifecycle"
+type = "service"
+label = "Model Lifecycle"
+tier = 1
+module = "analysis.services.model_lifecycle"
+service_role = "Model profiles, timelines, comparisons, status inference"
+
+[[nodes]]
+id = "svc.benchmark_trends"
+type = "service"
+label = "Benchmark Trends"
+tier = 1
+module = "analysis.services.benchmark_trends"
+service_role = "Leaderboards, score extraction, time series, benchmark listing"
+
+[[nodes]]
+id = "svc.competitive_intel"
+type = "service"
+label = "Competitive Intel"
+tier = 1
+module = "analysis.services.competitive_intel"
+service_role = "Cross-org activity timeline, iso-week cluster detection"
+
+[[nodes]]
+id = "svc.research_pulse"
+type = "service"
+label = "Research Pulse"
+tier = 1
+module = "analysis.services.research_pulse"
+service_role = "Citation leaders, research trends, paper-to-product matching"
+
+[[nodes]]
+id = "svc.anomaly_detector"
+type = "service"
+label = "Anomaly Detector"
+tier = 1
+module = "analysis.services.anomaly_detector"
+service_role = "6-rule automated insight flagging with idempotent persistence"
+
+[[nodes]]
+id = "svc.verification"
+type = "service"
+label = "Verification"
+tier = 1
+module = "analysis.services.verification"
+service_role = "Claim confirmation depth, confidence tier distribution, cross-ref validation"
+
+# ════════════════════════════════════════════
+#  Tier 2 Service Nodes — Composed Services
+#  (call Tier 1 services)
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "svc.capability"
+type = "service"
+label = "Capability"
+tier = 2
+module = "analysis.services.capability"
+service_role = "Cross-benchmark percentile profiles, composite scoring"
+
+[[nodes]]
+id = "svc.evolution"
+type = "service"
+label = "Evolution"
+tier = 2
+module = "analysis.services.evolution"
+service_role = "Rate-of-improvement, frontier progression, saturation detection"
+
+[[nodes]]
+id = "svc.spotlight"
+type = "service"
+label = "Spotlight"
+tier = 2
+module = "analysis.services.spotlight"
+service_role = "New model identification ranked by benchmark debut strength"
+
+[[nodes]]
+id = "svc.landscape"
+type = "service"
+label = "Landscape"
+tier = 2
+module = "analysis.services.landscape"
+service_role = "Org-level competitive synthesis with benchmark and pricing context"
+
+[[nodes]]
+id = "svc.correlation"
+type = "service"
+label = "Correlation"
+tier = 2
+module = "analysis.services.correlation"
+service_role = "Spearman rank correlation between benchmark variants, cluster detection"
+
+[[nodes]]
+id = "svc.research_pipeline"
+type = "service"
+label = "Research Pipeline"
+tier = 2
+module = "analysis.services.research_pipeline"
+service_role = "Citation velocity, split-window topic trends, predictive signals"
+
+# ════════════════════════════════════════════
+#  Tier 3 Service Node — Orchestrator
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "svc.digest"
+type = "service"
+label = "Digest"
+tier = 3
+module = "analysis.services.digest"
+service_role = "Periodic intelligence summary orchestrating all services"
+
+# ════════════════════════════════════════════
+#  Product Nodes — Output Intelligence Products
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "out.model_data"
+type = "product"
+label = "Model Profiles & Timelines"
+dataclass = "ModelSummary, ModelProfile, TimelineEntry"
+
+[[nodes]]
+id = "out.benchmark_data"
+type = "product"
+label = "Benchmark Leaderboards & Trends"
+dataclass = "BenchmarkSummary, Leaderboard, BenchmarkDataPoint"
+
+[[nodes]]
+id = "out.competitive_data"
+type = "product"
+label = "Competitive Activity & Clusters"
+dataclass = "ActivityTimeline, CompetitiveCluster"
+
+[[nodes]]
+id = "out.research_data"
+type = "product"
+label = "Research Trends & Citations"
+dataclass = "ResearchTrends, PaperCitationEntry"
+
+[[nodes]]
+id = "out.insight_data"
+type = "product"
+label = "Analysis Insights"
+dataclass = "AnalysisInsight"
+
+[[nodes]]
+id = "out.verification_data"
+type = "product"
+label = "Verification Reports"
+dataclass = "VerificationReport"
+
+[[nodes]]
+id = "out.capability_data"
+type = "product"
+label = "Capability Profiles"
+dataclass = "CapabilityProfile"
+
+[[nodes]]
+id = "out.evolution_data"
+type = "product"
+label = "Evolution Summaries"
+dataclass = "EvolutionSummary"
+
+[[nodes]]
+id = "out.spotlight_data"
+type = "product"
+label = "Spotlight Reports"
+dataclass = "SpotlightReport"
+
+[[nodes]]
+id = "out.landscape_data"
+type = "product"
+label = "Landscape Reports"
+dataclass = "LandscapeReport"
+
+[[nodes]]
+id = "out.correlation_data"
+type = "product"
+label = "Correlation Matrix"
+dataclass = "CorrelationMatrix"
+
+[[nodes]]
+id = "out.research_pipeline_data"
+type = "product"
+label = "Research Pipeline Reports"
+dataclass = "ResearchPipelineReport"
+
+[[nodes]]
+id = "out.digest_data"
+type = "product"
+label = "Intelligence Digest"
+dataclass = "DigestReport"
+
+# ════════════════════════════════════════════
+#  Consumer Nodes — UI Pages, API, CLI
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "ui.overview"
+type = "consumer"
+label = "Intelligence Overview"
+consumer_type = "ui_page"
+route = "/eval/analysis"
+
+[[nodes]]
+id = "ui.models"
+type = "consumer"
+label = "Models List"
+consumer_type = "ui_page"
+route = "/eval/analysis/models"
+
+[[nodes]]
+id = "ui.model_detail"
+type = "consumer"
+label = "Model Detail"
+consumer_type = "ui_page"
+route = "/eval/analysis/models/{slug}"
+
+[[nodes]]
+id = "ui.verification"
+type = "consumer"
+label = "Verification Dashboard"
+consumer_type = "ui_page"
+route = "/eval/analysis/verification"
+
+[[nodes]]
+id = "con.api"
+type = "consumer"
+label = "REST API"
+consumer_type = "api"
+route = "/api/analysis/*"
+endpoint_count = 18
+
+[[nodes]]
+id = "con.cli"
+type = "consumer"
+label = "CLI Commands"
+consumer_type = "cli"
+route = "analyze *"
+command_count = 16
+
+# ════════════════════════════════════════════
+#  Edges — START → Input Tables
+# ════════════════════════════════════════════
+
+[[edges]]
+source = "START"
+target = "tbl.event_records"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "tbl.claim_records"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "tbl.cross_references"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "tbl.candidate_papers"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "tbl.enriched_papers"
+relationship = "initiates"
+
+# ════════════════════════════════════════════
+#  Edges — Tables → Tier 1 Services
+# ════════════════════════════════════════════
+
+# model_lifecycle reads events, claims, and cross-references
+[[edges]]
+source = "tbl.event_records"
+target = "svc.model_lifecycle"
+relationship = "feeds"
+
+[[edges]]
+source = "tbl.claim_records"
+target = "svc.model_lifecycle"
+relationship = "feeds"
+
+[[edges]]
+source = "tbl.cross_references"
+target = "svc.model_lifecycle"
+relationship = "feeds"
+
+# benchmark_trends reads events (benchmark_variant + raw_content)
+[[edges]]
+source = "tbl.event_records"
+target = "svc.benchmark_trends"
+relationship = "feeds"
+
+# competitive_intel reads events (organization + event_type)
+[[edges]]
+source = "tbl.event_records"
+target = "svc.competitive_intel"
+relationship = "feeds"
+
+# research_pulse reads papers and events (paper-to-product matching)
+[[edges]]
+source = "tbl.candidate_papers"
+target = "svc.research_pulse"
+relationship = "feeds"
+
+[[edges]]
+source = "tbl.enriched_papers"
+target = "svc.research_pulse"
+relationship = "feeds"
+
+[[edges]]
+source = "tbl.event_records"
+target = "svc.research_pulse"
+relationship = "feeds"
+
+# anomaly_detector reads events and claims
+[[edges]]
+source = "tbl.event_records"
+target = "svc.anomaly_detector"
+relationship = "feeds"
+
+[[edges]]
+source = "tbl.claim_records"
+target = "svc.anomaly_detector"
+relationship = "feeds"
+
+# verification reads events, claims, and cross-references
+[[edges]]
+source = "tbl.event_records"
+target = "svc.verification"
+relationship = "feeds"
+
+[[edges]]
+source = "tbl.claim_records"
+target = "svc.verification"
+relationship = "feeds"
+
+[[edges]]
+source = "tbl.cross_references"
+target = "svc.verification"
+relationship = "feeds"
+
+# ════════════════════════════════════════════
+#  Edges — Tier 1 → Tier 2 Service Composition
+# ════════════════════════════════════════════
+
+# capability calls benchmark_trends (extract_benchmark_score, list_benchmarks)
+[[edges]]
+source = "svc.benchmark_trends"
+target = "svc.capability"
+relationship = "calls"
+
+# evolution calls benchmark_trends (list_benchmarks, get_benchmark_leaderboard, get_benchmark_timeline)
+[[edges]]
+source = "svc.benchmark_trends"
+target = "svc.evolution"
+relationship = "calls"
+
+# spotlight calls model_lifecycle + benchmark_trends
+[[edges]]
+source = "svc.model_lifecycle"
+target = "svc.spotlight"
+relationship = "calls"
+
+[[edges]]
+source = "svc.benchmark_trends"
+target = "svc.spotlight"
+relationship = "calls"
+
+# landscape calls competitive_intel + model_lifecycle + benchmark_trends
+[[edges]]
+source = "svc.competitive_intel"
+target = "svc.landscape"
+relationship = "calls"
+
+[[edges]]
+source = "svc.model_lifecycle"
+target = "svc.landscape"
+relationship = "calls"
+
+[[edges]]
+source = "svc.benchmark_trends"
+target = "svc.landscape"
+relationship = "calls"
+
+# correlation calls benchmark_trends (extract_benchmark_score)
+[[edges]]
+source = "svc.benchmark_trends"
+target = "svc.correlation"
+relationship = "calls"
+
+# research_pipeline calls research_pulse (get_citation_leaders, detect_paper_to_product)
+[[edges]]
+source = "svc.research_pulse"
+target = "svc.research_pipeline"
+relationship = "calls"
+
+# ════════════════════════════════════════════
+#  Edges — Services → Tier 3 Digest Orchestrator
+# ════════════════════════════════════════════
+
+[[edges]]
+source = "svc.model_lifecycle"
+target = "svc.digest"
+relationship = "calls"
+
+[[edges]]
+source = "svc.benchmark_trends"
+target = "svc.digest"
+relationship = "calls"
+
+[[edges]]
+source = "svc.competitive_intel"
+target = "svc.digest"
+relationship = "calls"
+
+[[edges]]
+source = "svc.research_pulse"
+target = "svc.digest"
+relationship = "calls"
+
+[[edges]]
+source = "svc.anomaly_detector"
+target = "svc.digest"
+relationship = "calls"
+
+[[edges]]
+source = "svc.spotlight"
+target = "svc.digest"
+relationship = "calls"
+
+[[edges]]
+source = "svc.evolution"
+target = "svc.digest"
+relationship = "calls"
+
+# ════════════════════════════════════════════
+#  Edges — Services → Products
+# ════════════════════════════════════════════
+
+[[edges]]
+source = "svc.model_lifecycle"
+target = "out.model_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.benchmark_trends"
+target = "out.benchmark_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.competitive_intel"
+target = "out.competitive_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.research_pulse"
+target = "out.research_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.anomaly_detector"
+target = "out.insight_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.verification"
+target = "out.verification_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.capability"
+target = "out.capability_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.evolution"
+target = "out.evolution_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.spotlight"
+target = "out.spotlight_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.landscape"
+target = "out.landscape_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.correlation"
+target = "out.correlation_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.research_pipeline"
+target = "out.research_pipeline_data"
+relationship = "produces"
+
+[[edges]]
+source = "svc.digest"
+target = "out.digest_data"
+relationship = "produces"
+
+# ════════════════════════════════════════════
+#  Edges — Products → UI Page Consumers
+# ════════════════════════════════════════════
+
+# Overview page consumes 5 products
+[[edges]]
+source = "out.model_data"
+target = "ui.overview"
+relationship = "renders"
+
+[[edges]]
+source = "out.verification_data"
+target = "ui.overview"
+relationship = "renders"
+
+[[edges]]
+source = "out.spotlight_data"
+target = "ui.overview"
+relationship = "renders"
+
+[[edges]]
+source = "out.landscape_data"
+target = "ui.overview"
+relationship = "renders"
+
+[[edges]]
+source = "out.evolution_data"
+target = "ui.overview"
+relationship = "renders"
+
+# Models page consumes model data
+[[edges]]
+source = "out.model_data"
+target = "ui.models"
+relationship = "renders"
+
+# Model detail page consumes model data + capability
+[[edges]]
+source = "out.model_data"
+target = "ui.model_detail"
+relationship = "renders"
+
+[[edges]]
+source = "out.capability_data"
+target = "ui.model_detail"
+relationship = "renders"
+
+# Verification page consumes verification data
+[[edges]]
+source = "out.verification_data"
+target = "ui.verification"
+relationship = "renders"
+
+# ════════════════════════════════════════════
+#  Edges — Products → API Consumer
+# ════════════════════════════════════════════
+
+[[edges]]
+source = "out.model_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.benchmark_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.competitive_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.research_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.insight_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.verification_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.capability_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.evolution_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.spotlight_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.landscape_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.correlation_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.research_pipeline_data"
+target = "con.api"
+relationship = "renders"
+
+[[edges]]
+source = "out.digest_data"
+target = "con.api"
+relationship = "renders"
+
+# ════════════════════════════════════════════
+#  Edges — Products → CLI Consumer
+# ════════════════════════════════════════════
+
+[[edges]]
+source = "out.model_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.benchmark_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.competitive_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.research_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.insight_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.verification_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.capability_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.evolution_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.spotlight_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.landscape_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.correlation_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.research_pipeline_data"
+target = "con.cli"
+relationship = "renders"
+
+[[edges]]
+source = "out.digest_data"
+target = "con.cli"
+relationship = "renders"
+
+# ════════════════════════════════════════════
+#  Edges — Consumers → END
+# ════════════════════════════════════════════
+
+[[edges]]
+source = "ui.overview"
+target = "END"
+relationship = "delivers"
+
+[[edges]]
+source = "ui.models"
+target = "END"
+relationship = "delivers"
+
+[[edges]]
+source = "ui.model_detail"
+target = "END"
+relationship = "delivers"
+
+[[edges]]
+source = "ui.verification"
+target = "END"
+relationship = "delivers"
+
+[[edges]]
+source = "con.api"
+target = "END"
+relationship = "delivers"
+
+[[edges]]
+source = "con.cli"
+target = "END"
+relationship = "delivers"
+
+# ════════════════════════════════════════════
+#  Cross-service validation edges
+# ════════════════════════════════════════════
+
+# Anomaly detector uses benchmark_trends for score-based anomaly rules
+[[edges]]
+source = "svc.benchmark_trends"
+target = "svc.anomaly_detector"
+relationship = "validates"
+
+# Spotlight queries AnalysisInsight for insight flags
+[[edges]]
+source = "svc.anomaly_detector"
+target = "svc.spotlight"
+relationship = "validates"
+
+# Verification confirms model lifecycle claims via cross-references
+[[edges]]
+source = "svc.verification"
+target = "svc.model_lifecycle"
+relationship = "validates"
