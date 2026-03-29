@@ -10,8 +10,11 @@ from sqlalchemy import select
 
 from ..models.dataset import DatasetVersion, TestCase
 from ..models.evaluation import EvaluationVersion
+from ..models.machine import MachineProfile
+from ..models.runner import RunnerProfile
 from ..models.scorer import ScorerVersion
 from ..models.target import TargetConfiguration
+from .compatibility import is_runner_compatible_with_machine
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -135,6 +138,65 @@ async def validate_evaluation_binding(
 
     if total_weight <= 0 and not errors:
         errors.append("Scorer weights must sum to a positive number")
+
+    return ValidationResult(
+        valid=len(errors) == 0,
+        errors=errors,
+        warnings=warnings,
+    )
+
+
+async def validate_target_compatibility(
+    session: AsyncSession,
+    target_config_id: int,
+) -> ValidationResult:
+    """Validate that a target's runner and machine are compatible.
+
+    Checks:
+    1. Target exists and is not archived
+    2. If runner_profile_id is set, runner exists
+    3. If machine_profile_id is set, machine exists
+    4. If both are set, runner is compatible with machine's hardware class
+    5. Provider matches runner_class (warning if mismatched)
+    """
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    target = await session.get(TargetConfiguration, target_config_id)
+    if target is None:
+        errors.append(f"TargetConfiguration {target_config_id} not found")
+        return ValidationResult(valid=False, errors=errors)
+
+    if target.is_archived:
+        errors.append(f"TargetConfiguration '{target.name}' is archived")
+
+    runner: RunnerProfile | None = None
+    machine: MachineProfile | None = None
+
+    if target.runner_profile_id:
+        runner = await session.get(RunnerProfile, target.runner_profile_id)
+        if runner is None:
+            errors.append(f"RunnerProfile {target.runner_profile_id} not found")
+        elif runner.is_archived:
+            warnings.append(f"RunnerProfile '{runner.name}' is archived")
+
+    if target.machine_profile_id:
+        machine = await session.get(MachineProfile, target.machine_profile_id)
+        if machine is None:
+            errors.append(f"MachineProfile {target.machine_profile_id} not found")
+
+    # Check runner-machine compatibility
+    if runner and machine and not is_runner_compatible_with_machine(runner, machine):
+        errors.append(
+            f"Runner '{runner.runner_class}' is not compatible with "
+            f"machine '{machine.hardware_class}' ({machine.display_name})"
+        )
+
+    # Check provider-runner consistency
+    if runner and target.provider != runner.runner_class:
+        warnings.append(
+            f"Target provider '{target.provider}' differs from runner class '{runner.runner_class}'"
+        )
 
     return ValidationResult(
         valid=len(errors) == 0,

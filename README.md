@@ -134,8 +134,9 @@ ai_benchmark/eval/
   models/         18 SQLAlchemy tables (datasets, scorers, evaluations, targets,
                   machines, runners, runs, item results, metrics, artifacts,
                   traces, annotations)
-  services/       12 async service modules (dataset, scorer, eval, machine, target,
-                  runner, run, comparison, report, compatibility, seed, validation)
+  services/       13 async service modules (dataset, scorer, eval, machine, target,
+                  runner, run, comparison, report, compatibility, seed, validation,
+                  matrix)
   execution/      RunOrchestrator, ItemExecutor, 12 model adapters
     adapters/     OpenAI, Anthropic, Local (legacy), GenericHTTP,
                   Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang,
@@ -199,7 +200,7 @@ machine tracking.
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all 388 tests
+pytest                       # Run all 401 tests
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint
