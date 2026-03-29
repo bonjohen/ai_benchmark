@@ -80,7 +80,10 @@ class SemanticScholarClient(APIClient):
         return await self.get(
             f"/paper/{paper_id}",
             params={
-                "fields": "title,authors,year,citationCount,venue,externalIds,abstract,url,references,citations",
+                "fields": (
+                    "title,authors,year,citationCount,venue,"
+                    "externalIds,abstract,url,references,citations"
+                ),
             },
         )
 

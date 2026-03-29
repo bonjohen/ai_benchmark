@@ -41,22 +41,22 @@ Manually rewrap 60 lines exceeding 100-character limit across 30 files. All requ
 
 | No. | Status | Started (PST) | Completed (PST) | Description                                                                                                                                          |
 | --: | ------ | ------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  17 | Open   |               |                 | Fix 2 E501 violations in `ai_benchmark/cli.py` (lines 66, 160).                                                                                     |
-|  18 | Open   |               |                 | Fix 2 E501 violations in `ai_benchmark/collection/differ.py` (lines 142–143).                                                                       |
-|  19 | Open   |               |                 | Fix 4 E501 violations in `ai_benchmark/eval/cli/commands.py` (lines 63, 174, 444, 450).                                                             |
-|  20 | Open   |               |                 | Fix 2 E501 violations in `ai_benchmark/eval/execution/adapters/local_adapter.py` (line 46) and `openai_adapter.py` (lines 47, 53).                   |
-|  21 | Open   |               |                 | Fix 6 E501 violations in `ai_benchmark/eval/models/` — `dataset.py:7`, `evaluation.py:26`, `machine.py:29,46`, `run.py:71`, `scorer.py:38`, `target.py:32`. |
-|  22 | Open   |               |                 | Fix 3 E501 violations in `ai_benchmark/eval/scoring/builtin/model_judge.py` (lines 14, 18, 95) and 1 in `rubric.py:78`.                              |
-|  23 | Open   |               |                 | Fix 4 E501 violations in `ai_benchmark/eval/scoring/scorer_runner.py` (lines 135, 136, 138, 139).                                                   |
-|  24 | Open   |               |                 | Fix 2 E501 violations in `ai_benchmark/eval/services/` — `machine_service.py:110`, `report_service.py:25,146`.                                      |
-|  25 | Open   |               |                 | Fix 1 E501 violation in `ai_benchmark/models/events.py:63`.                                                                                         |
-|  26 | Open   |               |                 | Fix 2 E501 violations in `ai_benchmark/processing/normalizer.py` (lines 36, 102) and 1 each in `pipeline.py:112`, `quality_filter.py:50`.            |
-|  27 | Open   |               |                 | Fix 4 E501 violations in `ai_benchmark/sources/` — `benchmarks/__init__.py:43`, `benchmarks/gaia.py:28`, `community/github_discovery.py:101`, `research/arxiv.py:36`, `research/semantic_scholar.py:83`. |
-|  28 | Open   |               |                 | Fix 13 E501 violations across test files: `test_config.py:36`, `test_cross_reference.py:119-120`, `test_comparison_service.py:109-111`, `test_eval_models.py:148`, `test_integration.py:68-72,422`, `test_pipeline.py:158-160`, `test_benchmarks.py:91`, `test_news.py:28,33`, `test_triage.py:92,157`. |
-|  29 | Open   |               |                 | Run full test suite to confirm no regressions.                                                                                                       |
-|  30 | Open   |               |                 | Stage all Phase 3 changes.                                                                                                                           |
-|  31 | Open   |               |                 | Commit all Phase 3 changes with a phase-complete commit message.                                                                                     |
-|  32 | Open   |               |                 | Immediately begin Phase 4.                                                                                                                           |
+|  17 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix 2 E501 violations in `ai_benchmark/cli.py` (lines 66, 160). Note: Phase 2 formatting resolved most original violations; 12 remained post-format. |
+|  18 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix 2 E501 violations in `ai_benchmark/collection/differ.py` (lines 142–143). Resolved by Phase 2 formatting.                                       |
+|  19 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix 4 E501 violations in `ai_benchmark/eval/cli/commands.py` (lines 63, 174, 444, 450). Resolved by Phase 2 formatting.                             |
+|  20 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix 2 E501 violations in `ai_benchmark/eval/execution/adapters/local_adapter.py` and `openai_adapter.py`. Resolved by Phase 2 formatting.            |
+|  21 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix 6 E501 violations in `ai_benchmark/eval/models/`. Resolved by Phase 2 formatting.                                                               |
+|  22 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix E501 in `model_judge.py` (rewrapped prompt string) and `rubric.py` (resolved by formatting).                                                    |
+|  23 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix 4 E501 violations in `ai_benchmark/eval/scoring/scorer_runner.py`. Resolved by Phase 2 formatting.                                              |
+|  24 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix 2 E501 violations in `ai_benchmark/eval/services/`. Resolved by Phase 2 formatting.                                                             |
+|  25 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:01 PM | Fix 1 E501 violation in `ai_benchmark/models/events.py:63`. Resolved by Phase 2 formatting.                                                         |
+|  26 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:02 PM | Fix E501 in `normalizer.py` (split regex), `pipeline.py` and `quality_filter.py` (resolved by formatting).                                           |
+|  27 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:02 PM | Fix E501 in `benchmarks/__init__.py`, `swebench.py`, `github_discovery.py`, `semantic_scholar.py` (manual rewrap). Others resolved by formatting.    |
+|  28 | Completed | 2026-03-28 06:00 PM | 2026-03-28 06:02 PM | Fix E501 in `test_benchmarks.py`, `test_news.py`, `test_triage.py` (manual rewrap). Others resolved by Phase 2 formatting.                          |
+|  29 | Completed | 2026-03-28 06:02 PM | 2026-03-28 06:02 PM | Run full test suite to confirm no regressions. 340 passed, 2 pre-existing failures.                                                                  |
+|  30 | Completed | 2026-03-28 06:02 PM | 2026-03-28 06:02 PM | Stage all Phase 3 changes.                                                                                                                           |
+|  31 | Completed | 2026-03-28 06:02 PM | 2026-03-28 06:02 PM | Commit all Phase 3 changes with a phase-complete commit message.                                                                                     |
+|  32 | Completed | 2026-03-28 06:02 PM | 2026-03-28 06:02 PM | Immediately begin Phase 4.                                                                                                                           |
 
 ## Phase 4 — Typing-Only Imports (TC001/TC002/TC003)
 

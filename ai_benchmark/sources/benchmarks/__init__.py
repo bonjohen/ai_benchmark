@@ -41,7 +41,10 @@ class BenchmarkCollector(SourceCollector):
             items.append(
                 RawItem(
                     title=f"{self.benchmark_family}: {entry.model} = {entry.score}",
-                    body=f"Rank: {entry.rank}, Variant: {entry.variant}, Conditions: {entry.conditions}",
+                    body=(
+                        f"Rank: {entry.rank}, Variant: {entry.variant}, "
+                        f"Conditions: {entry.conditions}"
+                    ),
                     item_type="benchmark_entry",
                     model_hint=entry.model,
                     metadata={

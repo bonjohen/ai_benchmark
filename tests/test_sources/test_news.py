@@ -24,12 +24,14 @@ REUTERS_HTML = """
 TECHCRUNCH_HTML = """
 <html><body>
 <article class="post-block">
-  <h2 class="post-block__title"><a href="/2026/03/28/google-gemini-3/">Google launches Gemini 3.0</a></h2>
+  <h2 class="post-block__title"><a href="/2026/03/28/google-gemini-3/"
+    >Google launches Gemini 3.0</a></h2>
   <time class="river-byline__time">March 28, 2026</time>
   <a rel="author" href="/author/writer">AI Writer</a>
 </article>
 <article class="post-block">
-  <h2 class="post-block__title"><a href="/2026/03/27/ai-regulation/">EU proposes new AI regulations</a></h2>
+  <h2 class="post-block__title"><a href="/2026/03/27/ai-regulation/"
+    >EU proposes new AI regulations</a></h2>
   <time class="river-byline__time">March 27, 2026</time>
   <a rel="author" href="/author/policy">Policy Reporter</a>
 </article>

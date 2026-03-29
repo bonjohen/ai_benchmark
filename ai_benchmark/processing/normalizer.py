@@ -131,7 +131,8 @@ def extract_date(text: str) -> str | None:
         try:
             # Month name formats
             match = re.search(
-                r"\b(\w+ \d{1,2},? \d{4}|\d{1,2} \w+ \d{4}|\d{1,2}/\d{1,2}/\d{4}|\d{4}/\d{2}/\d{2})\b",
+                r"\b(\w+ \d{1,2},? \d{4}|\d{1,2} \w+ \d{4}"
+                r"|\d{1,2}/\d{1,2}/\d{4}|\d{4}/\d{2}/\d{2})\b",
                 text,
             )
             if match:

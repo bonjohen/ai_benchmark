@@ -165,7 +165,8 @@ def query(
         else:
             for e in results:
                 click.echo(
-                    f"[{e.event_type}] {e.organization}: {e.title} ({e.published_date or 'no date'})"
+                    f"[{e.event_type}] {e.organization}: "
+                    f"{e.title} ({e.published_date or 'no date'})"
                 )
 
         await engine.dispose()

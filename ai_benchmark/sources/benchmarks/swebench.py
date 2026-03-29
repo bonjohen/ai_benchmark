@@ -41,7 +41,10 @@ class SWEBenchCollector(BenchmarkCollector):
                         score=cells[1],
                         rank=len(entries) + 1,
                         variant=variant,
-                        conditions=f"SWE-bench {variant}; contamination risk noted for public subsets",
+                        conditions=(
+                            f"SWE-bench {variant}; "
+                            "contamination risk noted for public subsets"
+                        ),
                     )
                 )
         return entries

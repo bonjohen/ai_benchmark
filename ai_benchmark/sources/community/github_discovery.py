@@ -105,7 +105,10 @@ class GitHubDiscoveryCollector(SourceCollector):
                         for rel in releases[:3]:
                             items.append(
                                 RawItem(
-                                    title=f"{org}/{repo_name}: {rel.get('name') or rel.get('tag_name', '')}",
+                                    title=(
+                                        f"{org}/{repo_name}: "
+                                        f"{rel.get('name') or rel.get('tag_name', '')}"
+                                    ),
                                     url=rel.get("html_url", ""),
                                     date_text=rel.get("published_at", ""),
                                     body=(rel.get("body") or "")[:500],

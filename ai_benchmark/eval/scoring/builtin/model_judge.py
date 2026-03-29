@@ -19,7 +19,9 @@ from ..base import BaseScorer, ScorerResult, register_scorer
 
 logger = structlog.get_logger()
 
-_DEFAULT_JUDGE_PROMPT = """You are an expert evaluator. Score the following AI output on a scale of {scale_min} to {scale_max}.
+_DEFAULT_JUDGE_PROMPT = """\
+You are an expert evaluator. \
+Score the following AI output on a scale of {scale_min} to {scale_max}.
 
 Input: {input}
 Expected output: {expected}

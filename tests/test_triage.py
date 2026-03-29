@@ -89,7 +89,10 @@ async def test_enrich_candidate_marks_relevant(db_session):
     mock_client = AsyncMock()
     mock_client.get_paper_by_arxiv.return_value = {
         "title": "LLM Benchmark Evaluation for Language Models",
-        "abstract": "We present a new benchmark for evaluating large language model performance on reasoning tasks.",
+        "abstract": (
+            "We present a new benchmark for evaluating large language"
+            " model performance on reasoning tasks."
+        ),
         "paperId": "abc123",
     }
 
@@ -155,7 +158,10 @@ async def test_enrich_candidate_no_arxiv_searches_by_title(db_session):
     mock_client.search_paper.return_value = [
         {
             "title": "Agent Safety Alignment Study for LLM Systems",
-            "abstract": "A comprehensive evaluation of safety alignment techniques for language model agents.",
+            "abstract": (
+                "A comprehensive evaluation of safety alignment"
+                " techniques for language model agents."
+            ),
             "paperId": "ghi789",
         }
     ]
