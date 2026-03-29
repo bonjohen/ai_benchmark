@@ -72,23 +72,23 @@ Open  ──>  Started  ──>  Completed
 
 | # | Status | Started (PST) | Completed (PST) | Description |
 |---|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Create `ai_benchmark/analysis/services/model_lifecycle.py` — `list_tracked_models`, `build_model_profile`, `get_model_timeline`, `compare_models` per PDR §5.1 |
-| 2.2 | Open | | | Create `ai_benchmark/analysis/formatters/json_export.py` — `to_json()` with dataclasses.asdict support |
-| 2.3 | Open | | | Create `ai_benchmark/analysis/formatters/markdown.py` — `model_profile_to_markdown`, `model_list_to_markdown` |
-| 2.4 | Open | | | Create `ai_benchmark/analysis/formatters/csv_export.py` — `models_to_csv` |
-| 2.5 | Open | | | Add CLI subcommands to `analysis/cli.py` — `analyze models` and `analyze model <slug>` with `--org`, `--format` options |
-| 2.6 | Open | | | Create `tests/test_analysis/test_model_lifecycle.py` — service tests with sample EventRecord/ClaimRecord data |
-| 2.7 | Open | | | Create `tests/test_analysis/test_formatters.py` — formatter output tests |
-| 2.8 | Open | | | Run `pytest` — all tests pass |
-| 2.9 | Open | | | Run `ruff check` + `ruff format --check` — clean |
+| 2.1 | Completed | 2026-03-29 06:30 PM | 2026-03-29 06:35 PM | Create `ai_benchmark/analysis/services/model_lifecycle.py` — `list_tracked_models`, `build_model_profile`, `get_model_timeline`, `compare_models` per PDR §5.1 |
+| 2.2 | Completed | 2026-03-29 06:30 PM | 2026-03-29 06:32 PM | Create `ai_benchmark/analysis/formatters/json_export.py` — `to_json()` with dataclasses.asdict support |
+| 2.3 | Completed | 2026-03-29 06:30 PM | 2026-03-29 06:35 PM | Create `ai_benchmark/analysis/formatters/markdown.py` — `model_profile_to_markdown`, `model_list_to_markdown` |
+| 2.4 | Completed | 2026-03-29 06:30 PM | 2026-03-29 06:35 PM | Create `ai_benchmark/analysis/formatters/csv_export.py` — `models_to_csv` |
+| 2.5 | Completed | 2026-03-29 06:40 PM | 2026-03-29 06:45 PM | Add CLI subcommands to `analysis/cli.py` — `analyze models` and `analyze model <slug>` with `--org`, `--format` options |
+| 2.6 | Completed | 2026-03-29 06:45 PM | 2026-03-29 06:50 PM | Create `tests/test_analysis/test_model_lifecycle.py` — service tests with sample EventRecord/ClaimRecord data |
+| 2.7 | Completed | 2026-03-29 06:45 PM | 2026-03-29 06:50 PM | Create `tests/test_analysis/test_formatters.py` — formatter output tests |
+| 2.8 | Completed | 2026-03-29 06:50 PM | 2026-03-29 06:52 PM | Run `pytest` — 723 passed, 0 failures |
+| 2.9 | Completed | 2026-03-29 06:50 PM | 2026-03-29 06:52 PM | Run `ruff check` + `ruff format --check` — clean |
 | 2.10 | Open | | | Stage all Phase 2 changes |
 | 2.11 | Open | | | Commit: "Add model lifecycle service with formatters and CLI commands" |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `ai_benchmark/analysis/services/model_lifecycle.py` (4 async service functions: list_tracked_models, get_model_timeline, build_model_profile, compare_models), `ai_benchmark/analysis/formatters/json_export.py` (to_json), `ai_benchmark/analysis/formatters/markdown.py` (6 Markdown renderers), `ai_benchmark/analysis/formatters/csv_export.py` (3 CSV serializers), updated `ai_benchmark/analysis/cli.py` (analyze models + analyze model subcommands with --org, --format, --limit options). 38 new tests (15 service + 23 formatter), 723 total passing.
 - **Changes hosted at:** TBD
-- **Commit:** TBD
+- **Commit:** `Add model lifecycle service with formatters and CLI commands`
 
 ## Phase 3: Benchmark Trends + Competitive Intelligence
 
