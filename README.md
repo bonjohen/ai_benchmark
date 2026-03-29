@@ -51,9 +51,10 @@ ai_benchmark/
     news/           Reuters, TechCrunch
     community/      HF Forums, GitHub discovery, HF Leaderboard Docs
   processing/       Normalizer, deduplicator (composite key + model slug + fuzzy),
-                    verification hierarchy (5 chains), cross-reference builder,
-                    triage pipeline, quality filter, discovery queue, path prober,
-                    full processing pipeline
+                    verification hierarchy (5 chains), cross-reference builder
+                    (3 strategies: model-slug, org+event-type, arXiv ID → cites),
+                    triage pipeline, quality filter, discovery queue (real fetch
+                    execution), path prober, full processing pipeline
   scheduling/       APScheduler async scheduler, cron cadence config, health tracking
                     with circuit breaker
   reporting/        Query functions (events, claims, cross-refs), JSON/CSV export
@@ -67,7 +68,7 @@ All 22 sources from the requirements are implemented:
 | Category | Sources | Trust |
 |---|---|---|
 | Official vendors (7) | OpenAI, Anthropic, Google/Gemini, xAI, Mistral, Cohere, Meta | 4.5–5.0 |
-| Benchmarks (7) | Artificial Analysis, LMArena, LiveBench, SWE-bench, GAIA, HLE, Terminal-Bench | 4.0–4.5 |
+| Benchmarks (7) | Artificial Analysis, LMArena (incl. image/vision), LiveBench, SWE-bench (incl. Pro), GAIA, HLE (multi-slice), Terminal-Bench | 4.0–4.5 |
 | Research feeds (3) | arXiv, Semantic Scholar, HF Papers | 4.0 |
 | News (2) | Reuters (high secondary), TechCrunch (medium discovery) | 3.5–4.0 |
 | Community (3) | HF Forums, GitHub discovery, HF Leaderboard Docs | 3.0 |
@@ -77,12 +78,14 @@ All 22 sources from the requirements are implemented:
 Events are verified through 5 chains:
 
 1. **Model releases**: Confirmed when 2+ official surfaces agree
-2. **Benchmark claims**: Benchmark owner report required
-3. **Pricing changes**: Only confirmed from pricing page changes
+2. **Benchmark claims**: Benchmark owner report required; variant (e.g., SWE-bench Pro vs Verified) and evaluation conditions always recorded
+3. **Pricing changes**: Only confirmed from pricing page changes (both docs and main pricing pages monitored)
 4. **Announcements**: Newsroom + at least one other source
 5. **Research claims**: Primary paper required
 
 Claims from different sources are stored as separate records — never merged.
+
+Confidence tiers (5 standard values): `official_self_report`, `benchmark_owner_report`, `high_secondary`, `medium_discovery`, `low_discovery`. All tiers are enforced uniformly across the verification and normalization modules.
 
 ## Configuration
 
@@ -100,7 +103,7 @@ Settings are loaded via Pydantic with the `AI_BENCH_` env prefix. Also reads `.e
 | `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent fetch requests |
 | `AI_BENCH_RETRY_ATTEMPTS` | `3` | Retry count with exponential backoff |
 
-Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 64 pages)
+Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 78 pages)
 Schedule config: `ai_benchmark/config/schedules.toml` (24 cron entries)
 
 ## Database Models
@@ -192,15 +195,16 @@ machine tracking.
 
 - **Source pipeline:** `docs/core_requirements_plan.md` — All 7 phases complete
 - **Eval pipeline:** `docs/model_eval_pipeline_plan.md` — 9 phases (E1–E9) complete
-- **Gap remediation:** `docs/gap_remediation_plan.md` — 6 phases (G1–G6), 66 tasks complete
+- **Gap remediation v1:** `docs/gap_remediation_plan.md` — 6 phases (G1–G6), 66 tasks complete
+- **Gap remediation v2:** `docs/gap_remediation_subset_plan_v2.md` — 13 tasks complete (discovery queue wiring, confidence tier fix, 5 new source pages, cross-ref cites + arXiv strategy, HLE multi-slice, LMArena image/vision, benchmark GitHub repos, Semantic Scholar dual classification)
 - **PEP8 compliance:** `docs/pep8_plan.md` — All 7 phases complete
-- **Runner comparison:** `docs/llm_runner_plan.md` — 14 phases, in progress
+- **Runner comparison:** `docs/llm_runner_plan.md` — 14 phases, phases 1–7 complete
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all 465 tests
+pytest                       # Run all tests (465 pass, 2 known failures in test_cli.py)
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint

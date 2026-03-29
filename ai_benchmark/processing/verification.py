@@ -63,7 +63,7 @@ VERIFICATION_CHAINS: dict[str, list[str]] = {
 # Confidence tier by source classification
 CLAIM_LABELS: dict[str, str] = {
     "primary": "official_self_report",
-    "secondary": "independent_report",
+    "secondary": "high_secondary",
     "discovery-only": "community_signal",
     # Specific overrides
     "benchmark_owner": "benchmark_owner_report",

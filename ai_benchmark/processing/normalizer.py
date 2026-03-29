@@ -163,6 +163,10 @@ SOURCE_TIER_OVERRIDES: dict[tuple[str, str], str] = {
     ("HLE", "leaderboard"): "benchmark_owner_report",
     ("Terminal-Bench", "leaderboard"): "benchmark_owner_report",
     ("Artificial Analysis", "leaderboard"): "benchmark_owner_report",
+    # Semantic Scholar: API endpoint used for metadata confirmation stays high_secondary;
+    # paper_discovery output (new papers surfaced by enrichment) is treated as low_discovery.
+    ("Semantic Scholar", "api endpoint"): "high_secondary",
+    ("Semantic Scholar", "paper_discovery"): "low_discovery",
 }
 
 

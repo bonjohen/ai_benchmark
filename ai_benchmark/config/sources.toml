@@ -76,6 +76,12 @@ page_type = "pricing"
 polling_frequency = "daily"
 
 [[sources.pages]]
+canonical_url = "https://www.anthropic.com/pricing"
+page_type = "pricing"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
 canonical_url = "https://docs.anthropic.com/en/release-notes/api"
 page_type = "api release notes"
 polling_frequency = "6h"
@@ -146,6 +152,11 @@ canonical_url = "https://x.ai/news"
 page_type = "news"
 polling_frequency = "daily"
 
+[[sources.pages]]
+canonical_url = "https://docs.x.ai/developers/rate-limits"
+page_type = "rate limits"
+polling_frequency = "daily"
+
 [[sources]]
 source_name = "Mistral AI"
 category = "official company source"
@@ -170,6 +181,11 @@ polling_frequency = "daily"
 
 [[sources.pages]]
 canonical_url = "https://mistral.ai/pricing"
+page_type = "pricing"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://docs.mistral.ai/deployment/ai-studio/pricing"
 page_type = "pricing"
 polling_frequency = "daily"
 
@@ -246,6 +262,12 @@ polling_frequency = "6h"
 priority = true
 
 [[sources.pages]]
+canonical_url = "https://artificialanalysis.ai/embed/llm-performance-leaderboard"
+page_type = "leaderboard"
+polling_frequency = "6h"
+priority = true
+
+[[sources.pages]]
 canonical_url = "https://artificialanalysis.ai/text/arena?tab=Ranking"
 page_type = "methodology"
 polling_frequency = "weekly"
@@ -288,6 +310,16 @@ polling_frequency = "6h"
 
 [[sources.pages]]
 canonical_url = "https://lmarena.ai/leaderboard/longer-query"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/image"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/vision"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
@@ -338,6 +370,12 @@ polling_frequency = "daily"
 canonical_url = "https://www.swebench.com/full.html"
 page_type = "leaderboard"
 polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://www.swebench.com/pro.html"
+page_type = "leaderboard"
+polling_frequency = "daily"
+priority = true
 
 [[sources.pages]]
 canonical_url = "https://www.swebench.com/multilingual.html"
@@ -559,6 +597,36 @@ polling_frequency = "12h"
 [[sources.pages]]
 canonical_url = "https://github.com/cohere-ai"
 page_type = "github org"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/princeton-nlp/SWE-bench"
+page_type = "github repo releases"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/LiveBench/LiveBench"
+page_type = "github repo releases"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/gaia-benchmark/GAIA"
+page_type = "github repo releases"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/ScaleAI/hle"
+page_type = "github repo releases"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/laude-institute/t-bench"
+page_type = "github repo releases"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/lmarena/arena-hard-auto"
+page_type = "github repo releases"
 polling_frequency = "12h"
 
 [[sources]]

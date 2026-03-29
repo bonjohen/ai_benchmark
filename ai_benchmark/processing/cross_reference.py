@@ -18,6 +18,9 @@ from sqlalchemy import and_, or_, select
 
 from ..models.events import CrossReference, EventRecord
 
+# arXiv ID pattern: matches "arXiv:2312.12345" or "arXiv:2312.12345v2"
+_ARXIV_ID_RE = re.compile(r"\barXiv:(\d{4}\.\d{4,5}(?:v\d+)?)\b", re.IGNORECASE)
+
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -79,11 +82,29 @@ def _extract_numbers(text: str | None) -> list[float]:
     return [float(m) for m in re.findall(r"(?<![-\w])(\d{2,}(?:\.\d+)?)", text)]
 
 
+def _extract_arxiv_ids(text: str | None) -> set[str]:
+    """Extract normalized arXiv IDs from text (strips version suffix for comparison)."""
+    if not text:
+        return set()
+    ids = set()
+    for match in _ARXIV_ID_RE.finditer(text):
+        # Strip version suffix (v1, v2, …) for cross-version matching
+        raw = match.group(1)
+        ids.add(raw.split("v")[0])
+    return ids
+
+
 def determine_relationship(event_a: EventRecord, event_b: EventRecord) -> str:
     """Determine the relationship type between two events.
 
     Returns one of: confirms, supplements, conflicts_with, cites.
     """
+    # Citation detection: one event's content references the other's arXiv ID
+    ids_a = _extract_arxiv_ids(event_a.raw_content) | _extract_arxiv_ids(event_a.title)
+    ids_b = _extract_arxiv_ids(event_b.raw_content) | _extract_arxiv_ids(event_b.title)
+    if ids_a & ids_b:
+        return "cites"
+
     # Conflict detection: same model + event type, different orgs, numerical disagreement >10%
     if (
         event_a.model_slug
@@ -176,6 +197,34 @@ async def create_cross_reference(
     return xref
 
 
+async def find_related_by_arxiv_id(
+    session: AsyncSession,
+    event: EventRecord,
+) -> list[EventRecord]:
+    """Find events that share at least one arXiv ID with this event."""
+    event_ids = _extract_arxiv_ids(event.raw_content) | _extract_arxiv_ids(event.title)
+    if not event_ids:
+        return []
+
+    # Fetch recent events from any org and filter by shared arXiv ID in Python
+    stmt = (
+        select(EventRecord)
+        .where(EventRecord.id != event.id)
+        .order_by(EventRecord.observed_at.desc())
+        .limit(100)
+    )
+    result = await session.execute(stmt)
+    candidates = list(result.scalars().all())
+    related: list[EventRecord] = []
+    for candidate in candidates:
+        candidate_ids = _extract_arxiv_ids(candidate.raw_content) | _extract_arxiv_ids(
+            candidate.title
+        )
+        if event_ids & candidate_ids:
+            related.append(candidate)
+    return related
+
+
 async def build_cross_references(
     session: AsyncSession,
     event: EventRecord,
@@ -194,6 +243,13 @@ async def build_cross_references(
     org_related = await find_related_by_org_event_type(session, event)
     for related in org_related:
         xref = await create_cross_reference(session, event, related)
+        if xref:
+            created.append(xref)
+
+    # Strategy 3: shared arXiv ID → cites relationship
+    arxiv_related = await find_related_by_arxiv_id(session, event)
+    for related in arxiv_related:
+        xref = await create_cross_reference(session, event, related, relationship_type="cites")
         if xref:
             created.append(xref)
 
