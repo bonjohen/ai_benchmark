@@ -6,17 +6,17 @@ Status lifecycle for every task: Open → Started → Completed. Use Blocked whe
 
 | No. | Status | Started (PST) | Completed (PST) | Description                                                                                                                                 |
 | --: | ------ | ------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-|   1 | Open   |               |                 | Create the release branch for the evaluation pipeline and runner comparison platform.                                                       |
-|   2 | Open   |               |                 | Create the top-level project structure for backend, frontend, shared schemas, docs, and scripts.                                            |
-|   3 | Open   |               |                 | Add a planning folder for PRD, release plan, architecture notes, and implementation logs.                                                   |
-|   4 | Open   |               |                 | Create initial configuration files for environment handling, local development, and testing.                                                |
-|   5 | Open   |               |                 | Define the canonical naming conventions for evaluations, runs, run groups, datasets, scorers, target configurations, runners, and machines. |
-|   6 | Open   |               |                 | Create placeholder modules for evaluation definitions, execution engine, run storage, runner adapters, and UI navigation.                   |
-|   7 | Open   |               |                 | Add a project task-tracking file that mirrors this phased release document.                                                                 |
-|   8 | Open   |               |                 | Update readme.md with project purpose, scope, and current implementation status for Phase 1.                                                |
-|   9 | Open   |               |                 | Stage all Phase 1 changes.                                                                                                                  |
-|  10 | Open   |               |                 | Commit all Phase 1 changes with a phase-complete commit message.                                                                            |
-|  11 | Open   |               |                 | Immediately begin Phase 2.                                                                                                                  |
+|   1 | Completed | 2026-03-28 06:26 PM | 2026-03-28 06:26 PM | Create the release branch `feature/llm-runner-comparison`.                                                                                   |
+|   2 | Completed | 2026-03-28 06:26 PM | 2026-03-28 06:28 PM | Extended existing `ai_benchmark/eval/` structure: new models (runner.py, trace.py), 8 adapter placeholders, runner_service.py.               |
+|   3 | Completed | 2026-03-28 06:28 PM | 2026-03-28 06:29 PM | Added `docs/llm_runner_log.md` implementation log. PRD, design, and plan already in `docs/`.                                                |
+|   4 | Completed | 2026-03-28 06:29 PM | 2026-03-28 06:30 PM | Updated test conftest.py to register new models (runner, trace). Updated target model with runner_profile_id FK.                            |
+|   5 | Completed | 2026-03-28 06:29 PM | 2026-03-28 06:30 PM | Defined canonical naming conventions in `docs/naming_conventions.md` — entities, runner classes, machine classes, tags, provider strings.    |
+|   6 | Completed | 2026-03-28 06:27 PM | 2026-03-28 06:28 PM | Created 8 runner adapter placeholders (ollama, lmstudio, llamacpp, mlx, vllm, sglang, tensorrt, openvino) plus RunnerProfile and Trace models. |
+|   7 | Completed | 2026-03-28 06:28 PM | 2026-03-28 06:29 PM | Implementation log at `docs/llm_runner_log.md`; this plan file serves as the task tracker.                                                  |
+|   8 | Completed | 2026-03-28 06:30 PM | 2026-03-28 06:31 PM | Updated README.md with runner comparison platform status, design doc links, and updated architecture.                                       |
+|   9 | Completed | 2026-03-28 06:31 PM | 2026-03-28 06:31 PM | Stage all Phase 1 changes.                                                                                                                  |
+|  10 | Completed | 2026-03-28 06:31 PM | 2026-03-28 06:31 PM | Commit all Phase 1 changes with a phase-complete commit message.                                                                            |
+|  11 | Completed | 2026-03-28 06:31 PM | 2026-03-28 06:31 PM | Immediately begin Phase 2.                                                                                                                  |
 
 ## Phase 2 — Core Domain Model and Persistence
 

@@ -20,8 +20,10 @@ async def db_engine():
         evaluation,
         machine,
         run,
+        runner,
         scorer,
         target,
+        trace,
     )
     from ai_benchmark.models import discovery, events, research, sources  # noqa: F401
 
@@ -48,8 +50,10 @@ async def db_engine_fk():
         evaluation,
         machine,
         run,
+        runner,
         scorer,
         target,
+        trace,
     )
     from ai_benchmark.models import discovery, events, research, sources  # noqa: F401
 

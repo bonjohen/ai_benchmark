@@ -22,6 +22,9 @@ class TargetConfiguration(Base):
     machine_profile_id: Mapped[int | None] = mapped_column(
         ForeignKey("machine_profiles.id"), nullable=True
     )
+    runner_profile_id: Mapped[int | None] = mapped_column(
+        ForeignKey("runner_profiles.id"), nullable=True
+    )
     runtime_backend: Mapped[str | None] = mapped_column(String(100), nullable=True)
     prompt_wrapper: Mapped[str | None] = mapped_column(Text, nullable=True)
     inference_params: Mapped[str] = mapped_column(Text, nullable=False)  # JSON

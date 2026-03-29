@@ -131,12 +131,15 @@ ai-benchmark eval list --evaluations --targets    # List entities
 
 ```
 ai_benchmark/eval/
-  models/         15 SQLAlchemy tables (datasets, scorers, evaluations, targets,
-                  machines, runs, item results, metrics, artifacts)
-  services/       8 async CRUD services (dataset, scorer, eval, machine, target,
-                  run, comparison, report)
-  execution/      RunOrchestrator, ItemExecutor, 4 model adapters (OpenAI,
-                  Anthropic, Local, Generic HTTP)
+  models/         18 SQLAlchemy tables (datasets, scorers, evaluations, targets,
+                  machines, runners, runs, item results, metrics, artifacts,
+                  traces, annotations)
+  services/       9 async CRUD services (dataset, scorer, eval, machine, target,
+                  runner, run, comparison, report)
+  execution/      RunOrchestrator, ItemExecutor, 12 model adapters
+    adapters/     OpenAI, Anthropic, Local (legacy), GenericHTTP,
+                  Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang,
+                  TensorRT-LLM, OpenVINO GenAI
   scoring/        ScorerRunner + 7 built-in scorers (exact_match, fuzzy_match,
                   rubric, format_validator, latency_cost, safety, model_judge)
   api/            FastAPI with 44 REST endpoints under /api/eval/
@@ -160,17 +163,35 @@ ai_benchmark/eval/
 | `AI_BENCH_EVAL_ITEM_TIMEOUT_SECONDS` | `120` | Per-item timeout |
 | `AI_BENCH_EVAL_RETRY_FAILED_ITEMS` | `2` | Auto-retries per item |
 
+### Runner Comparison Platform
+
+The eval pipeline is being extended into a full runner comparison platform that treats
+the inference runner (Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang, TensorRT-LLM,
+OpenVINO GenAI) as a first-class experimental variable. Results are
+`model × machine × runner × configuration`, not just `model × machine`.
+
+Target hardware: DGX Spark 128 GB, Apple Silicon M4 MBP 64 GB, Mac mini 24 GB,
+RTX 4070 desktop, ASUS Vivobook S 15 (Intel NPU), GTX 1060 laptop, Raspberry Pi edge.
+
+**Status**: Phase 1 complete — skeleton, naming conventions, placeholder adapters.
+
 ### Design Documents
 
-- Design: `docs/model_eval_pipeline_design.md`
-- Physical requirements: `docs/model_eval_pipeline_pdr.md`
-- Implementation plan: `docs/model_eval_pipeline_plan.md`
+- Eval pipeline design: `docs/model_eval_pipeline_design.md`
+- Eval pipeline PDR: `docs/model_eval_pipeline_pdr.md`
+- Eval pipeline plan: `docs/model_eval_pipeline_plan.md`
+- Runner comparison PRD: `docs/llm_runner_prd.md`
+- Runner comparison design: `docs/llm_runner_design.md`
+- Runner comparison plan: `docs/llm_runner_plan.md`
+- Naming conventions: `docs/naming_conventions.md`
 
 ## Implementation Plans
 
 - **Source pipeline:** `docs/core_requirements_plan.md` — All 7 phases complete
 - **Eval pipeline:** `docs/model_eval_pipeline_plan.md` — 9 phases (E1–E9) complete
 - **Gap remediation:** `docs/gap_remediation_plan.md` — 6 phases (G1–G6), 66 tasks complete
+- **PEP8 compliance:** `docs/pep8_plan.md` — All 7 phases complete
+- **Runner comparison:** `docs/llm_runner_plan.md` — 14 phases, in progress
 
 ## Development
 
