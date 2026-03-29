@@ -1,0 +1,913 @@
+# AI Benchmark — Secondary Source Collection Graph
+# Independent benchmarks, leaderboards, news outlets, and curated indices (trust 3.5-5.0).
+# These corroborate or challenge claims from primary sources.
+
+[graph]
+name = "Secondary Sources"
+classification = "secondary"
+description = "Benchmarks, leaderboards, news outlets, Semantic Scholar, HF leaderboard docs"
+source_count = 11
+page_count = 29
+
+# ════════════════════════════════════════════
+#  Control Nodes
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "START"
+type = "control"
+label = "Collection Start"
+
+[[nodes]]
+id = "END"
+type = "control"
+label = "Collection End"
+
+# ════════════════════════════════════════════
+#  Source Nodes — Benchmarks
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "artificial_analysis"
+type = "source"
+label = "Artificial Analysis"
+organization = "Artificial Analysis"
+trust_rating = 4.5
+source_role = "independent benchmark and price/speed comparator"
+cadence = "0 8 * * *"
+
+[[nodes]]
+id = "lmarena"
+type = "source"
+label = "LMArena"
+organization = "LMArena"
+trust_rating = 4.5
+source_role = "human-preference arena for text, image, vision"
+cadence = "0 8 * * *"
+
+[[nodes]]
+id = "livebench"
+type = "source"
+label = "LiveBench"
+organization = "LiveBench"
+trust_rating = 4.5
+source_role = "contamination-resistant, frequently refreshed benchmark"
+cadence = "0 8 * * *"
+
+[[nodes]]
+id = "swebench"
+type = "source"
+label = "SWE-bench"
+organization = "SWE-bench team"
+trust_rating = 4.5
+source_role = "coding-agent benchmark and leaderboard"
+cadence = "0 8 * * *"
+
+[[nodes]]
+id = "gaia"
+type = "source"
+label = "GAIA Benchmark"
+organization = "GAIA benchmark"
+trust_rating = 4.5
+source_role = "general AI assistant benchmark"
+cadence = "0 8 * * *"
+
+[[nodes]]
+id = "hle"
+type = "source"
+label = "Humanity's Last Exam"
+organization = "Scale AI"
+trust_rating = 4.5
+source_role = "frontier knowledge/reasoning exam"
+cadence = "0 8 * * *"
+
+[[nodes]]
+id = "terminal_bench"
+type = "source"
+label = "Terminal-Bench"
+organization = "Stanford x Laude"
+trust_rating = 4.5
+source_role = "terminal-environment agent benchmark"
+cadence = "0 8 * * *"
+
+# ════════════════════════════════════════════
+#  Source Nodes — News
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "reuters"
+type = "source"
+label = "Reuters AI"
+organization = "Reuters"
+trust_rating = 5.0
+source_role = "high-quality secondary reporting and AI newsletter"
+cadence = "0 */3 * * *"
+confidence_tier = "high_secondary"
+
+[[nodes]]
+id = "techcrunch"
+type = "source"
+label = "TechCrunch AI"
+organization = "TechCrunch"
+trust_rating = 4.0
+source_role = "fast-moving startup, product, and ecosystem coverage"
+cadence = "0 */6 * * *"
+confidence_tier = "medium_discovery"
+
+# ════════════════════════════════════════════
+#  Source Nodes — Research & Index
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "semantic_scholar"
+type = "source"
+label = "Semantic Scholar"
+organization = "Ai2"
+trust_rating = 4.5
+source_role = "searchable research database and API"
+cadence = "0 6,18 * * *"
+
+[[nodes]]
+id = "hf_leaderboard_docs"
+type = "source"
+label = "HF Leaderboard Docs"
+organization = "Hugging Face"
+trust_rating = 4.5
+source_role = "searchable index for community-managed eval surfaces"
+cadence = "0 8 * * *"
+
+# ════════════════════════════════════════════
+#  Page Nodes — Artificial Analysis
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "aa.leaderboard_models"
+type = "page"
+label = "AA Model Leaderboard"
+url = "https://artificialanalysis.ai/leaderboards/models"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+priority = true
+
+[[nodes]]
+id = "aa.leaderboard_perf"
+type = "page"
+label = "AA Performance Leaderboard"
+url = "https://artificialanalysis.ai/embed/llm-performance-leaderboard"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+priority = true
+
+[[nodes]]
+id = "aa.methodology"
+type = "page"
+label = "AA Arena Methodology"
+url = "https://artificialanalysis.ai/text/arena?tab=Ranking"
+page_type = "methodology"
+collection_method = "html"
+polling_frequency = "weekly"
+
+[[nodes]]
+id = "aa.rss"
+type = "page"
+label = "Artificial Analysis RSS"
+url = "https://news.google.com/rss/search?q=%22artificial+analysis%22+ai+benchmark+OR+leaderboard&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "daily"
+
+# ════════════════════════════════════════════
+#  Page Nodes — LMArena
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "lmarena.main"
+type = "page"
+label = "LMArena Main Leaderboard"
+url = "https://lmarena.ai/leaderboard/"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "lmarena.text"
+type = "page"
+label = "LMArena Text"
+url = "https://lmarena.ai/leaderboard/text"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "lmarena.code"
+type = "page"
+label = "LMArena Code"
+url = "https://lmarena.ai/leaderboard/code"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "lmarena.vision"
+type = "page"
+label = "LMArena Vision"
+url = "https://lmarena.ai/leaderboard/vision"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "lmarena.t2i"
+type = "page"
+label = "LMArena Text-to-Image"
+url = "https://lmarena.ai/leaderboard/text-to-image"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "lmarena.t2v"
+type = "page"
+label = "LMArena Text-to-Video"
+url = "https://lmarena.ai/leaderboard/text-to-video"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "lmarena.document"
+type = "page"
+label = "LMArena Document"
+url = "https://lmarena.ai/leaderboard/document"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "lmarena.search"
+type = "page"
+label = "LMArena Search"
+url = "https://lmarena.ai/leaderboard/search"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "6h"
+
+# ════════════════════════════════════════════
+#  Page Nodes — LiveBench
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "livebench.leaderboard"
+type = "page"
+label = "LiveBench Leaderboard"
+url = "https://livebench.ai/"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "livebench.methodology"
+type = "page"
+label = "LiveBench Methodology PDF"
+url = "https://livebench.ai/livebench.pdf"
+page_type = "methodology pdf"
+collection_method = "html"
+polling_frequency = "weekly"
+
+# ════════════════════════════════════════════
+#  Page Nodes — SWE-bench
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "swebench.verified"
+type = "page"
+label = "SWE-bench Verified"
+url = "https://www.swebench.com/verified.html"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "swebench.lite"
+type = "page"
+label = "SWE-bench Lite"
+url = "https://www.swebench.com/lite.html"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "swebench.full"
+type = "page"
+label = "SWE-bench Full"
+url = "https://www.swebench.com/full.html"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "swebench.pro"
+type = "page"
+label = "SWE-bench Pro"
+url = "https://www.swebench.com/pro.html"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "swebench.multilingual"
+type = "page"
+label = "SWE-bench Multilingual"
+url = "https://www.swebench.com/multilingual.html"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "swebench.multimodal"
+type = "page"
+label = "SWE-bench Multimodal"
+url = "https://www.swebench.com/multimodal.html"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+
+# ════════════════════════════════════════════
+#  Page Nodes — GAIA
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "gaia.leaderboard"
+type = "page"
+label = "GAIA Leaderboard"
+url = "https://huggingface.co/spaces/gaia-benchmark/leaderboard"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "gaia.org"
+type = "page"
+label = "GAIA Org Page"
+url = "https://huggingface.co/gaia-benchmark"
+page_type = "org page"
+collection_method = "html"
+polling_frequency = "daily"
+
+# ════════════════════════════════════════════
+#  Page Nodes — HLE (Scale AI)
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "hle.leaderboard"
+type = "page"
+label = "HLE Leaderboard"
+url = "https://scale.com/leaderboard/humanitys_last_exam"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "hle.hub"
+type = "page"
+label = "Scale AI Leaderboard Hub"
+url = "https://scale.com/leaderboard"
+page_type = "leaderboard hub"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "hle.rss"
+type = "page"
+label = "HLE Google News RSS"
+url = "https://news.google.com/rss/search?q=%22humanity%27s+last+exam%22+OR+%22HLE%22+benchmark&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "daily"
+
+# ════════════════════════════════════════════
+#  Page Nodes — Terminal-Bench
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "tbench.leaderboard"
+type = "page"
+label = "Terminal-Bench Leaderboard"
+url = "https://www.tbench.ai/"
+page_type = "leaderboard"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "tbench.registry"
+type = "page"
+label = "Terminal-Bench Registry"
+url = "https://www.tbench.ai/docs/registry"
+page_type = "registry"
+collection_method = "html"
+polling_frequency = "weekly"
+
+[[nodes]]
+id = "tbench.rss"
+type = "page"
+label = "Terminal-Bench Google News RSS"
+url = "https://news.google.com/rss/search?q=%22terminal-bench%22+OR+%22tbench%22+benchmark&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "daily"
+
+# ════════════════════════════════════════════
+#  Page Nodes — Reuters
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "reuters.rss"
+type = "page"
+label = "Reuters AI Google News RSS"
+url = "https://news.google.com/rss/search?q=artificial+intelligence+site:reuters.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "3h"
+priority = true
+
+# ════════════════════════════════════════════
+#  Page Nodes — TechCrunch
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "techcrunch.index"
+type = "page"
+label = "TechCrunch AI Index"
+url = "https://techcrunch.com/category/artificial-intelligence/"
+page_type = "news index"
+collection_method = "html"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "techcrunch.rss"
+type = "page"
+label = "TechCrunch AI RSS"
+url = "https://techcrunch.com/category/artificial-intelligence/feed/"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "6h"
+priority = true
+
+# ════════════════════════════════════════════
+#  Page Nodes — Semantic Scholar
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "s2.api"
+type = "page"
+label = "Semantic Scholar API"
+url = "https://api.semanticscholar.org/graph/v1"
+page_type = "api endpoint"
+collection_method = "api"
+polling_frequency = "on_demand"
+
+# ════════════════════════════════════════════
+#  Page Nodes — HF Leaderboard Docs
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "hf_docs.leaderboard_index"
+type = "page"
+label = "HF Leaderboard Docs Index"
+url = "https://huggingface.co/docs/leaderboards/en/index"
+page_type = "leaderboard docs"
+collection_method = "html"
+polling_frequency = "weekly"
+
+# ════════════════════════════════════════════
+#  Edges
+# ════════════════════════════════════════════
+
+# START → Sources
+[[edges]]
+source = "START"
+target = "artificial_analysis"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "lmarena"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "livebench"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "swebench"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "gaia"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "hle"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "terminal_bench"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "reuters"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "techcrunch"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "semantic_scholar"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "hf_leaderboard_docs"
+relationship = "initiates"
+
+# Artificial Analysis → Pages
+[[edges]]
+source = "artificial_analysis"
+target = "aa.leaderboard_models"
+relationship = "monitors"
+
+[[edges]]
+source = "artificial_analysis"
+target = "aa.leaderboard_perf"
+relationship = "monitors"
+
+[[edges]]
+source = "artificial_analysis"
+target = "aa.methodology"
+relationship = "monitors"
+
+[[edges]]
+source = "artificial_analysis"
+target = "aa.rss"
+relationship = "monitors"
+
+# LMArena → Pages
+[[edges]]
+source = "lmarena"
+target = "lmarena.main"
+relationship = "monitors"
+
+[[edges]]
+source = "lmarena"
+target = "lmarena.text"
+relationship = "monitors"
+
+[[edges]]
+source = "lmarena"
+target = "lmarena.code"
+relationship = "monitors"
+
+[[edges]]
+source = "lmarena"
+target = "lmarena.vision"
+relationship = "monitors"
+
+[[edges]]
+source = "lmarena"
+target = "lmarena.t2i"
+relationship = "monitors"
+
+[[edges]]
+source = "lmarena"
+target = "lmarena.t2v"
+relationship = "monitors"
+
+[[edges]]
+source = "lmarena"
+target = "lmarena.document"
+relationship = "monitors"
+
+[[edges]]
+source = "lmarena"
+target = "lmarena.search"
+relationship = "monitors"
+
+# LiveBench → Pages
+[[edges]]
+source = "livebench"
+target = "livebench.leaderboard"
+relationship = "monitors"
+
+[[edges]]
+source = "livebench"
+target = "livebench.methodology"
+relationship = "monitors"
+
+# SWE-bench → Pages
+[[edges]]
+source = "swebench"
+target = "swebench.verified"
+relationship = "monitors"
+
+[[edges]]
+source = "swebench"
+target = "swebench.lite"
+relationship = "monitors"
+
+[[edges]]
+source = "swebench"
+target = "swebench.full"
+relationship = "monitors"
+
+[[edges]]
+source = "swebench"
+target = "swebench.pro"
+relationship = "monitors"
+
+[[edges]]
+source = "swebench"
+target = "swebench.multilingual"
+relationship = "monitors"
+
+[[edges]]
+source = "swebench"
+target = "swebench.multimodal"
+relationship = "monitors"
+
+# GAIA → Pages
+[[edges]]
+source = "gaia"
+target = "gaia.leaderboard"
+relationship = "monitors"
+
+[[edges]]
+source = "gaia"
+target = "gaia.org"
+relationship = "monitors"
+
+# HLE → Pages
+[[edges]]
+source = "hle"
+target = "hle.leaderboard"
+relationship = "monitors"
+
+[[edges]]
+source = "hle"
+target = "hle.hub"
+relationship = "monitors"
+
+[[edges]]
+source = "hle"
+target = "hle.rss"
+relationship = "monitors"
+
+# Terminal-Bench → Pages
+[[edges]]
+source = "terminal_bench"
+target = "tbench.leaderboard"
+relationship = "monitors"
+
+[[edges]]
+source = "terminal_bench"
+target = "tbench.registry"
+relationship = "monitors"
+
+[[edges]]
+source = "terminal_bench"
+target = "tbench.rss"
+relationship = "monitors"
+
+# Reuters → Pages
+[[edges]]
+source = "reuters"
+target = "reuters.rss"
+relationship = "monitors"
+
+# TechCrunch → Pages
+[[edges]]
+source = "techcrunch"
+target = "techcrunch.index"
+relationship = "monitors"
+
+[[edges]]
+source = "techcrunch"
+target = "techcrunch.rss"
+relationship = "monitors"
+
+# Semantic Scholar → Pages
+[[edges]]
+source = "semantic_scholar"
+target = "s2.api"
+relationship = "monitors"
+
+# HF Leaderboard Docs → Pages
+[[edges]]
+source = "hf_leaderboard_docs"
+target = "hf_docs.leaderboard_index"
+relationship = "monitors"
+
+# Pages → END
+[[edges]]
+source = "aa.leaderboard_models"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "aa.leaderboard_perf"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "aa.methodology"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "aa.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "lmarena.main"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "lmarena.text"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "lmarena.code"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "lmarena.vision"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "lmarena.t2i"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "lmarena.t2v"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "lmarena.document"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "lmarena.search"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "livebench.leaderboard"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "livebench.methodology"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "swebench.verified"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "swebench.lite"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "swebench.full"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "swebench.pro"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "swebench.multilingual"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "swebench.multimodal"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "gaia.leaderboard"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "gaia.org"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "hle.leaderboard"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "hle.hub"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "hle.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "tbench.leaderboard"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "tbench.registry"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "tbench.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "reuters.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "techcrunch.index"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "techcrunch.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "s2.api"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "hf_docs.leaderboard_index"
+target = "END"
+relationship = "produces"
+
+# ════════════════════════════════════════════
+#  Cross-source verification edges
+# ════════════════════════════════════════════
+
+# Benchmark RSS supplements leaderboard HTML
+[[edges]]
+source = "aa.rss"
+target = "aa.leaderboard_models"
+relationship = "supplements"
+
+[[edges]]
+source = "hle.rss"
+target = "hle.leaderboard"
+relationship = "supplements"
+
+[[edges]]
+source = "tbench.rss"
+target = "tbench.leaderboard"
+relationship = "supplements"
+
+# TechCrunch RSS supplements index
+[[edges]]
+source = "techcrunch.rss"
+target = "techcrunch.index"
+relationship = "supplements"

@@ -23,6 +23,8 @@ class OpenAICollector(SourceCollector):
         return None
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
+        if "rss" in page.page_type:
+            return self._extract_google_news_rss(html)
         if "changelog" in page.page_type:
             return self._extract_changelog(html)
         if "product-news" in page.page_type:

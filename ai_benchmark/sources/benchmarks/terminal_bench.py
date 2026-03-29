@@ -19,6 +19,8 @@ class TerminalBenchCollector(BenchmarkCollector):
     benchmark_family = "Terminal-Bench"
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
+        if "rss" in page.page_type:
+            return self._extract_google_news_rss(html)
         if "registry" in page.page_type:
             return self._extract_registry(html)
         return super().extract_items(html, page)

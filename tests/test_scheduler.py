@@ -29,7 +29,7 @@ def test_schedules_cover_all_sources():
     # Should have entries for all major source categories
     assert "OpenAI" in orgs
     assert "Reuters" in orgs
-    assert "arXiv" in orgs
+    assert "arXiv / Cornell" in orgs
     assert "Hugging Face Forums" in orgs
 
 

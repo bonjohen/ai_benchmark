@@ -19,6 +19,8 @@ class ArtificialAnalysisCollector(BenchmarkCollector):
     benchmark_family = "Artificial Analysis"
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
+        if "rss" in page.page_type:
+            return self._extract_google_news_rss(html)
         if "methodology" in page.page_type:
             return self._extract_methodology(html)
         return super().extract_items(html, page)

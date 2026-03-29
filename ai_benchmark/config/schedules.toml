@@ -55,28 +55,28 @@ cron = "0 8 * * *"
 max_concurrent = 1
 
 [[schedules]]
-organization = "SWE-bench"
+organization = "SWE-bench team"
 cron = "0 9 * * *"
 max_concurrent = 1
 
 [[schedules]]
-organization = "GAIA"
+organization = "GAIA benchmark"
 cron = "0 10 * * *"
 max_concurrent = 1
 
 [[schedules]]
-organization = "HLE"
+organization = "Scale AI"
 cron = "0 11 * * *"
 max_concurrent = 1
 
 [[schedules]]
-organization = "Terminal-Bench"
+organization = "Stanford x Laude"
 cron = "0 12 * * *"
 max_concurrent = 1
 
 # Research feeds — every 12-24 hours
 [[schedules]]
-organization = "arXiv"
+organization = "arXiv / Cornell"
 cron = "0 6,18 * * *"
 max_concurrent = 1
 
@@ -87,7 +87,7 @@ max_concurrent = 1
 
 # Semantic Scholar enrichment — every 4 hours
 [[schedules]]
-organization = "Semantic Scholar"
+organization = "Ai2"
 cron = "0 */4 * * *"
 max_concurrent = 1
 
@@ -125,6 +125,6 @@ cron = "0 8 * * *"
 max_concurrent = 1
 
 [[schedules]]
-organization = "Hugging Face Leaderboard Docs"
+organization = "Hugging Face"
 cron = "0 9 * * *"
 max_concurrent = 1

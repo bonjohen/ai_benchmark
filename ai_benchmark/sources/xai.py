@@ -16,6 +16,8 @@ class XAICollector(SourceCollector):
     """Collector for xAI official pages."""
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
+        if "rss" in page.page_type:
+            return self._extract_google_news_rss(html)
         if "release" in page.page_type:
             return self._extract_release_notes(html)
         if "model" in page.page_type or "pricing" in page.page_type:

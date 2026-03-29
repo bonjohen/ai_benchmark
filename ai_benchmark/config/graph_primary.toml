@@ -1,0 +1,1157 @@
+# AI Benchmark — Primary Source Collection Graph
+# Official vendor pages and GitHub API sources (trust 4.5-5.0).
+# These are authoritative first-party sources.
+
+[graph]
+name = "Primary Sources"
+classification = "primary"
+description = "Official vendor pages, API docs, and GitHub org monitoring"
+source_count = 8
+page_count = 44
+
+# ════════════════════════════════════════════
+#  Control Nodes
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "START"
+type = "control"
+label = "Collection Start"
+
+[[nodes]]
+id = "END"
+type = "control"
+label = "Collection End"
+
+# ════════════════════════════════════════════
+#  Source Nodes
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "openai"
+type = "source"
+label = "OpenAI"
+organization = "OpenAI"
+trust_rating = 5.0
+source_role = "primary source for model launches, API changes, pricing, system cards"
+cadence = "0 */6 * * *"
+
+[[nodes]]
+id = "anthropic"
+type = "source"
+label = "Anthropic"
+organization = "Anthropic"
+trust_rating = 5.0
+source_role = "primary source for Claude announcements, system cards, pricing"
+cadence = "15 */6 * * *"
+
+[[nodes]]
+id = "google"
+type = "source"
+label = "Google Gemini / DeepMind"
+organization = "Google"
+trust_rating = 5.0
+source_role = "primary source for Gemini models, pricing, release notes"
+cadence = "30 */6 * * *"
+
+[[nodes]]
+id = "xai"
+type = "source"
+label = "xAI"
+organization = "xAI"
+trust_rating = 4.5
+source_role = "primary source for Grok announcements, API release notes, pricing"
+cadence = "45 */6 * * *"
+
+[[nodes]]
+id = "mistral"
+type = "source"
+label = "Mistral AI"
+organization = "Mistral AI"
+trust_rating = 5.0
+source_role = "primary source for model launches, open-weight releases, API updates"
+cadence = "0 */12 * * *"
+
+[[nodes]]
+id = "cohere"
+type = "source"
+label = "Cohere"
+organization = "Cohere"
+trust_rating = 4.5
+source_role = "primary source for enterprise-model announcements, release notes"
+cadence = "15 */12 * * *"
+
+[[nodes]]
+id = "meta"
+type = "source"
+label = "Meta Open Source AI"
+organization = "Meta"
+trust_rating = 4.5
+source_role = "primary source for Llama repos, model utilities, safety tools"
+cadence = "30 */12 * * *"
+
+[[nodes]]
+id = "github"
+type = "source"
+label = "GitHub"
+organization = "GitHub"
+trust_rating = 4.5
+source_role = "official repos, releases, SDKs, eval harnesses"
+cadence = "0 8 * * *"
+
+# ════════════════════════════════════════════
+#  Page Nodes — OpenAI
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "openai.product_news"
+type = "page"
+label = "OpenAI Product Releases"
+url = "https://openai.com/news/product-releases/"
+page_type = "product-news index"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "openai.changelog"
+type = "page"
+label = "OpenAI API Changelog"
+url = "https://platform.openai.com/docs/changelog"
+page_type = "api changelog"
+collection_method = "html"
+polling_frequency = "6h"
+priority = true
+
+[[nodes]]
+id = "openai.models"
+type = "page"
+label = "OpenAI Model Catalog"
+url = "https://platform.openai.com/docs/models"
+page_type = "model catalog"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "openai.pricing"
+type = "page"
+label = "OpenAI Pricing"
+url = "https://openai.com/api/pricing/"
+page_type = "pricing"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "openai.system_cards"
+type = "page"
+label = "OpenAI System Cards"
+url = "https://openai.com/index/system-cards/"
+page_type = "system-card index"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "openai.rss"
+type = "page"
+label = "OpenAI Google News RSS"
+url = "https://news.google.com/rss/search?q=openai+model+OR+api+OR+gpt+site:openai.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "6h"
+priority = true
+
+# ════════════════════════════════════════════
+#  Page Nodes — Anthropic
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "anthropic.newsroom"
+type = "page"
+label = "Anthropic Newsroom"
+url = "https://www.anthropic.com/news"
+page_type = "newsroom"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "anthropic.system_cards"
+type = "page"
+label = "Anthropic System Cards"
+url = "https://www.anthropic.com/system-cards"
+page_type = "system-card index"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "anthropic.models"
+type = "page"
+label = "Anthropic Model Catalog"
+url = "https://docs.anthropic.com/en/docs/about-claude/models"
+page_type = "model catalog"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "anthropic.pricing_docs"
+type = "page"
+label = "Anthropic Pricing (Docs)"
+url = "https://docs.anthropic.com/en/docs/about-claude/pricing"
+page_type = "pricing"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "anthropic.pricing_main"
+type = "page"
+label = "Anthropic Pricing (Main)"
+url = "https://www.anthropic.com/pricing"
+page_type = "pricing"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "anthropic.release_notes"
+type = "page"
+label = "Anthropic API Release Notes"
+url = "https://docs.anthropic.com/en/release-notes/api"
+page_type = "api release notes"
+collection_method = "html"
+polling_frequency = "6h"
+
+# ════════════════════════════════════════════
+#  Page Nodes — Google
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "google.changelog"
+type = "page"
+label = "Gemini API Changelog"
+url = "https://ai.google.dev/gemini-api/docs/changelog"
+page_type = "api changelog"
+collection_method = "html"
+polling_frequency = "6h"
+priority = true
+
+[[nodes]]
+id = "google.pricing"
+type = "page"
+label = "Gemini Pricing"
+url = "https://ai.google.dev/pricing"
+page_type = "pricing"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "google.models"
+type = "page"
+label = "Gemini Model Catalog"
+url = "https://ai.google.dev/gemini-api/docs/models/gemini"
+page_type = "model catalog"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "google.blog"
+type = "page"
+label = "Google DeepMind Blog"
+url = "https://blog.google/technology/google-deepmind/"
+page_type = "research blog"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "google.rate_limits"
+type = "page"
+label = "Gemini Rate Limits"
+url = "https://ai.google.dev/gemini-api/docs/rate-limits"
+page_type = "rate limits"
+collection_method = "html"
+polling_frequency = "daily"
+
+# ════════════════════════════════════════════
+#  Page Nodes — xAI
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "xai.release_notes"
+type = "page"
+label = "xAI Release Notes"
+url = "https://docs.x.ai/docs/release-notes"
+page_type = "release notes"
+collection_method = "html"
+polling_frequency = "6h"
+priority = true
+
+[[nodes]]
+id = "xai.models"
+type = "page"
+label = "xAI Model Catalog / Pricing"
+url = "https://docs.x.ai/developers/models"
+page_type = "model catalog / pricing"
+collection_method = "html"
+polling_frequency = "daily"
+priority = true
+
+[[nodes]]
+id = "xai.news"
+type = "page"
+label = "xAI News"
+url = "https://x.ai/news"
+page_type = "news"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "xai.rate_limits"
+type = "page"
+label = "xAI Rate Limits"
+url = "https://docs.x.ai/developers/rate-limits"
+page_type = "rate limits"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "xai.rss"
+type = "page"
+label = "xAI Google News RSS"
+url = "https://news.google.com/rss/search?q=xai+grok+model+OR+api+site:x.ai&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "6h"
+priority = true
+
+# ════════════════════════════════════════════
+#  Page Nodes — Mistral AI
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "mistral.changelog"
+type = "page"
+label = "Mistral Changelog"
+url = "https://docs.mistral.ai/getting-started/changelog"
+page_type = "changelog"
+collection_method = "html"
+polling_frequency = "6h"
+priority = true
+
+[[nodes]]
+id = "mistral.news"
+type = "page"
+label = "Mistral News"
+url = "https://mistral.ai/news/"
+page_type = "news"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "mistral.pricing"
+type = "page"
+label = "Mistral Pricing"
+url = "https://mistral.ai/pricing"
+page_type = "pricing"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "mistral.pricing_studio"
+type = "page"
+label = "Mistral AI Studio Pricing"
+url = "https://docs.mistral.ai/deployment/ai-studio/pricing"
+page_type = "pricing"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "mistral.rss"
+type = "page"
+label = "Mistral Google News RSS"
+url = "https://news.google.com/rss/search?q=mistral+ai+model+OR+release+site:mistral.ai&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "6h"
+priority = true
+
+# ════════════════════════════════════════════
+#  Page Nodes — Cohere
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "cohere.changelog"
+type = "page"
+label = "Cohere Release Notes"
+url = "https://docs.cohere.com/changelog"
+page_type = "release notes"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "cohere.blog"
+type = "page"
+label = "Cohere Blog"
+url = "https://cohere.com/blog"
+page_type = "blog"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "cohere.pricing"
+type = "page"
+label = "Cohere Pricing"
+url = "https://cohere.com/pricing"
+page_type = "pricing"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "cohere.models"
+type = "page"
+label = "Cohere Model Catalog"
+url = "https://docs.cohere.com/docs/models"
+page_type = "model catalog"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "cohere.rss"
+type = "page"
+label = "Cohere Google News RSS"
+url = "https://news.google.com/rss/search?q=cohere+ai+model+OR+release+site:cohere.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "6h"
+priority = true
+
+# ════════════════════════════════════════════
+#  Page Nodes — Meta
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "meta.github"
+type = "page"
+label = "Meta Llama GitHub Org"
+url = "https://github.com/meta-llama"
+page_type = "github org"
+collection_method = "github_api"
+polling_frequency = "6h"
+priority = true
+
+[[nodes]]
+id = "meta.landing"
+type = "page"
+label = "Meta Open Source AI Landing"
+url = "https://ai.meta.com/opensourceAI/"
+page_type = "landing page"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "meta.rss"
+type = "page"
+label = "Meta Google News RSS"
+url = "https://news.google.com/rss/search?q=meta+llama+model+OR+release+site:ai.meta.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+collection_method = "rss"
+polling_frequency = "6h"
+priority = true
+
+# ════════════════════════════════════════════
+#  Page Nodes — GitHub (multi-org monitor)
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "github.openai"
+type = "page"
+label = "GitHub: openai"
+url = "https://github.com/openai"
+page_type = "github org"
+collection_method = "github_api"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "github.anthropics"
+type = "page"
+label = "GitHub: anthropics"
+url = "https://github.com/anthropics"
+page_type = "github org"
+collection_method = "github_api"
+polling_frequency = "6h"
+
+[[nodes]]
+id = "github.google"
+type = "page"
+label = "GitHub: google"
+url = "https://github.com/google"
+page_type = "github org"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.mistralai"
+type = "page"
+label = "GitHub: mistralai"
+url = "https://github.com/mistralai"
+page_type = "github org"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.xai_org"
+type = "page"
+label = "GitHub: xai-org"
+url = "https://github.com/xai-org"
+page_type = "github org"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.cohere_ai"
+type = "page"
+label = "GitHub: cohere-ai"
+url = "https://github.com/cohere-ai"
+page_type = "github org"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.swebench"
+type = "page"
+label = "GitHub: SWE-bench"
+url = "https://github.com/princeton-nlp/SWE-bench"
+page_type = "github repo releases"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.livebench"
+type = "page"
+label = "GitHub: LiveBench"
+url = "https://github.com/LiveBench/LiveBench"
+page_type = "github repo releases"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.gaia_dataset"
+type = "page"
+label = "HF: GAIA Dataset"
+url = "https://huggingface.co/datasets/gaia-benchmark/GAIA"
+page_type = "dataset page"
+collection_method = "html"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.hle"
+type = "page"
+label = "GitHub: HLE"
+url = "https://github.com/centerforaisafety/hle"
+page_type = "github repo releases"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.tbench"
+type = "page"
+label = "GitHub: T-Bench"
+url = "https://github.com/laude-institute/t-bench"
+page_type = "github repo releases"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+[[nodes]]
+id = "github.arena_hard"
+type = "page"
+label = "GitHub: Arena Hard Auto"
+url = "https://github.com/lmarena/arena-hard-auto"
+page_type = "github repo releases"
+collection_method = "github_api"
+polling_frequency = "12h"
+
+# ════════════════════════════════════════════
+#  Edges
+# ════════════════════════════════════════════
+
+# START → Sources
+[[edges]]
+source = "START"
+target = "openai"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "anthropic"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "google"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "xai"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "mistral"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "cohere"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "meta"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "github"
+relationship = "initiates"
+
+# OpenAI → Pages
+[[edges]]
+source = "openai"
+target = "openai.product_news"
+relationship = "monitors"
+
+[[edges]]
+source = "openai"
+target = "openai.changelog"
+relationship = "monitors"
+
+[[edges]]
+source = "openai"
+target = "openai.models"
+relationship = "monitors"
+
+[[edges]]
+source = "openai"
+target = "openai.pricing"
+relationship = "monitors"
+
+[[edges]]
+source = "openai"
+target = "openai.system_cards"
+relationship = "monitors"
+
+[[edges]]
+source = "openai"
+target = "openai.rss"
+relationship = "monitors"
+
+# Anthropic → Pages
+[[edges]]
+source = "anthropic"
+target = "anthropic.newsroom"
+relationship = "monitors"
+
+[[edges]]
+source = "anthropic"
+target = "anthropic.system_cards"
+relationship = "monitors"
+
+[[edges]]
+source = "anthropic"
+target = "anthropic.models"
+relationship = "monitors"
+
+[[edges]]
+source = "anthropic"
+target = "anthropic.pricing_docs"
+relationship = "monitors"
+
+[[edges]]
+source = "anthropic"
+target = "anthropic.pricing_main"
+relationship = "monitors"
+
+[[edges]]
+source = "anthropic"
+target = "anthropic.release_notes"
+relationship = "monitors"
+
+# Google → Pages
+[[edges]]
+source = "google"
+target = "google.changelog"
+relationship = "monitors"
+
+[[edges]]
+source = "google"
+target = "google.pricing"
+relationship = "monitors"
+
+[[edges]]
+source = "google"
+target = "google.models"
+relationship = "monitors"
+
+[[edges]]
+source = "google"
+target = "google.blog"
+relationship = "monitors"
+
+[[edges]]
+source = "google"
+target = "google.rate_limits"
+relationship = "monitors"
+
+# xAI → Pages
+[[edges]]
+source = "xai"
+target = "xai.release_notes"
+relationship = "monitors"
+
+[[edges]]
+source = "xai"
+target = "xai.models"
+relationship = "monitors"
+
+[[edges]]
+source = "xai"
+target = "xai.news"
+relationship = "monitors"
+
+[[edges]]
+source = "xai"
+target = "xai.rate_limits"
+relationship = "monitors"
+
+[[edges]]
+source = "xai"
+target = "xai.rss"
+relationship = "monitors"
+
+# Mistral → Pages
+[[edges]]
+source = "mistral"
+target = "mistral.changelog"
+relationship = "monitors"
+
+[[edges]]
+source = "mistral"
+target = "mistral.news"
+relationship = "monitors"
+
+[[edges]]
+source = "mistral"
+target = "mistral.pricing"
+relationship = "monitors"
+
+[[edges]]
+source = "mistral"
+target = "mistral.pricing_studio"
+relationship = "monitors"
+
+[[edges]]
+source = "mistral"
+target = "mistral.rss"
+relationship = "monitors"
+
+# Cohere → Pages
+[[edges]]
+source = "cohere"
+target = "cohere.changelog"
+relationship = "monitors"
+
+[[edges]]
+source = "cohere"
+target = "cohere.blog"
+relationship = "monitors"
+
+[[edges]]
+source = "cohere"
+target = "cohere.pricing"
+relationship = "monitors"
+
+[[edges]]
+source = "cohere"
+target = "cohere.models"
+relationship = "monitors"
+
+[[edges]]
+source = "cohere"
+target = "cohere.rss"
+relationship = "monitors"
+
+# Meta → Pages
+[[edges]]
+source = "meta"
+target = "meta.github"
+relationship = "monitors"
+
+[[edges]]
+source = "meta"
+target = "meta.landing"
+relationship = "monitors"
+
+[[edges]]
+source = "meta"
+target = "meta.rss"
+relationship = "monitors"
+
+# GitHub → Pages
+[[edges]]
+source = "github"
+target = "github.openai"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.anthropics"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.google"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.mistralai"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.xai_org"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.cohere_ai"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.swebench"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.livebench"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.gaia_dataset"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.hle"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.tbench"
+relationship = "monitors"
+
+[[edges]]
+source = "github"
+target = "github.arena_hard"
+relationship = "monitors"
+
+# Pages → END
+[[edges]]
+source = "openai.product_news"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "openai.changelog"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "openai.models"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "openai.pricing"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "openai.system_cards"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "openai.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "anthropic.newsroom"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "anthropic.system_cards"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "anthropic.models"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "anthropic.pricing_docs"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "anthropic.pricing_main"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "anthropic.release_notes"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "google.changelog"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "google.pricing"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "google.models"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "google.blog"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "google.rate_limits"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "xai.release_notes"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "xai.models"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "xai.news"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "xai.rate_limits"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "xai.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "mistral.changelog"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "mistral.news"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "mistral.pricing"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "mistral.pricing_studio"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "mistral.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "cohere.changelog"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "cohere.blog"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "cohere.pricing"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "cohere.models"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "cohere.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "meta.github"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "meta.landing"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "meta.rss"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.openai"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.anthropics"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.google"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.mistralai"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.xai_org"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.cohere_ai"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.swebench"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.livebench"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.gaia_dataset"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.hle"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.tbench"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "github.arena_hard"
+target = "END"
+relationship = "produces"
+
+# ════════════════════════════════════════════
+#  Cross-source verification edges
+# ════════════════════════════════════════════
+
+# GitHub releases confirm vendor announcements
+[[edges]]
+source = "github.openai"
+target = "openai"
+relationship = "confirms"
+
+[[edges]]
+source = "github.anthropics"
+target = "anthropic"
+relationship = "confirms"
+
+[[edges]]
+source = "github.google"
+target = "google"
+relationship = "confirms"
+
+[[edges]]
+source = "github.mistralai"
+target = "mistral"
+relationship = "confirms"
+
+[[edges]]
+source = "github.xai_org"
+target = "xai"
+relationship = "confirms"
+
+[[edges]]
+source = "github.cohere_ai"
+target = "cohere"
+relationship = "confirms"
+
+# RSS supplements direct HTML pages
+[[edges]]
+source = "openai.rss"
+target = "openai.product_news"
+relationship = "supplements"
+
+[[edges]]
+source = "xai.rss"
+target = "xai.news"
+relationship = "supplements"
+
+[[edges]]
+source = "mistral.rss"
+target = "mistral.news"
+relationship = "supplements"
+
+[[edges]]
+source = "cohere.rss"
+target = "cohere.blog"
+relationship = "supplements"
+
+[[edges]]
+source = "meta.rss"
+target = "meta.landing"
+relationship = "supplements"

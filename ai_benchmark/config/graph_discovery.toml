@@ -1,0 +1,257 @@
+# AI Benchmark — Discovery Source Collection Graph
+# Low-confidence community and research feeds (trust 3.0-4.5).
+# Items from these sources enter the triage pipeline, not direct event creation.
+# Research papers route to candidate_paper → enrichment → promotion.
+# Community items provide minimal metadata only.
+
+[graph]
+name = "Discovery Sources"
+classification = "discovery-only"
+description = "arXiv, HF Papers, HF Forums — early signals and community discussion"
+source_count = 3
+page_count = 7
+
+# ════════════════════════════════════════════
+#  Control Nodes
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "START"
+type = "control"
+label = "Collection Start"
+
+[[nodes]]
+id = "END"
+type = "control"
+label = "Collection End"
+
+# ════════════════════════════════════════════
+#  Source Nodes
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "arxiv"
+type = "source"
+label = "arXiv / Cornell"
+organization = "arXiv / Cornell"
+trust_rating = 4.5
+source_role = "early paper discovery"
+cadence = "0 6,18 * * *"
+item_type = "candidate_paper"
+pipeline = "research_triage"
+
+[[nodes]]
+id = "hf_papers"
+type = "source"
+label = "Hugging Face Papers"
+organization = "Hugging Face Papers"
+trust_rating = 4.0
+source_role = "community-amplified paper discovery"
+cadence = "0 8 * * *"
+item_type = "candidate_paper"
+pipeline = "research_triage"
+
+[[nodes]]
+id = "hf_forums"
+type = "source"
+label = "Hugging Face Forums"
+organization = "Hugging Face Forums"
+trust_rating = 3.0
+source_role = "discovery-only community source"
+cadence = "0 8 * * *"
+item_type = "community"
+pipeline = "standard"
+
+# ════════════════════════════════════════════
+#  Page Nodes — arXiv
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "arxiv.cs_ai"
+type = "page"
+label = "arXiv cs.AI Recent"
+url = "https://arxiv.org/list/cs.AI/recent"
+page_type = "recent submissions"
+collection_method = "html"
+polling_frequency = "12h"
+categories = ["cs.AI"]
+
+[[nodes]]
+id = "arxiv.cs_cl"
+type = "page"
+label = "arXiv cs.CL Recent"
+url = "https://arxiv.org/list/cs.CL/recent"
+page_type = "recent submissions"
+collection_method = "html"
+polling_frequency = "12h"
+categories = ["cs.CL"]
+
+[[nodes]]
+id = "arxiv.cs_lg"
+type = "page"
+label = "arXiv cs.LG Recent"
+url = "https://arxiv.org/list/cs.LG/recent"
+page_type = "recent submissions"
+collection_method = "html"
+polling_frequency = "12h"
+categories = ["cs.LG"]
+
+# ════════════════════════════════════════════
+#  Page Nodes — HF Papers
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "hf_papers.index"
+type = "page"
+label = "HF Papers Index"
+url = "https://huggingface.co/papers"
+page_type = "papers index"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "hf_papers.trending"
+type = "page"
+label = "HF Papers Trending"
+url = "https://huggingface.co/papers/trending"
+page_type = "trending papers"
+collection_method = "html"
+polling_frequency = "daily"
+
+# ════════════════════════════════════════════
+#  Page Nodes — HF Forums
+# ════════════════════════════════════════════
+
+[[nodes]]
+id = "hf_forums.index"
+type = "page"
+label = "HF Forums Index"
+url = "https://discuss.huggingface.co/"
+page_type = "forum index"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "hf_forums.api"
+type = "page"
+label = "HF Forums Discourse API"
+url = "https://discuss.huggingface.co/latest.json"
+page_type = "discourse json"
+collection_method = "discourse_api"
+polling_frequency = "daily"
+
+# ════════════════════════════════════════════
+#  Edges
+# ════════════════════════════════════════════
+
+# START → Sources
+[[edges]]
+source = "START"
+target = "arxiv"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "hf_papers"
+relationship = "initiates"
+
+[[edges]]
+source = "START"
+target = "hf_forums"
+relationship = "initiates"
+
+# arXiv → Pages
+[[edges]]
+source = "arxiv"
+target = "arxiv.cs_ai"
+relationship = "monitors"
+
+[[edges]]
+source = "arxiv"
+target = "arxiv.cs_cl"
+relationship = "monitors"
+
+[[edges]]
+source = "arxiv"
+target = "arxiv.cs_lg"
+relationship = "monitors"
+
+# HF Papers → Pages
+[[edges]]
+source = "hf_papers"
+target = "hf_papers.index"
+relationship = "monitors"
+
+[[edges]]
+source = "hf_papers"
+target = "hf_papers.trending"
+relationship = "monitors"
+
+# HF Forums → Pages
+[[edges]]
+source = "hf_forums"
+target = "hf_forums.index"
+relationship = "monitors"
+
+[[edges]]
+source = "hf_forums"
+target = "hf_forums.api"
+relationship = "monitors"
+
+# Pages → END
+[[edges]]
+source = "arxiv.cs_ai"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "arxiv.cs_cl"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "arxiv.cs_lg"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "hf_papers.index"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "hf_papers.trending"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "hf_forums.index"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "hf_forums.api"
+target = "END"
+relationship = "produces"
+
+# ════════════════════════════════════════════
+#  Cross-source edges
+# ════════════════════════════════════════════
+
+# HF Papers trending supplements the main index
+[[edges]]
+source = "hf_papers.trending"
+target = "hf_papers.index"
+relationship = "supplements"
+
+# HF Forums Discourse API supplements the HTML index
+[[edges]]
+source = "hf_forums.api"
+target = "hf_forums.index"
+relationship = "supplements"
+
+# arXiv papers may appear on HF Papers (community amplification)
+[[edges]]
+source = "arxiv"
+target = "hf_papers"
+relationship = "feeds_into"

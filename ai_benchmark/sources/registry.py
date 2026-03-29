@@ -77,6 +77,8 @@ def get_collector(source_config: SourceConfig, **kwargs) -> SourceCollector:
         raise ValueError(f"No collector registered for organization: {source_config.organization}")
     if cls in (MetaCollector, GitHubDiscoveryCollector):
         return cls(source_config, github_token=kwargs.get("github_token"))
+    if cls is SemanticScholarCollector:
+        return cls(source_config, api_key=kwargs.get("semantic_scholar_api_key"))
     return cls(source_config)
 
 

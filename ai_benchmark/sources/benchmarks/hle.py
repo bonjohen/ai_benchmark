@@ -10,6 +10,7 @@ from . import BenchmarkCollector, LeaderboardEntry
 
 if TYPE_CHECKING:
     from ...config.settings import PageConfig
+    from ..base import RawItem  # noqa: TC004
 
 # Column header substrings mapped to variant labels.
 # The leaderboard exposes overall accuracy, text-only accuracy, and
@@ -45,6 +46,11 @@ class HLECollector(BenchmarkCollector):
     """
 
     benchmark_family = "HLE"
+
+    def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
+        if "rss" in page.page_type:
+            return self._extract_google_news_rss(html)
+        return super().extract_items(html, page)
 
     def extract_leaderboard(self, html: str, page: PageConfig) -> list[LeaderboardEntry]:
         soup = BeautifulSoup(html, "lxml")

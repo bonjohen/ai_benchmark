@@ -8,7 +8,19 @@ from ...collection.api_client import APIClient
 from ..base import RawItem, SourceCollector
 
 if TYPE_CHECKING:
+    from datetime import date
+
+    from ...collection.differ import DiffResult
+    from ...collection.fetcher import Fetcher
+    from ...collection.snapshot import SnapshotManager
     from ...config.settings import PageConfig, SourceConfig
+
+# Default queries for discovery polling
+_DEFAULT_QUERIES = [
+    "large language model benchmark evaluation",
+    "LLM reasoning safety alignment",
+    "frontier AI model release",
+]
 
 
 class SemanticScholarCollector(SourceCollector):
@@ -21,6 +33,26 @@ class SemanticScholarCollector(SourceCollector):
     def __init__(self, source_config: SourceConfig, api_key: str | None = None):
         super().__init__(source_config)
         self.client = SemanticScholarClient(api_key=api_key)
+
+    async def collect_page(
+        self,
+        page: PageConfig,
+        fetcher: Fetcher,
+        snapshot_mgr: SnapshotManager,
+        page_id: int,
+        since_date: date | None = None,
+    ) -> tuple[list[RawItem], DiffResult | None]:
+        """Override to use Semantic Scholar API instead of HTML."""
+        if "api" in page.page_type:
+            items = await self.collect_via_api(_DEFAULT_QUERIES)
+            return items, None
+        return await super().collect_page(
+            page,
+            fetcher,
+            snapshot_mgr,
+            page_id,
+            since_date=since_date,
+        )
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
         """Semantic Scholar is API-only; HTML extraction returns nothing."""

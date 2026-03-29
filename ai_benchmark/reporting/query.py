@@ -137,3 +137,14 @@ async def count_events_by_type(session: AsyncSession) -> dict[str, int]:
     )
     result = await session.execute(stmt)
     return {row[0]: row[1] for row in result.all()}
+
+
+async def count_research_by_source(session: AsyncSession) -> dict[str, int]:
+    """Count candidate papers grouped by discovered_via source."""
+    from ..models.research import CandidatePaper
+
+    stmt = select(CandidatePaper.discovered_via, func.count(CandidatePaper.id)).group_by(
+        CandidatePaper.discovered_via
+    )
+    result = await session.execute(stmt)
+    return {row[0]: row[1] for row in result.all()}

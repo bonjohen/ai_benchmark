@@ -21,7 +21,47 @@ class TechCrunchCollector(SourceCollector):
 
     CONFIDENCE_TIER = "medium_discovery"
 
+    def _extract_rss(self, xml_text: str) -> list[RawItem]:
+        """Parse TechCrunch WordPress RSS feed."""
+        soup = BeautifulSoup(xml_text, "lxml-xml")
+        items: list[RawItem] = []
+        for item in soup.find_all("item"):
+            title_el = item.find("title")
+            link_el = item.find("link")
+            pub_date_el = item.find("pubDate")
+            creator_el = item.find("dc:creator")
+            desc_el = item.find("description")
+            if not title_el:
+                continue
+            title = title_el.get_text(strip=True)
+            if not title:
+                continue
+            link = link_el.get_text(strip=True) if link_el else ""
+            date_text = pub_date_el.get_text(strip=True) if pub_date_el else None
+            author = creator_el.get_text(strip=True) if creator_el else None
+            body = ""
+            if desc_el:
+                desc_soup = BeautifulSoup(desc_el.get_text(), "lxml")
+                body = desc_soup.get_text(strip=True)[:500]
+            items.append(
+                RawItem(
+                    title=title,
+                    url=link,
+                    date_text=date_text,
+                    body=body,
+                    item_type="news_article",
+                    metadata={
+                        "source": "techcrunch",
+                        "author": author,
+                        "confidence_tier": self.CONFIDENCE_TIER,
+                    },
+                )
+            )
+        return items
+
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
+        if "rss" in page.page_type:
+            return self._extract_rss(html)
         soup = BeautifulSoup(html, "lxml")
         items: list[RawItem] = []
 

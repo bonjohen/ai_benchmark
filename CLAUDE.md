@@ -35,7 +35,7 @@ ai-benchmark eval run-matrix --evaluation X --targets 1,2,3  # Matrix run
 
 ## Core Domain Concepts
 
-- **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector); 78 monitored pages
+- **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector); 87 monitored pages (including Google News RSS feeds and API endpoints)
 - **Source classifications**: primary (official vendor pages), secondary (independent benchmarks, reputable news), discovery-only (community forums, arXiv, trending feeds)
 - **Trust tiers**: sources rated 1-5; official vendor pages are 5, community sources as low as 3
 - **Event records**: normalized change records with source, title, path, observed timestamp, and extracted model/version names
@@ -65,15 +65,18 @@ ai_benchmark/
   config/           Pydantic settings (env vars), TOML source catalog + schedule definitions
   models/           SQLAlchemy 2.0 async ORM — 9 models across 4 modules
   collection/       HTTP fetcher (httpx, retry/backoff), HTML differ, snapshot manager, API client
-  sources/          22 registered source collectors
-    benchmarks/     7 benchmark collectors (Artificial Analysis, LMArena, LiveBench, SWE-bench, GAIA, HLE, Terminal-Bench)
-    research/       arXiv, Semantic Scholar (collector + enrichment client), HF Papers
-    news/           Reuters, TechCrunch
-    community/      HF Forums, GitHub discovery, HF Leaderboard Docs
+  sources/          22 registered source collectors (HTML + RSS + API collection methods)
+    benchmarks/     7 benchmark collectors (Artificial Analysis, LMArena, LiveBench, SWE-bench,
+                    GAIA, HLE, Terminal-Bench) — HTML + Google News RSS fallback
+    research/       arXiv (HTML), Semantic Scholar (API via collect_page override), HF Papers (HTML)
+    news/           Reuters (Google News RSS), TechCrunch (WordPress RSS + HTML)
+    community/      HF Forums (Discourse JSON API + HTML), GitHub discovery (GitHub API via
+                    collect_page override), HF Leaderboard Docs (HTML)
+    base.py         SourceCollector ABC with shared _extract_google_news_rss() helper
   processing/       Normalizer, deduplicator, verification, cross-reference builder, triage,
                     quality filter, discovery queue, path prober, pipeline orchestrator
   scheduling/       APScheduler async scheduler, cron cadence config, health tracker with circuit breaker
-  reporting/        Query functions (events, claims, cross-refs), JSON/CSV export
+  reporting/        Query functions (events, claims, cross-refs, research counts), JSON/CSV export
   eval/             Model evaluation pipeline (see Eval Architecture below)
 ```
 
@@ -82,26 +85,30 @@ ai_benchmark/
 ```
 ai_benchmark/eval/
   config.py         EvalSettings with AI_BENCH_EVAL_ env prefix
-  models/           15 SQLAlchemy tables: datasets, dataset_versions, test_cases, scorers,
+  models/           19 SQLAlchemy tables: datasets, dataset_versions, test_cases, scorers,
                     scorer_versions, evaluation_definitions, evaluation_versions, machine_profiles,
-                    machine_snapshots, target_configurations, run_groups, runs, run_item_results,
-                    run_aggregate_metrics, artifacts
-  services/         9 async service modules: dataset, scorer, eval, machine, target, run,
-                    comparison, report, artifact — all accept AsyncSession, return model instances
+                    machine_snapshots, target_configurations, runner_profiles, run_groups, runs,
+                    run_item_results, run_aggregate_metrics, artifacts, trace_references,
+                    annotations, eval_audit_log
+  services/         16 async service modules: dataset, scorer, eval, machine, target, runner,
+                    run, comparison, report, compatibility, seed, validation, matrix, artifact,
+                    audit, privacy — all accept AsyncSession, return model instances
   execution/        RunOrchestrator (3-stage: create → execute → score/finalize),
-                    ItemExecutor (prompt templating, retry), 4 model adapters
-    adapters/       OpenAIAdapter, AnthropicAdapter, LocalAdapter, GenericHTTPAdapter
+                    ItemExecutor (prompt templating, retry), 13 model adapters
+    adapters/       OpenAI, Anthropic, Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang,
+                    TensorRT-LLM, OpenVINO GenAI, GenericHTTP, OpenAI-compat, Local (legacy)
   scoring/          ScorerRunner (weighted pass logic, aggregate metrics), BaseScorer ABC
     builtin/        7 scorers: exact_match, fuzzy_match, rubric, format_validator,
                     latency_cost, safety, model_judge
   api/              FastAPI app factory, ~50 endpoints under /api/eval/,
                     API key auth middleware (X-API-Key / Bearer), /healthz
-    routes/         evaluations, datasets, scorers, targets, machines, runs, runners,
-                    comparisons, reports
+    routes/         9 route modules: evaluations, datasets, scorers, targets, machines,
+                    runs, runners, comparisons, reports
     schemas/        Pydantic request/response models for all entities
   ui/               Jinja2 server-rendered UI with sectioned sidebar navigation
-    templates/      22 HTML templates: dashboard, entity list/detail, runner/run-group
-                    pages, run detail/live, comparison, search, reports with Chart.js
+    templates/      28 HTML templates: dashboard, entity list/detail/create/clone/preview,
+                    runner/run-group pages, run detail/live/launch, comparison, search,
+                    reports with Chart.js, includes (empty_state, metadata_panel)
     static/         CSS (tables, cards, badges, metadata panel, empty states) + JS
                     (sorting, tabs, auto-refresh, search)
   cli/              10 Click subcommands: run, run-matrix, status, list, compare, export,
@@ -110,10 +117,10 @@ ai_benchmark/eval/
 
 ## Eval Key Patterns
 
-- **Model Adapters**: ABC in `execution/adapters/base.py`. Implement `async generate(prompt, params, options) -> GenerationResult`. Registry resolves by provider string. Currently 4 adapters: `OpenAIAdapter`, `AnthropicAdapter`, `LocalAdapter` (ollama/vllm/llamacpp), `GenericHTTPAdapter`.
-- **Scorers**: ABC in `scoring/base.py`. Implement `score(output, expected) -> ScorerResult`. Registry in `_SCORER_REGISTRY`. Built-in scorers auto-register. Currently 7 scorers: exact_match, fuzzy_match, rubric, format_validator, latency_cost, safety, model_judge.
+- **Model Adapters**: ABC in `execution/adapters/base.py`. Implement `async generate(prompt, params, options) -> GenerationResult`. Registry resolves by provider string. 13 adapters: OpenAI, Anthropic, Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang, TensorRT-LLM, OpenVINO GenAI, GenericHTTP, OpenAI-compat, Local (legacy).
+- **Scorers**: ABC in `scoring/base.py`. Implement `score(output, expected) -> ScorerResult`. Registry in `_SCORER_REGISTRY`. Built-in scorers auto-register. 7 scorers: exact_match, fuzzy_match, rubric, format_validator, latency_cost, safety, model_judge.
 - **Orchestrator**: `execution/orchestrator.py` — `create_run()` → `execute_run()` → `score_run()`. Supports sequential and parallel modes via `asyncio.Semaphore`.
-- **Service pattern**: Each service accepts `AsyncSession`, returns ORM instances. All CRUD is async. Versioning auto-increments `version_number`. 9 services: dataset, scorer, eval, machine, target, run, comparison, report, artifact.
+- **Service pattern**: Each service accepts `AsyncSession`, returns ORM instances. All CRUD is async. Versioning auto-increments `version_number`. 16 services: dataset, scorer, eval, machine, target, runner, run, comparison, report, compatibility, seed, validation, matrix, artifact, audit, privacy.
 - **API pattern**: ORM objects converted to dicts BEFORE `session.commit()` to avoid MissingGreenlet. Service update methods call `await session.refresh(obj)` after flush on `onupdate` columns.
 - **UI mounting**: `eval/ui/server.py` — `mount_ui(app)` registers templates and static files on the FastAPI app.
 
@@ -126,12 +133,13 @@ ai_benchmark/eval/
 
 ## Key Patterns
 
-- **SourceCollector**: Abstract base in `sources/base.py`. Subclass and implement `extract_items(html: str, page: PageConfig) -> list[RawItem]`. Register in `sources/registry.py`.
+- **SourceCollector**: Abstract base in `sources/base.py`. Subclass and implement `extract_items(html: str, page: PageConfig) -> list[RawItem]`. Register in `sources/registry.py`. Base class provides `_extract_google_news_rss()` helper. API-based collectors override `collect_page()` instead.
 - **BenchmarkCollector**: Extended base in `sources/benchmarks/__init__.py` with `extract_leaderboard()` returning `LeaderboardEntry` objects. Auto-converts to `RawItem` via default `extract_items()`.
-- **Registry**: `COLLECTOR_CLASSES` dict in `sources/registry.py` maps org names to classes. `get_collector(source_config)` is the factory.
-- **Processing pipeline**: `processing/pipeline.py` — `process_item()` / `process_items()` run the full normalize→dedup→verify→xref chain.
+- **Registry**: `COLLECTOR_CLASSES` dict in `sources/registry.py` maps org names to classes. `get_collector(source_config)` is the factory. Passes `github_token` and `semantic_scholar_api_key` to collectors that need them.
+- **Collection methods**: Three patterns — (1) HTML fetch + extract_items for standard pages, (2) Google News RSS feeds for Cloudflare-blocked or JS-rendered sites, (3) API calls via `collect_page()` overrides for GitHub, Meta, and Semantic Scholar.
+- **Processing pipeline**: `processing/pipeline.py` — `process_item()` / `process_items()` run the full normalize→dedup→verify→xref chain. `candidate_paper` items are routed through the triage pipeline instead.
 - **Scheduling**: `scheduling/scheduler.py` — `PipelineScheduler` wraps APScheduler with `SourceHealthTracker` circuit breaker (5 consecutive failures trips the breaker).
-- **Reporting**: `reporting/query.py` for filtered event/claim queries; `reporting/export.py` for JSON/CSV serialization.
+- **Reporting**: `reporting/query.py` for filtered event/claim queries and research paper counts; `reporting/export.py` for JSON/CSV serialization.
 - **Async throughout**: SQLAlchemy async sessions, httpx async client, APScheduler AsyncIOScheduler.
 
 ## Polling Cadences
@@ -171,8 +179,9 @@ Also supports `.env` file in project root.
 
 ## Key Design Constraints
 
-- HTML diffing is the primary collection method; some sources use API access (Semantic Scholar, GitHub, Hugging Face)
-- Research papers go through a triage pipeline (candidate → enrichment → authoritative store) — never auto-ingest
+- Three collection methods: HTML diffing (primary), Google News RSS feeds (for Cloudflare-blocked or JS-rendered sites), API calls (GitHub, Semantic Scholar, Discourse)
+- API-based collectors override `collect_page()` to call their API methods directly instead of fetching HTML
+- Research papers go through a triage pipeline (candidate → enrichment → authoritative store) — never auto-ingest; show as "Papers" not "Events" in status
 - Community sources ingest only minimal metadata (title, author, timestamp, tags, outbound links)
 - Conflicts between sources are stored as separate claim records, not resolved automatically
 
@@ -180,20 +189,15 @@ Also supports `.env` file in project root.
 
 Codebase is fully compliant with ruff (E/F/I/N/W/UP/B/SIM/TCH rules, line-length 100, py312). Run `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — both exit clean. Per-file-ignores for B008 (FastAPI Depends pattern) in `eval/api/routes/*.py` and `eval/ui/server.py`. Some model/schema files have `# noqa: TC003` for datetime imports required at runtime by SQLAlchemy/Pydantic.
 
-## Requirements Documents
+## Documentation
 
-- Source details and intake guidance: `docs/core_requirements.md`
-- Implementation plan (all phases complete): `docs/core_requirements_plan.md`
-- Gap analysis v1: `docs/gap_remediation_analysis.md`
-- Gap analysis v2 (against archived requirements): `docs/gap_remediation_analysis_v2.md`
-- Gap remediation plan v1 (all 6 phases complete): `docs/gap_remediation_plan.md`
-- Gap remediation plan v2 (all 13 tasks complete): `docs/gap_remediation_subset_plan_v2.md`
-- Model eval pipeline design: `docs/model_eval_pipeline_design.md`
-- Model eval pipeline PDR: `docs/model_eval_pipeline_pdr.md`
-- Model eval pipeline plan (all 9 phases complete): `docs/model_eval_pipeline_plan.md`
-- PEP8/ruff compliance plan (all 7 phases complete): `docs/pep8_plan.md`
-- LLM runner comparison platform PRD: `docs/llm_runner_prd.md`
-- LLM runner comparison design notes: `docs/llm_runner_design.md`
-- LLM runner comparison plan (all 14 phases complete): `docs/llm_runner_plan.md`
-- General code review findings: `docs/general_code_review_findings.md`
-- General code review remediation plan (all 4 phases complete): `docs/general_code_review_plan.md`
+Active docs in `docs/`:
+- Naming conventions: `docs/naming_conventions.md`
+- Eval automation examples: `docs/eval_automation_examples.md`
+- Collection bug tracker: `docs/collection_bugs.md`
+
+Archived plans and design docs in `docs/archive/`:
+- Source requirements: `docs/archive/core_requirements.md`
+- All implementation plans (core, eval, gap remediation, PEP8, runner comparison, code review)
+- All design docs (eval pipeline design/PDR, runner comparison PRD/design)
+- Gap analyses and release notes

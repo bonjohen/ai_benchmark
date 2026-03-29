@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
@@ -10,6 +11,11 @@ from ..collection.api_client import APIClient
 from .base import RawItem, SourceCollector
 
 if TYPE_CHECKING:
+    from datetime import date
+
+    from ..collection.differ import DiffResult
+    from ..collection.fetcher import Fetcher
+    from ..collection.snapshot import SnapshotManager
     from ..config.settings import PageConfig
 
 
@@ -48,9 +54,34 @@ class MetaCollector(SourceCollector):
         super().__init__(source_config)
         self.gh_client = GitHubOrgClient(api_key=github_token)
 
-    def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
+    async def collect_page(
+        self,
+        page: PageConfig,
+        fetcher: Fetcher,
+        snapshot_mgr: SnapshotManager,
+        page_id: int,
+        since_date: date | None = None,
+    ) -> tuple[list[RawItem], DiffResult | None]:
+        """Override to use GitHub API for github org pages."""
         if "github" in page.page_type:
-            # GitHub pages are handled via API, not HTML extraction
+            # Extract org from URL like https://github.com/meta-llama
+            match = re.search(r"github\.com/([^/]+)", page.canonical_url)
+            org = match.group(1) if match else "meta-llama"
+            items = await self.collect_github(org)
+            return items, None
+        return await super().collect_page(
+            page,
+            fetcher,
+            snapshot_mgr,
+            page_id,
+            since_date=since_date,
+        )
+
+    def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
+        if "rss" in page.page_type:
+            return self._extract_google_news_rss(html)
+        if "github" in page.page_type:
+            # GitHub pages are handled via API in collect_page override
             return []
         if "landing" in page.page_type:
             return self._extract_landing(html)

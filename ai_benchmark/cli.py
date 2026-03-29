@@ -70,10 +70,20 @@ def check_config(catalog: Path | None) -> None:
 
 @cli.command()
 @click.option("--source", default=None, help="Collect from a single source organization.")
+@click.option(
+    "--since",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=None,
+    help="Backfill historical data to this date (YYYY-MM-DD).",
+)
 @click.pass_context
-def collect(ctx: click.Context, source: str | None) -> None:
+def collect(ctx: click.Context, source: str | None, since: click.DateTime | None) -> None:
     """Run collection for one or all sources immediately."""
     settings: PipelineSettings = ctx.obj["settings"]
+    since_date = since.date() if since else None
+
+    if since_date:
+        click.echo(f"Backfill mode: collecting data since {since_date.isoformat()}")
 
     async def _collect() -> None:
         from .scheduling.scheduler import PipelineScheduler
@@ -83,12 +93,12 @@ def collect(ctx: click.Context, source: str | None) -> None:
 
         if source:
             click.echo(f"Collecting from: {source}")
-            await scheduler.collect_source(source)
+            await scheduler.collect_source(source, since_date=since_date)
         else:
             sources = load_source_catalog()
             for s in sources:
                 click.echo(f"Collecting from: {s.organization}")
-                await scheduler.collect_source(s.organization)
+                await scheduler.collect_source(s.organization, since_date=since_date)
 
         click.echo("Collection complete.")
 
@@ -103,7 +113,7 @@ def status(ctx: click.Context) -> None:
 
     async def _status() -> None:
         from .models.base import create_engine, create_session_factory
-        from .reporting.query import count_events_by_org
+        from .reporting.query import count_events_by_org, count_research_by_source
 
         engine = create_engine(settings.database_url)
         from .models import events, research  # noqa: F401
@@ -111,13 +121,27 @@ def status(ctx: click.Context) -> None:
         session_factory = create_session_factory(engine)
         async with session_factory() as session:
             counts = await count_events_by_org(session)
+            research_counts = await count_research_by_source(session)
+
+        # Map discovered_via values to org names for display
+        research_org_map = {
+            "arxiv": "arXiv / Cornell",
+            "hf_papers": "Hugging Face Papers",
+            "semantic_scholar": "Ai2",
+        }
 
         sources = load_source_catalog()
-        click.echo(f"{'Source':<30} {'Classification':<18} {'Events':>8}")
-        click.echo("-" * 60)
+        click.echo(f"{'Source':<30} {'Classification':<18} {'Events':>8} {'Papers':>8}")
+        click.echo("-" * 68)
         for s in sources:
-            count = counts.get(s.organization, 0)
-            click.echo(f"{s.organization:<30} {s.classification:<18} {count:>8}")
+            event_count = counts.get(s.organization, 0)
+            paper_count = 0
+            for via, org_name in research_org_map.items():
+                if s.organization == org_name:
+                    paper_count = research_counts.get(via, 0)
+            click.echo(
+                f"{s.organization:<30} {s.classification:<18} {event_count:>8} {paper_count:>8}"
+            )
 
         await engine.dispose()
 

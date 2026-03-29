@@ -6,8 +6,8 @@ error tracking with circuit breaker, and health monitoring.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from typing import Any
+from datetime import UTC, date, datetime
+from typing import TYPE_CHECKING, Any
 
 import structlog
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -17,14 +17,26 @@ from ..collection.fetcher import Fetcher
 from ..collection.snapshot import SnapshotManager
 from ..config.settings import PipelineSettings, load_source_catalog
 from ..models.base import create_engine, create_session_factory
+from ..processing.normalizer import extract_date
 from ..processing.pipeline import process_items
 from ..sources.registry import get_collector
 from .cadence import ScheduleEntry, load_schedules, parse_cron_fields
+
+if TYPE_CHECKING:
+    from ..sources.base import RawItem
 
 logger = structlog.get_logger()
 
 # Circuit breaker: skip a source after this many consecutive failures
 MAX_CONSECUTIVE_FAILURES = 5
+
+
+def _item_in_date_range(item: RawItem, since_date: date) -> bool:
+    """Check if an item's date falls on or after since_date. Keeps undated items."""
+    date_str = extract_date(item.date_text or item.body)
+    if date_str is None:
+        return True  # keep items without parseable dates
+    return date_str >= since_date.isoformat()
 
 
 class SourceHealthTracker:
@@ -83,7 +95,11 @@ class PipelineScheduler:
             retry_attempts=self.settings.retry_attempts,
         )
 
-    async def collect_source(self, organization: str) -> None:
+    async def collect_source(
+        self,
+        organization: str,
+        since_date: date | None = None,
+    ) -> None:
         """Run collection for a single source organization."""
         log = logger.bind(organization=organization)
 
@@ -98,7 +114,11 @@ class PipelineScheduler:
                 log.error("source_not_found")
                 return
 
-            collector = get_collector(source_config, github_token=self.settings.github_token)
+            collector = get_collector(
+                source_config,
+                github_token=self.settings.github_token,
+                semantic_scholar_api_key=self.settings.semantic_scholar_api_key,
+            )
 
             all_items = []
             # Open a proper session for snapshot management and page lookup
@@ -137,7 +157,11 @@ class PipelineScheduler:
                         page_db_id = page_record.id if page_record else 0
 
                         items, _diff = await collector.collect_page(
-                            page, self._fetcher, snapshot_mgr, page_id=page_db_id
+                            page,
+                            self._fetcher,
+                            snapshot_mgr,
+                            page_id=page_db_id,
+                            since_date=since_date,
                         )
                         all_items.extend(items)
 
@@ -152,6 +176,10 @@ class PipelineScheduler:
                         log.warning("page_error", page=page.canonical_url, error=str(e))
 
                 await session.commit()
+
+            # Post-extraction date filter: drop items before since_date
+            if since_date and all_items:
+                all_items = [item for item in all_items if _item_in_date_range(item, since_date)]
 
             if all_items:
                 async with self._session_factory() as session, session.begin():

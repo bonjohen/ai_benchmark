@@ -40,16 +40,19 @@ ai_benchmark/
   config/           Settings (Pydantic + env vars), TOML source catalog,
                     TOML schedule definitions
   models/           SQLAlchemy 2.0 async ORM (Source, Page, Snapshot, EventRecord,
-                    ClaimRecord, CrossReference, CandidatePaper, EnrichedPaper)
+                    ClaimRecord, CrossReference, CandidatePaper, EnrichedPaper,
+                    FollowUpTask)
   collection/       HTTP fetcher (httpx, retry/backoff), HTML differ, snapshot manager,
                     base API client
-  sources/          Source-specific collectors (22 registered)
+  sources/          22 registered collectors (HTML + RSS + API collection methods)
     openai.py, anthropic.py, google.py, xai.py, mistral.py, cohere.py, meta.py
+    base.py         SourceCollector ABC with shared Google News RSS parser
     benchmarks/     Artificial Analysis, LMArena, LiveBench, SWE-bench, GAIA, HLE,
-                    Terminal-Bench
-    research/       arXiv, Semantic Scholar (collector + enrichment client), HF Papers
-    news/           Reuters, TechCrunch
-    community/      HF Forums, GitHub discovery, HF Leaderboard Docs
+                    Terminal-Bench (HTML + RSS fallback)
+    research/       arXiv (HTML), Semantic Scholar (API), HF Papers (HTML)
+    news/           Reuters (Google News RSS), TechCrunch (WordPress RSS + HTML)
+    community/      HF Forums (Discourse JSON API + HTML), GitHub discovery (GitHub API),
+                    HF Leaderboard Docs (HTML)
   processing/       Normalizer, deduplicator (composite key + model slug + fuzzy),
                     verification hierarchy (5 chains), cross-reference builder
                     (3 strategies: model-slug, org+event-type, arXiv ID → cites),
@@ -57,7 +60,8 @@ ai_benchmark/
                     execution), path prober, full processing pipeline
   scheduling/       APScheduler async scheduler, cron cadence config, health tracking
                     with circuit breaker
-  reporting/        Query functions (events, claims, cross-refs), JSON/CSV export
+  reporting/        Query functions (events, claims, cross-refs, research counts),
+                    JSON/CSV export
   eval/             Model evaluation pipeline (see below)
 ```
 
@@ -87,6 +91,175 @@ Claims from different sources are stored as separate records — never merged.
 
 Confidence tiers (5 standard values): `official_self_report`, `benchmark_owner_report`, `high_secondary`, `medium_discovery`, `low_discovery`. All tiers are enforced uniformly across the verification and normalization modules.
 
+## How the Extract Pipeline Works
+
+The extract pipeline collects, processes, and verifies AI industry events from 22 sources across 87 monitored pages. It runs either as a one-shot command (`ai-benchmark collect`) or as a long-running daemon with cron-scheduled jobs (`ai-benchmark run`).
+
+### Pipeline Overview
+
+```
+                          ┌─────────────────────────────────┐
+                          │  CLI: collect / run (daemon)    │
+                          └──────────────┬──────────────────┘
+                                         │
+                          ┌──────────────▼──────────────────┐
+                          │  Scheduler                      │
+                          │  Loads sources.toml + schedules  │
+                          │  Iterates each organization     │
+                          └──────────────┬──────────────────┘
+                                         │
+            ┌────────────────────────────┼────────────────────────────┐
+            │                            │                            │
+   ┌────────▼─────────┐     ┌───────────▼──────────┐     ┌──────────▼──────────┐
+   │ HTML Fetch + Diff │     │ Google News RSS      │     │ API Call            │
+   │ (primary method)  │     │ (Cloudflare fallback)│     │ (GitHub, S2, HF)    │
+   └────────┬──────────┘     └───────────┬──────────┘     └──────────┬──────────┘
+            │                            │                            │
+            └────────────────────────────┼────────────────────────────┘
+                                         │
+                               ┌─────────▼─────────┐
+                               │  Quality Filter    │
+                               │  (stale, trivial,  │
+                               │   garbage removal) │
+                               └─────────┬─────────┘
+                                         │
+                               ┌─────────▼─────────┐
+                               │  RawItem list      │
+                               └─────────┬─────────┘
+                                         │
+                          ┌──────────────▼──────────────────┐
+                          │  Processing Pipeline            │
+                          │  normalize → discovery check →  │
+                          │  dedup → create event/claim →   │
+                          │  verify → cross-reference       │
+                          └──────────────┬──────────────────┘
+                                         │
+                    ┌────────────────────┼────────────────────┐
+                    │                                         │
+           ┌────────▼─────────┐                    ┌─────────▼──────────┐
+           │  EventRecord +   │                    │  Research Triage   │
+           │  ClaimRecord     │                    │  (candidate_paper  │
+           │  (standard items)│                    │   items only)      │
+           └──────────────────┘                    └────────────────────┘
+```
+
+### Stage 1: Collection
+
+The scheduler loads the source catalog (`config/sources.toml`) and iterates each organization. For each source, it resolves the appropriate collector from the registry (`sources/registry.py`) and processes every page defined for that source.
+
+**Three collection methods:**
+
+1. **HTML fetch + diff** (primary) — The fetcher (`collection/fetcher.py`) downloads the page with httpx, using retry with exponential backoff, rate-limit handling (429 → Retry-After), and concurrency control via semaphore. The snapshot manager (`collection/snapshot.py`) compares the new HTML against the prior snapshot using SHA-256 hash (fast path) and `difflib.SequenceMatcher` (detailed diff). If the page hasn't changed, it's skipped. If it has changed, the collector's `extract_items()` method parses the HTML into `RawItem` objects.
+
+2. **Google News RSS** (fallback for Cloudflare-blocked or JS-rendered sites) — Pages with `rss` in their page type are parsed by the shared `_extract_google_news_rss()` helper in the base collector. This extracts title, link, publication date, and description from standard RSS XML. Used by xAI, Mistral, Cohere, Meta, and all benchmark sources as a fallback.
+
+3. **API calls** (GitHub, Semantic Scholar, HF Forums) — Collectors that use APIs override `collect_page()` to bypass HTML fetching entirely and call their API methods directly. GitHub discovery calls the GitHub REST API for org repos and recent releases. Semantic Scholar calls its search API with keyword queries. HF Forums calls the Discourse JSON API (`/latest.json`).
+
+**Fetcher details:**
+- User agent mimics Chrome to avoid bot detection
+- HTTP/2 support enabled
+- Default 30-second timeout, 5 max concurrent requests, 3 retry attempts
+- 403 responses treated as terminal (no retry); 429 responses sleep and retry
+- Optional HTTP proxy support
+
+### Stage 2: Quality Filter
+
+Before items enter the processing pipeline, the quality filter (`processing/quality_filter.py`) removes low-value pages:
+
+- **Trivial changes on stable pages** — If the page has been polled 5+ times and the change ratio is below 1%, the page is skipped.
+- **Garbage extraction** — If all extracted titles are shorter than 5 characters, the page is skipped.
+- **Stale content** — If no extracted item has a date within the last 90 days, the page is skipped. This check is disabled on first-ever fetch (cold start) and for inherently dateless page types (leaderboards, pricing, model catalogs).
+
+### Stage 3: Processing Pipeline
+
+Each `RawItem` flows through `processing/pipeline.py` in this order:
+
+1. **Route research items** — Items with `item_type="candidate_paper"` (from arXiv, Semantic Scholar, HF Papers) are diverted to the research triage pipeline and do not create events. They appear as "Papers" in status output, not "Events".
+
+2. **Normalize** (`processing/normalizer.py`):
+   - `normalize_title()` — Lowercase, strip, collapse whitespace
+   - `extract_model_slug()` — Regex extraction for known model families (GPT, Claude, Gemini, Grok, Llama, Mistral, Command, etc.), normalized to lowercase-hyphenated form (e.g., "gpt-4-turbo")
+   - `extract_date()` — Tries ISO format first, then 24 common date patterns, returns YYYY-MM-DD
+   - `classify_event_type()` — Keyword scoring against 6 event types: `model_release`, `pricing_change`, `api_update`, `deprecation`, `system_card`, `announcement` (default)
+
+3. **Discovery check** (`processing/discovery_queue.py`) — If a model slug was extracted, the discovery queue checks whether it's new. New slugs trigger 4 follow-up tasks: pricing search, release notes search, system card search, and benchmark coverage search. These tasks are executed on the next collection run, fetching the org's relevant pages and filtering for items that mention the new model.
+
+4. **Deduplicate** (`processing/deduplicator.py`) — Three-layer strategy:
+   - **Exact composite key**: normalized title + org + source type + URL + date + model slug
+   - **Model slug + org + date**: Same model from same vendor on same day
+   - **Fuzzy title match**: `SequenceMatcher` ratio ≥ 0.85 within the same organization
+
+   If a duplicate is found, a new claim is created on the existing event (enabling multi-source confirmation) and no new event is created.
+
+5. **Create event + claim** — If unique, an `EventRecord` is created with normalized title, organization, event type, model slug, and published date. A `ClaimRecord` is attached with a confidence tier derived from the source's classification:
+   - `primary` → `official_self_report`
+   - `benchmark_owner` → `benchmark_owner_report`
+   - `secondary` → `high_secondary`
+   - `news_medium` → `medium_discovery`
+   - `discovery-only` → `low_discovery`
+
+   Source-specific overrides exist (e.g., Reuters always maps to `high_secondary`).
+
+6. **Verify** (`processing/verification.py`) — The verification module evaluates confirmation status using ordered verification chains per event type:
+   - **Model releases**: Confirmed when 2+ distinct source types agree, with at least 1 from the top 3 (launch page, developer docs, model catalog)
+   - **Benchmark results**: Requires at least one `benchmark_owner_report` claim
+   - **Pricing changes**: Requires a `pricing_page` source claim
+   - **Announcements**: Requires newsroom + 1 other source
+   - **Research claims**: Requires a `primary_paper` claim
+
+   Numerical conflict detection compares extracted values across claims — disagreement > 10% sets status to `conflicted`.
+
+7. **Cross-reference** (`processing/cross_reference.py`) — Three linking strategies:
+   - **Model slug + time window**: Same model mentioned by different sources within 7 days → `confirms` or `supplements`
+   - **Org + event type**: Same org, same event type within 3 days → `supplements`
+   - **arXiv ID**: Shared arXiv ID in content → `cites`
+
+   Relationship types: `confirms`, `supplements`, `conflicts_with`, `cites`.
+
+### Research Triage (Separate Path)
+
+Research items bypass event creation and enter a three-stage pipeline (`processing/triage.py`):
+
+1. **Ingest** — `CandidatePaper` record created with title, arXiv ID, authors, categories, discovery source. Status: `pending`.
+2. **Enrich** — Semantic Scholar API fetches metadata (abstract, venue, citation count, code URL). Relevance scored against keyword list (benchmark, evaluation, LLM, safety, etc.). Papers scoring ≥ 2 advance; others are rejected.
+3. **Promote** — Enriched candidates become `EnrichedPaper` records in the authoritative store with full metadata.
+
+Enrichment runs as a scheduled job, processing up to 50 pending candidates per cycle.
+
+### Scheduling
+
+**One-shot mode** (`ai-benchmark collect`): Runs collection for all sources (or one with `--source`) sequentially, then exits.
+
+**Daemon mode** (`ai-benchmark run`): Starts an APScheduler `AsyncIOScheduler` with cron triggers loaded from `config/schedules.toml`. Each source has its own cron expression (vendors every 6h, Reuters every 3h, benchmarks daily, research twice daily). The scheduler includes:
+
+- **Circuit breaker** (`scheduling/health.py`): After 5 consecutive failures for a source, the circuit opens and that source is skipped until manually reset. Success resets the counter.
+- **Health tracking**: Per-source state with `last_success_at`, `last_failure_at`, `consecutive_failures`, and `last_error`.
+- **Graceful shutdown**: Signal handlers (SIGINT/SIGTERM) stop the scheduler and close database connections.
+
+### Monitoring Collection Runs
+
+```bash
+# Check per-source event and paper counts
+ai-benchmark status
+
+# Watch log output during a run
+# PowerShell:
+Get-Content C:\ai-benchmark\logs\collect_*.log -Wait -Tail 20
+# Bash:
+tail -f /c/ai-benchmark/logs/collect_*.log
+
+# Check which sources completed vs. started
+findstr "Collecting collection_complete" C:\ai-benchmark\logs\collect_*.log
+
+# Check errors
+findstr "ERROR WARNING fetch_failed" C:\ai-benchmark\logs\collect_*.log
+
+# Query events after collection
+ai-benchmark query --org OpenAI
+ai-benchmark query --model gpt-4
+ai-benchmark export --format csv --output events.csv
+```
+
 ## Configuration
 
 Settings are loaded via Pydantic with the `AI_BENCH_` env prefix. Also reads `.env` in the project root.
@@ -103,7 +276,7 @@ Settings are loaded via Pydantic with the `AI_BENCH_` env prefix. Also reads `.e
 | `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent fetch requests |
 | `AI_BENCH_RETRY_ATTEMPTS` | `3` | Retry count with exponential backoff |
 
-Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 78 pages)
+Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 87 pages)
 Schedule config: `ai_benchmark/config/schedules.toml` (24 cron entries)
 
 ## Database Models
@@ -134,23 +307,27 @@ ai-benchmark eval list --evaluations --targets    # List entities
 
 ```
 ai_benchmark/eval/
-  models/         18 SQLAlchemy tables (datasets, scorers, evaluations, targets,
-                  machines, runners, runs, item results, metrics, artifacts,
-                  traces, annotations)
-  services/       14 async service modules (dataset, scorer, eval, machine, target,
+  models/         19 SQLAlchemy tables (datasets, dataset_versions, test_cases,
+                  scorers, scorer_versions, evaluation_definitions,
+                  evaluation_versions, machine_profiles, machine_snapshots,
+                  target_configurations, runner_profiles, run_groups, runs,
+                  run_item_results, run_aggregate_metrics, artifacts,
+                  trace_references, annotations, eval_audit_log)
+  services/       16 async service modules (dataset, scorer, eval, machine, target,
                   runner, run, comparison, report, compatibility, seed, validation,
-                  matrix, artifact)
+                  matrix, artifact, audit, privacy)
   execution/      RunOrchestrator (with auto-artifact generation), ItemExecutor
-                  (with trace capture), Dispatch engine, 12 model adapters
-    adapters/     OpenAI, Anthropic, Local (legacy), GenericHTTP,
-                  Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang,
-                  TensorRT-LLM, OpenVINO GenAI
-  scoring/        ScorerRunner + 8 built-in scorers (exact_match, fuzzy_match,
+                  (with trace capture), Dispatch engine, 13 model adapters
+    adapters/     OpenAI, Anthropic, Ollama, LM Studio, llama.cpp, MLX, vLLM,
+                  SGLang, TensorRT-LLM, OpenVINO GenAI, GenericHTTP,
+                  OpenAI-compat, Local (legacy)
+  scoring/        ScorerRunner + 7 built-in scorers (exact_match, fuzzy_match,
                   rubric, format_validator, latency_cost, safety, model_judge)
   api/            FastAPI with ~50 REST endpoints under /api/eval/,
                   API key auth middleware (X-API-Key / Bearer), /healthz
   ui/             Jinja2 templates: dashboard, entity pages, runner/run-group
-                  pages, run detail/live, comparison, search, reports (22 templates)
+                  pages, run detail/live/launch, comparison, search, reports,
+                  create/clone/preview (28 templates)
   cli/            10 Click subcommands (run, run-matrix, status, list, compare,
                   export, rescore, serve, runners, machines)
   config.py       EvalSettings with AI_BENCH_EVAL_ env prefix
@@ -186,28 +363,27 @@ RTX 4070 desktop, ASUS Vivobook S 15 (Intel NPU), GTX 1060 laptop, Raspberry Pi 
 regression test suite across all UI workflows. Historical run filtering, traces tab,
 comparison filters, report generation with runner/machine grouping, export to
 JSON/CSV/HTML/Markdown. Sectioned navigation, runner/run-group pages, global search.
-~50 REST endpoints, API key auth, 10 CLI subcommands, 12 model adapters, 19 tables.
-Runner/machine registry with compatibility rules and seed data for 7 target machines.
+~50 REST endpoints, API key auth, 10 CLI subcommands, 13 model adapters, 19 tables,
+16 services, 28 templates. Runner/machine registry with compatibility rules and
+seed data for 7 target machines.
 
 ### Design Documents
 
-- Eval pipeline design: `docs/model_eval_pipeline_design.md`
-- Eval pipeline PDR: `docs/model_eval_pipeline_pdr.md`
-- Eval pipeline plan: `docs/model_eval_pipeline_plan.md`
-- Runner comparison PRD: `docs/llm_runner_prd.md`
-- Runner comparison design: `docs/llm_runner_design.md`
-- Runner comparison plan: `docs/llm_runner_plan.md`
 - Naming conventions: `docs/naming_conventions.md`
+- Eval automation examples: `docs/eval_automation_examples.md`
+- Archived plans and design docs: `docs/archive/` (eval pipeline, runner comparison, gap remediation, etc.)
 
 ## Implementation Plans
 
-- **Source pipeline:** `docs/core_requirements_plan.md` — All 7 phases complete
-- **Eval pipeline:** `docs/model_eval_pipeline_plan.md` — 9 phases (E1–E9) complete
-- **Gap remediation v1:** `docs/gap_remediation_plan.md` — 6 phases (G1–G6), 66 tasks complete
-- **Gap remediation v2:** `docs/gap_remediation_subset_plan_v2.md` — 13 tasks complete (discovery queue wiring, confidence tier fix, 5 new source pages, cross-ref cites + arXiv strategy, HLE multi-slice, LMArena image/vision, benchmark GitHub repos, Semantic Scholar dual classification)
-- **PEP8 compliance:** `docs/pep8_plan.md` — All 7 phases complete
-- **Runner comparison:** `docs/llm_runner_plan.md` — All 14 phases complete
-- **Code review remediation:** `docs/general_code_review_plan.md` — All 4 phases complete (49 tasks)
+All implementation plans are complete and archived in `docs/archive/`:
+
+- **Source pipeline:** 7 phases complete
+- **Eval pipeline:** 9 phases (E1–E9) complete
+- **Gap remediation v1:** 6 phases (G1–G6), 66 tasks complete
+- **Gap remediation v2:** 13 tasks complete
+- **PEP8 compliance:** 7 phases complete
+- **Runner comparison:** 14 phases complete
+- **Code review remediation:** 4 phases complete (49 tasks)
 
 ## Development
 

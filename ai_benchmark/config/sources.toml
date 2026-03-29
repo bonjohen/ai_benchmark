@@ -42,6 +42,12 @@ canonical_url = "https://openai.com/index/system-cards/"
 page_type = "system-card index"
 polling_frequency = "daily"
 
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=openai+model+OR+api+OR+gpt+site:openai.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "6h"
+priority = true
+
 [[sources]]
 source_name = "Anthropic"
 category = "official company source"
@@ -157,6 +163,12 @@ canonical_url = "https://docs.x.ai/developers/rate-limits"
 page_type = "rate limits"
 polling_frequency = "daily"
 
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=xai+grok+model+OR+api+site:x.ai&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "6h"
+priority = true
+
 [[sources]]
 source_name = "Mistral AI"
 category = "official company source"
@@ -189,6 +201,12 @@ canonical_url = "https://docs.mistral.ai/deployment/ai-studio/pricing"
 page_type = "pricing"
 polling_frequency = "daily"
 
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=mistral+ai+model+OR+release+site:mistral.ai&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "6h"
+priority = true
+
 [[sources]]
 source_name = "Cohere"
 category = "official company source"
@@ -220,6 +238,12 @@ canonical_url = "https://docs.cohere.com/docs/models"
 page_type = "model catalog"
 polling_frequency = "daily"
 
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=cohere+ai+model+OR+release+site:cohere.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "6h"
+priority = true
+
 [[sources]]
 source_name = "Meta Open Source AI"
 category = "official company source"
@@ -241,6 +265,12 @@ priority = true
 canonical_url = "https://ai.meta.com/opensourceAI/"
 page_type = "landing page"
 polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=meta+llama+model+OR+release+site:ai.meta.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "6h"
+priority = true
 
 # ─── Secondary Sources: Benchmarks / Leaderboards ───
 
@@ -271,6 +301,11 @@ priority = true
 canonical_url = "https://artificialanalysis.ai/text/arena?tab=Ranking"
 page_type = "methodology"
 polling_frequency = "weekly"
+
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=%22artificial+analysis%22+ai+benchmark+OR+leaderboard&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "daily"
 
 [[sources]]
 source_name = "LMArena"
@@ -430,6 +465,11 @@ canonical_url = "https://scale.com/leaderboard"
 page_type = "leaderboard hub"
 polling_frequency = "daily"
 
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=%22humanity%27s+last+exam%22+OR+%22HLE%22+benchmark&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "daily"
+
 [[sources]]
 source_name = "Terminal-Bench"
 category = "benchmark / agent evaluation"
@@ -450,6 +490,11 @@ polling_frequency = "daily"
 canonical_url = "https://www.tbench.ai/docs/registry"
 page_type = "registry"
 polling_frequency = "weekly"
+
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=%22terminal-bench%22+OR+%22tbench%22+benchmark&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "daily"
 
 # ─── Research Discovery Sources ───
 
@@ -551,6 +596,12 @@ canonical_url = "https://techcrunch.com/category/artificial-intelligence/"
 page_type = "news index"
 polling_frequency = "6h"
 
+[[sources.pages]]
+canonical_url = "https://techcrunch.com/category/artificial-intelligence/feed/"
+page_type = "rss feed"
+polling_frequency = "6h"
+priority = true
+
 # ─── Community / Ecosystem Sources ───
 
 [[sources]]
@@ -638,6 +689,11 @@ collection_method = "html"
 [[sources.pages]]
 canonical_url = "https://discuss.huggingface.co/"
 page_type = "forum index"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://discuss.huggingface.co/latest.json"
+page_type = "discourse json"
 polling_frequency = "daily"
 
 [[sources]]

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from typing import TYPE_CHECKING
 
@@ -10,6 +11,11 @@ from bs4 import BeautifulSoup
 from ..base import RawItem, SourceCollector
 
 if TYPE_CHECKING:
+    from datetime import date
+
+    from ...collection.differ import DiffResult
+    from ...collection.fetcher import Fetcher
+    from ...collection.snapshot import SnapshotManager
     from ...config.settings import PageConfig
 
 # Support/help thread patterns to filter out
@@ -37,6 +43,62 @@ class HFForumsCollector(SourceCollector):
     """
 
     CONFIDENCE_TIER = "low_discovery"
+
+    async def collect_page(
+        self,
+        page: PageConfig,
+        fetcher: Fetcher,
+        snapshot_mgr: SnapshotManager,
+        page_id: int,
+        since_date: date | None = None,
+    ) -> tuple[list[RawItem], DiffResult | None]:
+        """Override to use Discourse JSON API for json pages."""
+        if "discourse json" in page.page_type:
+            result = await fetcher.fetch(page.canonical_url)
+            if not result.ok:
+                return [], None
+            return self._extract_discourse_json(result.body_text), None
+        return await super().collect_page(
+            page,
+            fetcher,
+            snapshot_mgr,
+            page_id,
+            since_date=since_date,
+        )
+
+    def _extract_discourse_json(self, body: str) -> list[RawItem]:
+        """Parse Discourse /latest.json API response."""
+        items: list[RawItem] = []
+        try:
+            data = json.loads(body)
+        except (json.JSONDecodeError, ValueError):
+            return items
+        topics = data.get("topic_list", {}).get("topics", [])
+        for topic in topics:
+            title = topic.get("title", "")
+            if not title or _is_support_thread(title):
+                continue
+            slug = topic.get("slug", "")
+            topic_id = topic.get("id", "")
+            url = f"https://discuss.huggingface.co/t/{slug}/{topic_id}" if slug else ""
+            tags = topic.get("tags", [])
+            items.append(
+                RawItem(
+                    title=title,
+                    url=url,
+                    date_text=topic.get("created_at", ""),
+                    body="",
+                    item_type="forum_topic",
+                    metadata={
+                        "source": "hf_forums",
+                        "tags": tags,
+                        "reply_count": topic.get("reply_count", 0),
+                        "views": topic.get("views", 0),
+                        "confidence_tier": self.CONFIDENCE_TIER,
+                    },
+                )
+            )
+        return items
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
         soup = BeautifulSoup(html, "lxml")

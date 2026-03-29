@@ -34,6 +34,7 @@ def is_low_value_page(
     items: list[RawItem],
     page: PageConfig,
     times_polled: int = 0,
+    max_age_days: int = 90,
 ) -> bool:
     """Determine if a page's extracted items are low-value noise.
 
@@ -65,7 +66,7 @@ def is_low_value_page(
     is_cold_start = diff and diff.change_ratio is not None and diff.change_ratio >= 1.0
     dateless_page_types = {"leaderboard", "model catalog", "pricing", "methodology"}
     skip_date_check = is_cold_start or (page.page_type in dateless_page_types)
-    if not skip_date_check and not has_recent_date(items):
+    if not skip_date_check and not has_recent_date(items, max_age_days=max_age_days):
         logger.debug("low_value_stale_dates", page=page.canonical_url)
         return True
 
