@@ -26,6 +26,7 @@ class RawItem:
     body: str = ""
     model_hint: str | None = None
     item_type: str = "unknown"
+    page_title: str | None = None
     metadata: dict = field(default_factory=dict)
 
 
@@ -79,5 +80,8 @@ class SourceCollector(abc.ABC):
             return [], diff
 
         items = self.extract_items(result.body_text, page)
+        for item in items:
+            if item.page_title is None:
+                item.page_title = page.page_type
         log.info("items_extracted", count=len(items), change_ratio=diff.change_ratio)
         return items, diff

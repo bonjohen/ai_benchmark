@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from ai_benchmark.models.events import CrossReference, EventRecord
+from ai_benchmark.models.sources import Snapshot  # noqa: F401 — ensure mapper resolves
 from ai_benchmark.processing.cross_reference import (
     build_cross_references,
     create_cross_reference,
@@ -165,3 +166,35 @@ async def test_build_cross_references(db_session):
     xrefs = await build_cross_references(db_session, event_a)
     assert len(xrefs) >= 1
     assert any(x.record_b_id == event_b.id for x in xrefs)
+
+
+def test_determine_relationship_conflicts_with():
+    """conflicts_with when model scores disagree across orgs."""
+    event_a = EventRecord(
+        source_id=1, title="A", normalized_title="a", organization="SWE-bench",
+        source_type="leaderboard", canonical_path="/a", event_type="benchmark_result",
+        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+        raw_content="GPT-5 achieves 95.0% on SWE-bench Verified",
+    )
+    event_b = EventRecord(
+        source_id=1, title="B", normalized_title="b", organization="OpenAI",
+        source_type="blog", canonical_path="/b", event_type="benchmark_result",
+        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+        raw_content="GPT-5 achieves 80.0% on SWE-bench Verified",
+    )
+    assert determine_relationship(event_a, event_b) == "conflicts_with"
+
+
+def test_determine_relationship_confirms_same_model_different_source():
+    """confirms when same model from different source types, no numerical conflict."""
+    event_a = EventRecord(
+        source_id=1, title="A", normalized_title="a", organization="OpenAI",
+        source_type="changelog", canonical_path="/a", event_type="model_release",
+        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+    )
+    event_b = EventRecord(
+        source_id=1, title="B", normalized_title="b", organization="OpenAI",
+        source_type="newsroom", canonical_path="/b", event_type="model_release",
+        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+    )
+    assert determine_relationship(event_a, event_b) == "confirms"

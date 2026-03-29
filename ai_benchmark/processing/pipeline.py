@@ -17,6 +17,7 @@ from .normalizer import (
     normalize_title,
 )
 from .verification import create_claim, update_confirmation_status
+from ..collection.snapshot import SnapshotManager
 from ..sources.base import RawItem
 
 
@@ -60,7 +61,9 @@ async def process_item(
     )
     if existing:
         # Still create a claim for the existing event (multiple sources corroborate)
-        confidence_tier = confidence_tier_for_classification(classification)
+        confidence_tier = confidence_tier_for_classification(
+            classification, organization=organization, source_type=source_type,
+        )
         await create_claim(
             session,
             event=existing,
@@ -68,6 +71,7 @@ async def process_item(
             source_type=source_type,
             source_name=organization,
             confidence_tier=confidence_tier,
+            page_title=item.page_title,
         )
         await update_confirmation_status(session, existing)
         return None
@@ -93,15 +97,26 @@ async def process_item(
     await session.flush()
 
     # 4. Create initial claim
-    confidence_tier = confidence_tier_for_classification(classification)
-    await create_claim(
+    confidence_tier = confidence_tier_for_classification(
+        classification, organization=organization, source_type=source_type,
+    )
+    claim = await create_claim(
         session,
         event=event,
         claim_text=item.title,
         source_type=source_type,
         source_name=organization,
         confidence_tier=confidence_tier,
+        page_title=item.page_title,
     )
+
+    # 4b. Link pricing snapshot to claim
+    if event_type == "pricing_change" and page_id is not None:
+        snapshot_mgr = SnapshotManager(session)
+        latest_snap = await snapshot_mgr.get_latest_snapshot(page_id)
+        if latest_snap:
+            claim.snapshot_id = latest_snap.id
+            await session.flush()
 
     # 5. Check confirmation
     await update_confirmation_status(session, event)

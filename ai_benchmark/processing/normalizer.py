@@ -110,16 +110,42 @@ def extract_date(text: str) -> str | None:
     return None
 
 
-# Source classification → confidence tier mapping
+# Source classification → confidence tier mapping (5 tiers)
 CONFIDENCE_TIERS: dict[str, str] = {
     "primary": "official_self_report",
     "secondary": "high_secondary",
+    "benchmark_owner": "benchmark_owner_report",
+    "news_medium": "medium_discovery",
     "discovery-only": "low_discovery",
 }
 
+# Source-specific tier overrides: (organization, source_type) -> confidence tier
+SOURCE_TIER_OVERRIDES: dict[tuple[str, str], str] = {
+    ("Reuters", "news_index"): "high_secondary",
+    ("TechCrunch", "news_index"): "medium_discovery",
+    ("SWE-bench", "leaderboard"): "benchmark_owner_report",
+    ("GAIA", "leaderboard"): "benchmark_owner_report",
+    ("LiveBench", "leaderboard"): "benchmark_owner_report",
+    ("LMArena", "leaderboard"): "benchmark_owner_report",
+    ("HLE", "leaderboard"): "benchmark_owner_report",
+    ("Terminal-Bench", "leaderboard"): "benchmark_owner_report",
+    ("Artificial Analysis", "leaderboard"): "benchmark_owner_report",
+}
 
-def confidence_tier_for_classification(classification: str) -> str:
-    """Map a source classification to the appropriate confidence tier."""
+
+def confidence_tier_for_classification(
+    classification: str,
+    organization: str | None = None,
+    source_type: str | None = None,
+) -> str:
+    """Map a source classification to the appropriate confidence tier.
+
+    Checks SOURCE_TIER_OVERRIDES first, then falls back to CONFIDENCE_TIERS.
+    """
+    if organization and source_type:
+        override = SOURCE_TIER_OVERRIDES.get((organization, source_type))
+        if override:
+            return override
     return CONFIDENCE_TIERS.get(classification, "low_discovery")
 
 

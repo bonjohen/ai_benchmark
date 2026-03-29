@@ -11,6 +11,7 @@ Five verification chains:
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -87,9 +88,13 @@ async def check_confirmation(
 ) -> bool:
     """Check if an event has enough confirming claims to be marked confirmed.
 
-    For model releases: requires 2+ official surfaces.
-    For benchmark claims: requires benchmark owner claim.
-    For pricing: requires pricing_page source.
+    Enforces the verification chain ordering defined in VERIFICATION_CHAINS:
+    - Model releases: 2+ distinct source types from the chain, with at least
+      one from the top 3 ranked source types.
+    - Benchmark claims: requires a claim with benchmark_owner_report tier.
+    - Pricing: requires a pricing_page source claim.
+    - Announcements: newsroom + 1 other.
+    - Research: requires a primary_paper claim.
     """
     stmt = select(ClaimRecord).where(ClaimRecord.event_id == event.id)
     result = await session.execute(stmt)
@@ -102,8 +107,13 @@ async def check_confirmation(
     chain = VERIFICATION_CHAINS.get(event_type, [])
 
     if event_type == "model_release":
-        official_claims = [c for c in claims if c.confidence_tier == "official_self_report"]
-        return len(official_claims) >= min_sources
+        # Require 2+ distinct source types that appear in the chain,
+        # with at least one from the top 3 of the chain
+        top_types = set(chain[:3]) if len(chain) >= 3 else set(chain)
+        chain_set = set(chain)
+        matching_types = {c.source_type for c in claims if c.source_type in chain_set}
+        has_high_rank = bool(matching_types & top_types)
+        return len(matching_types) >= min_sources and has_high_rank
 
     if event_type == "benchmark_result":
         return any(c.confidence_tier == "benchmark_owner_report" for c in claims)
@@ -112,7 +122,6 @@ async def check_confirmation(
         return any(c.source_type == "pricing_page" for c in claims)
 
     if event_type == "announcement":
-        # Confirmed if newsroom + one other source
         has_newsroom = any("newsroom" in c.source_type for c in claims)
         return has_newsroom and len(claims) >= min_sources
 
@@ -121,6 +130,32 @@ async def check_confirmation(
 
     # Default: 2+ claims from any tier
     return len(claims) >= min_sources
+
+
+def _extract_numbers(text: str) -> list[float]:
+    """Extract numeric values from claim text for conflict comparison.
+
+    Prioritizes percentage values to avoid picking up model version numbers.
+    """
+    pcts = [float(m) for m in re.findall(r"(\d+(?:\.\d+)?)\s*%", text)]
+    if pcts:
+        return pcts
+    return [float(m) for m in re.findall(r"(?<![-\w])(\d{2,}(?:\.\d+)?)", text)]
+
+
+def detect_claim_conflict(claim_a: ClaimRecord, claim_b: ClaimRecord) -> bool:
+    """Detect if two claims conflict based on numerical value disagreement.
+
+    Returns True when both claims contain numbers and the first extracted
+    values differ by more than 10%.
+    """
+    nums_a = _extract_numbers(claim_a.claim_text)
+    nums_b = _extract_numbers(claim_b.claim_text)
+    if nums_a and nums_b:
+        val_a, val_b = nums_a[0], nums_b[0]
+        if val_a > 0 and abs(val_a - val_b) / val_a > 0.10:
+            return True
+    return False
 
 
 async def update_confirmation_status(
@@ -138,15 +173,11 @@ async def update_confirmation_status(
     if not claims:
         return "unconfirmed"
 
-    # Check for conflicts (claims with different confidence tiers disagreeing)
-    claim_texts_lower = [c.claim_text.lower() for c in claims]
+    # Check for conflicts using numerical value disagreement
     has_conflict = False
-    for i, text_a in enumerate(claim_texts_lower):
-        for text_b in claim_texts_lower[i + 1:]:
-            # Simple conflict detection: if claim texts are very different
-            # for the same event, flag as conflicted
-            from difflib import SequenceMatcher
-            if SequenceMatcher(None, text_a, text_b).ratio() < 0.5:
+    for i, claim_a in enumerate(claims):
+        for claim_b in claims[i + 1:]:
+            if detect_claim_conflict(claim_a, claim_b):
                 has_conflict = True
                 break
         if has_conflict:

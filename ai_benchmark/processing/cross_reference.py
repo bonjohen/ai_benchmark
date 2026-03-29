@@ -10,6 +10,7 @@ Relationship types: confirms, supplements, conflicts_with, cites
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import and_, or_, select
@@ -63,8 +64,42 @@ async def find_related_by_org_event_type(
     return list(result.scalars().all())
 
 
+def _extract_numbers(text: str | None) -> list[float]:
+    """Extract numeric values from text for conflict comparison.
+
+    Prioritizes percentage values (e.g. 95.0%) over bare numbers to
+    avoid picking up model version numbers like the '5' in 'GPT-5'.
+    """
+    if not text:
+        return []
+    # First try percentage-like patterns
+    pcts = [float(m) for m in re.findall(r"(\d+(?:\.\d+)?)\s*%", text)]
+    if pcts:
+        return pcts
+    # Fall back to dollar amounts or general numbers (skip single-digit after hyphen)
+    return [float(m) for m in re.findall(r"(?<![-\w])(\d{2,}(?:\.\d+)?)", text)]
+
+
 def determine_relationship(event_a: EventRecord, event_b: EventRecord) -> str:
-    """Determine the relationship type between two events."""
+    """Determine the relationship type between two events.
+
+    Returns one of: confirms, supplements, conflicts_with, cites.
+    """
+    # Conflict detection: same model + event type, different orgs, numerical disagreement >10%
+    if (
+        event_a.model_slug
+        and event_a.model_slug == event_b.model_slug
+        and event_a.event_type == event_b.event_type
+        and event_a.organization != event_b.organization
+    ):
+        nums_a = _extract_numbers(event_a.raw_content)
+        nums_b = _extract_numbers(event_b.raw_content)
+        if nums_a and nums_b:
+            # Compare first numerical values — if they differ by >10%, it's a conflict
+            val_a, val_b = nums_a[0], nums_b[0]
+            if val_a > 0 and abs(val_a - val_b) / val_a > 0.10:
+                return "conflicts_with"
+
     # Same model from different source types → confirms
     if (
         event_a.model_slug
