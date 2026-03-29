@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import signal
 from pathlib import Path
 
@@ -194,10 +195,7 @@ def export(ctx: click.Context, fmt: str, output_path: Path | None, limit: int) -
         async with session_factory() as session:
             results = await get_events(session, limit=limit)
 
-        if fmt == "json":
-            content = events_to_json(results)
-        else:
-            content = events_to_csv(results)
+        content = events_to_json(results) if fmt == "json" else events_to_csv(results)
 
         if output_path:
             output_path.write_text(content, encoding="utf-8")
@@ -234,11 +232,8 @@ def run(ctx: click.Context) -> None:
 
         loop = asyncio.get_running_loop()
         for sig in (signal.SIGINT, signal.SIGTERM):
-            try:
+            with contextlib.suppress(NotImplementedError):
                 loop.add_signal_handler(sig, _signal_handler)
-            except NotImplementedError:
-                # Windows doesn't support add_signal_handler
-                pass
 
         try:
             await stop_event.wait()

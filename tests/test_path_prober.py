@@ -73,8 +73,7 @@ async def test_discover_new_paths_returns_unconfigured(db_session):
     fetcher.fetch = mock_fetch
 
     new_paths = await discover_new_paths(db_session, fetcher)
-    domains = [d for d, p in new_paths]
-    paths = [p for d, p in new_paths]
+    paths = [p for _, p in new_paths]
 
     # /blog is new, /pricing is already configured
     assert "/blog" in paths

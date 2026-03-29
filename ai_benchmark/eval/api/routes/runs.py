@@ -170,7 +170,7 @@ async def cancel_run(
     try:
         run = await run_service.cancel_run(session, run_id)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise HTTPException(400, str(e)) from None
     if run is None:
         raise HTTPException(404, "Run not found")
     result = _run_to_dict(run)

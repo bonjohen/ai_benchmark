@@ -73,9 +73,8 @@ async def process_item(
     event_type = classify_event_type(item.title, item.body)
 
     # 1b. Discovery queue — check for new model slugs before dedup/creation
-    is_new_slug = False
     if model_slug:
-        is_new_slug = await check_and_enqueue(session, model_slug, organization)
+        await check_and_enqueue(session, model_slug, organization)
 
     # 2. Dedup
     existing = await is_duplicate(

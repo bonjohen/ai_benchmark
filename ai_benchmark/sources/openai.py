@@ -92,10 +92,7 @@ class OpenAICollector(SourceCollector):
         items: list[RawItem] = []
         for link in soup.select("a[href*='system-card'], a[href*='safety'], article"):
             title_el = link.select_one("h2, h3, .title")
-            if title_el:
-                title = title_el.get_text(strip=True)
-            else:
-                title = link.get_text(strip=True)[:200]
+            title = title_el.get_text(strip=True) if title_el else link.get_text(strip=True)[:200]
             if title and len(title) > 5:
                 items.append(
                     RawItem(

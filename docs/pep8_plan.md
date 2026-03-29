@@ -90,15 +90,15 @@ Fix 11 remaining violations that require manual code changes and judgment.
 
 | No. | Status | Started (PST) | Completed (PST) | Description                                                                                                                                          |
 | --: | ------ | ------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  45 | Open   |               |                 | Fix 1 F821 (undefined name) in `ai_benchmark/models/events.py:74` — reference to `Snapshot` that does not exist in scope. Add the correct import or fix the forward reference. |
-|  46 | Open   |               |                 | Fix 2 F841 (unused variable) violations: `ai_benchmark/eval/cli/commands.py:99` (variable `ev`) and `tests/test_path_prober.py:72` (variable `domains`). Remove or use the assigned variables. |
-|  47 | Open   |               |                 | Fix 1 B904 (raise-without-from) violation in `ai_benchmark/eval/cli/commands.py:115` — add `from` clause to re-raised exception to preserve traceback chain. |
-|  48 | Open   |               |                 | Fix 4 SIM108 (if-else-block-instead-of-ternary) violations in `cli.py:187`, `sources/hf_leaderboard_docs.py:27`, `sources/openai.py:86`, `eval/cli/commands.py:159`. Evaluate each case: convert to ternary only when readability is preserved; add `# noqa: SIM108` if the multi-line form is clearer. |
-|  49 | Open   |               |                 | Fix 2 SIM105 (suppressible-exception) violations in `cli.py:227` and `eval/cli/commands.py:225` — replace `try/except/pass` with `contextlib.suppress()`. |
-|  50 | Open   |               |                 | Run full test suite to confirm no regressions.                                                                                                       |
-|  51 | Open   |               |                 | Stage all Phase 6 changes.                                                                                                                           |
-|  52 | Open   |               |                 | Commit all Phase 6 changes with a phase-complete commit message.                                                                                     |
-|  53 | Open   |               |                 | Immediately begin Phase 7.                                                                                                                           |
+|  45 | Completed | 2026-03-28 06:08 PM | 2026-03-28 06:09 PM | Fix 1 F821 (undefined name) in `events.py` — added `from .sources import Snapshot` with `# noqa: TC001`.                                            |
+|  46 | Completed | 2026-03-28 06:09 PM | 2026-03-28 06:10 PM | Fix 3 F841 (unused variable): removed `ev` in `commands.py`, `is_new_slug` in `pipeline.py`, `domains` in `test_path_prober.py`.                     |
+|  47 | Completed | 2026-03-28 06:10 PM | 2026-03-28 06:10 PM | Fix 1 B904 in `eval/api/routes/runs.py` — added `from None` to `raise HTTPException`.                                                               |
+|  48 | Completed | 2026-03-28 06:10 PM | 2026-03-28 06:11 PM | Fix 4 SIM108: converted all to ternary (cli.py, exact_match.py, hf_leaderboard_docs.py, openai.py) — all readable as one-liners.                    |
+|  49 | Completed | 2026-03-28 06:11 PM | 2026-03-28 06:11 PM | Fix 2 SIM105: replaced try/except/pass with `contextlib.suppress()` in `cli.py` and `comparison_service.py`.                                        |
+|  50 | Completed | 2026-03-28 06:11 PM | 2026-03-28 06:11 PM | Run full test suite — 340 passed, 2 pre-existing failures.                                                                                           |
+|  51 | Completed | 2026-03-28 06:11 PM | 2026-03-28 06:11 PM | Stage all Phase 6 changes.                                                                                                                           |
+|  52 | Completed | 2026-03-28 06:11 PM | 2026-03-28 06:11 PM | Commit all Phase 6 changes with a phase-complete commit message.                                                                                     |
+|  53 | Completed | 2026-03-28 06:11 PM | 2026-03-28 06:11 PM | Immediately begin Phase 7.                                                                                                                           |
 
 ## Phase 7 — CI Enforcement and Configuration
 

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime  # noqa: TC003
 
 from .base import Base
+from .sources import Snapshot  # noqa: TC001
 
 
 class EventRecord(Base):

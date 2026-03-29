@@ -27,11 +27,7 @@ class HFLeaderboardDocsCollector(SourceCollector):
         # Look for leaderboard space cards or links
         for card in soup.select("a[href*='/spaces/'], .space-card, article"):
             title_el = card.select_one("h3, h2, .title, p")
-            if not title_el:
-                # Use the link text itself
-                title = card.get_text(strip=True)
-            else:
-                title = title_el.get_text(strip=True)
+            title = card.get_text(strip=True) if not title_el else title_el.get_text(strip=True)
 
             if not title or len(title) < 5:
                 continue

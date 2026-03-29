@@ -95,10 +95,6 @@ def run_matrix(ctx: click.Context, evaluation: str, targets: str, name: str | No
             from ..services import run_service
 
             ev_id = await _resolve_eval(session, evaluation)
-            # Get dataset_version_id from eval version
-            from ..models.evaluation import EvaluationVersion
-
-            ev = await session.get(EvaluationVersion, ev_id)
 
             rg, runs = await run_service.create_batch(
                 session,

@@ -79,10 +79,7 @@ class FuzzyMatchScorer(BaseScorer):
         if method == "token_overlap":
             out_tokens = set(output.lower().split())
             exp_tokens = set(expected.lower().split())
-            if not exp_tokens:
-                ratio = 0.0
-            else:
-                ratio = len(out_tokens & exp_tokens) / len(exp_tokens)
+            ratio = 0.0 if not exp_tokens else len(out_tokens & exp_tokens) / len(exp_tokens)
         else:
             # Default: SequenceMatcher (Levenshtein-like)
             ratio = difflib.SequenceMatcher(None, output, expected).ratio()

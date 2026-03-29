@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 from typing import Any, TYPE_CHECKING
 
@@ -123,10 +124,8 @@ async def diff_target_configs(
             val = getattr(t, field)
             # Parse JSON fields for readable comparison
             if field in ("inference_params", "runtime_options") and val:
-                try:
+                with contextlib.suppress(json.JSONDecodeError, TypeError):
                     val = json.loads(val)
-                except (json.JSONDecodeError, TypeError):
-                    pass
             values[t.id] = val
 
         # Only include if values differ
