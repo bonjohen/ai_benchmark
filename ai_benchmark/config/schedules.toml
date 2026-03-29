@@ -85,6 +85,12 @@ organization = "Hugging Face Papers"
 cron = "30 6,18 * * *"
 max_concurrent = 1
 
+# Semantic Scholar enrichment — every 4 hours
+[[schedules]]
+organization = "Semantic Scholar"
+cron = "0 */4 * * *"
+max_concurrent = 1
+
 # News — Reuters every 3-6 hours, TechCrunch every 6-12 hours
 [[schedules]]
 organization = "Reuters"

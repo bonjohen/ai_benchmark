@@ -6,16 +6,15 @@ from ai_benchmark.sources.registry import COLLECTOR_CLASSES, list_registered_org
 
 
 # All organizations with collectors in the registry.
-# Note: Semantic Scholar is an enrichment API client (used by triage pipeline),
-# not a polled collector, so it is not in the registry. 22 sources, 21 collectors.
+# 22 sources, 22 collectors (Semantic Scholar now has a collector class).
 ALL_ORGANIZATIONS = [
     # Official vendors (7)
     "OpenAI", "Anthropic", "Google", "xAI", "Mistral AI", "Cohere", "Meta",
     # Benchmarks (7)
     "Artificial Analysis", "LMArena", "LiveBench", "SWE-bench",
     "GAIA", "HLE", "Terminal-Bench",
-    # Research (2 collectors — S2 is enrichment-only)
-    "arXiv", "Hugging Face Papers",
+    # Research (3 collectors)
+    "arXiv", "Hugging Face Papers", "Semantic Scholar",
     # News (2)
     "Reuters", "TechCrunch",
     # Community (3)
@@ -31,8 +30,8 @@ def test_all_sources_registered():
 
 
 def test_collector_count():
-    """Registry should contain exactly 21 collector classes (S2 is enrichment-only)."""
-    assert len(COLLECTOR_CLASSES) == 21
+    """Registry should contain exactly 22 collector classes."""
+    assert len(COLLECTOR_CLASSES) == 22
 
 
 def test_list_registered_organizations_matches():

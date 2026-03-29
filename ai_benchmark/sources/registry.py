@@ -24,6 +24,7 @@ from .news.techcrunch import TechCrunchCollector
 from .openai import OpenAICollector
 from .research.arxiv import ArxivCollector
 from .research.hf_papers import HFPapersCollector
+from .research.semantic_scholar import SemanticScholarCollector
 from .xai import XAICollector
 
 # Map organization names to collector classes
@@ -47,6 +48,7 @@ COLLECTOR_CLASSES: dict[str, type[SourceCollector]] = {
     # Research
     "arXiv": ArxivCollector,
     "Hugging Face Papers": HFPapersCollector,
+    "Semantic Scholar": SemanticScholarCollector,
     # News
     "Reuters": ReutersCollector,
     "TechCrunch": TechCrunchCollector,

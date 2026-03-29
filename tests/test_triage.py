@@ -7,12 +7,16 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from ai_benchmark.models.research import CandidatePaper, EnrichedPaper
+from ai_benchmark.models.events import EventRecord
+from ai_benchmark.processing.pipeline import route_research_item
 from ai_benchmark.processing.triage import (
     enrich_candidate,
+    enrich_pending_candidates,
     get_pending_candidates,
     ingest_candidate,
     promote_to_enriched,
 )
+from ai_benchmark.sources.base import RawItem
 
 
 @pytest.mark.asyncio
@@ -247,3 +251,105 @@ async def test_get_pending_candidates_excludes_enriched(db_session):
     pending = await get_pending_candidates(db_session)
     ids = [p.arxiv_id for p in pending]
     assert "2603.60000" not in ids
+
+
+@pytest.mark.asyncio
+async def test_route_research_item_creates_candidate(db_session):
+    """route_research_item creates a CandidatePaper, not an EventRecord."""
+    item = RawItem(
+        title="New LLM Benchmark Framework",
+        url="https://arxiv.org/abs/2603.77777",
+        body="We present a new benchmark...",
+        item_type="candidate_paper",
+        metadata={
+            "arxiv_id": "2603.77777",
+            "authors": "Smith, Jones",
+            "categories": "cs.AI",
+            "source": "arxiv",
+        },
+    )
+    await route_research_item(db_session, item)
+
+    from sqlalchemy import select
+    result = await db_session.execute(select(CandidatePaper))
+    papers = result.scalars().all()
+    assert len(papers) == 1
+    assert papers[0].arxiv_id == "2603.77777"
+    assert papers[0].status == "pending"
+
+    result = await db_session.execute(select(EventRecord))
+    events = result.scalars().all()
+    assert len(events) == 0
+
+
+@pytest.mark.asyncio
+async def test_hf_papers_relevance_filtering():
+    """HFPapersCollector skips papers with no relevance keywords."""
+    from ai_benchmark.sources.research.hf_papers import HFPapersCollector
+    from ai_benchmark.config.settings import SourceConfig, PageConfig
+
+    config = SourceConfig(
+        source_name="HF Papers", category="research",
+        organization="Hugging Face Papers", homepage_url="https://huggingface.co/papers",
+        base_domain="huggingface.co", trust_rating=4.0,
+        source_role="research", classification="discovery-only", pages=[],
+    )
+    collector = HFPapersCollector(config)
+
+    # HTML with one relevant and one irrelevant paper
+    html = """
+    <article><h3>New LLM Benchmark for GPT Evaluation</h3></article>
+    <article><h3>Quantum Chemistry Simulation Methods</h3></article>
+    """
+    page = PageConfig(
+        canonical_url="https://huggingface.co/papers",
+        page_type="trending",
+    )
+    items = collector.extract_items(html, page)
+    # Only the LLM benchmark paper should pass relevance filtering
+    assert len(items) == 1
+    assert "LLM" in items[0].title or "GPT" in items[0].title
+
+
+@pytest.mark.asyncio
+async def test_enrich_pending_candidates_promotes(db_session):
+    """enrich_pending_candidates processes pending papers and promotes relevant ones."""
+    paper = await ingest_candidate(
+        db_session, title="LLM Safety Alignment Benchmark",
+        arxiv_id="2603.88888", authors="Author",
+        categories="cs.AI", abstract_url=None,
+        discovered_via="arxiv",
+    )
+    await db_session.flush()
+
+    mock_client = AsyncMock()
+    paper_data = {
+        "title": "LLM Safety Alignment Benchmark Evaluation",
+        "abstract": "A comprehensive benchmark for evaluating language model safety alignment.",
+        "paperId": "s2_promo_1",
+        "authors": [{"name": "Alice"}],
+        "citationCount": 10,
+        "venue": "NeurIPS",
+        "externalIds": {},
+    }
+    mock_client.get_paper_by_arxiv.return_value = paper_data
+
+    count = await enrich_pending_candidates(db_session, mock_client)
+    assert count == 1
+    assert paper.status == "promoted"
+
+
+@pytest.mark.asyncio
+async def test_retry_limit_skips_exhausted_candidates(db_session):
+    """Candidates with retry_count >= 3 are skipped by get_pending_candidates."""
+    paper = await ingest_candidate(
+        db_session, title="Failing Paper",
+        arxiv_id="2603.99990", authors="Author",
+        categories="cs.AI", abstract_url=None,
+        discovered_via="arxiv",
+    )
+    paper.retry_count = 3
+    await db_session.flush()
+
+    pending = await get_pending_candidates(db_session)
+    assert all(p.arxiv_id != "2603.99990" for p in pending)

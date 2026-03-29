@@ -16,9 +16,23 @@ from .normalizer import (
     extract_model_slug,
     normalize_title,
 )
+from .triage import ingest_candidate
 from .verification import create_claim, update_confirmation_status
 from ..collection.snapshot import SnapshotManager
 from ..sources.base import RawItem
+
+
+async def route_research_item(session: AsyncSession, item: RawItem) -> None:
+    """Route a candidate_paper item through the triage pipeline instead of event creation."""
+    await ingest_candidate(
+        session,
+        title=item.title,
+        arxiv_id=item.metadata.get("arxiv_id") or None,
+        authors=item.metadata.get("authors") or None,
+        categories=item.metadata.get("categories") or None,
+        abstract_url=item.url or None,
+        discovered_via=item.metadata.get("source", "unknown"),
+    )
 
 
 async def process_item(
@@ -42,6 +56,11 @@ async def process_item(
 
     Returns the new EventRecord, or None if duplicate.
     """
+    # 0. Route research items through triage pipeline
+    if item.item_type == "candidate_paper":
+        await route_research_item(session, item)
+        return None
+
     # 1. Normalize
     norm_title = normalize_title(item.title)
     combined_text = f"{item.title} {item.body}"

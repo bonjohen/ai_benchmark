@@ -83,6 +83,8 @@ async def enrich_candidate(
 
     except Exception:
         # API failures don't reject — leave as pending for retry
+        candidate.retry_count = (candidate.retry_count or 0) + 1
+        candidate.last_retry_at = datetime.now(timezone.utc)
         return candidate
 
 
@@ -114,11 +116,45 @@ async def promote_to_enriched(
 
 
 async def get_pending_candidates(session: AsyncSession, limit: int = 50) -> list[CandidatePaper]:
-    """Get candidates awaiting enrichment."""
+    """Get candidates awaiting enrichment, skipping those that exceeded retry limit."""
     result = await session.execute(
         select(CandidatePaper)
         .where(CandidatePaper.status == "pending")
+        .where(CandidatePaper.retry_count < 3)
         .order_by(CandidatePaper.discovered_at.asc())
         .limit(limit)
     )
     return list(result.scalars().all())
+
+
+async def enrich_pending_candidates(
+    session: AsyncSession,
+    s2_client: SemanticScholarClient,
+    limit: int = 50,
+) -> int:
+    """Scheduled job: enrich all pending candidates and promote relevant ones.
+
+    Returns the number of papers promoted.
+    """
+    candidates = await get_pending_candidates(session, limit=limit)
+    promoted_count = 0
+
+    for candidate in candidates:
+        enriched = await enrich_candidate(session, candidate, s2_client)
+
+        if enriched.status == "enriched":
+            # Re-fetch paper data for promotion
+            try:
+                if candidate.arxiv_id:
+                    paper_data = await s2_client.get_paper_by_arxiv(candidate.arxiv_id)
+                else:
+                    results = await s2_client.search_paper(candidate.title, limit=1)
+                    paper_data = results[0] if results else {}
+                if paper_data:
+                    await promote_to_enriched(session, candidate, paper_data)
+                    promoted_count += 1
+            except Exception:
+                pass  # Promotion failure is not fatal; paper stays enriched
+
+    await session.flush()
+    return promoted_count

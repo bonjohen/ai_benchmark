@@ -7,6 +7,7 @@ import re
 from bs4 import BeautifulSoup
 
 from ...config.settings import PageConfig
+from ...processing.triage import RELEVANCE_KEYWORDS
 from ..base import RawItem, SourceCollector
 
 
@@ -37,10 +38,15 @@ class HFPapersCollector(SourceCollector):
             upvote_el = article.select_one(".upvote, .likes, [data-likes]")
             upvotes = upvote_el.get_text(strip=True) if upvote_el else "0"
 
+            body_text = article.get_text(strip=True)
+            combined = f"{title} {body_text}".lower()
+            if not any(kw in combined for kw in RELEVANCE_KEYWORDS):
+                continue
+
             items.append(RawItem(
                 title=title,
                 url=href,
-                body=article.get_text(strip=True),
+                body=body_text,
                 item_type="candidate_paper",
                 metadata={
                     "arxiv_id": arxiv_id,
