@@ -102,6 +102,17 @@ organization = "TechCrunch"
 cron = "0 */6 * * *"
 max_concurrent = 1
 
+# Discovery automation
+[[schedules]]
+organization = "Discovery"
+cron = "*/30 * * * *"
+max_concurrent = 1
+
+[[schedules]]
+organization = "PathProber"
+cron = "0 3 * * 0"
+max_concurrent = 1
+
 # Community — daily
 [[schedules]]
 organization = "Hugging Face Forums"
