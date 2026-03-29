@@ -81,20 +81,20 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Create `ai_benchmark/analysis/services/capability.py`: `get_capability_profile()` and `compare_capabilities()` composing `build_model_profile`, `get_benchmark_leaderboard` with percentile normalization and composite scoring. |
-| 3.2 | Open | | | Create `ai_benchmark/analysis/services/landscape.py`: `get_landscape()` composing `get_activity_timeline`, `list_tracked_models`, `get_recent_insights` with per-org benchmark aggregation and trend computation. |
-| 3.3 | Open | | | Create `tests/test_analysis/test_capability.py`: 8 tests — empty DB, single model, percentile computation, composite score, compare multi-model, model not found, single benchmark, equal-score tie. |
-| 3.4 | Open | | | Create `tests/test_analysis/test_landscape.py`: 7 tests — empty DB, single org, multi-org ranking, new model detection, pricing events, cluster count, trend computation. |
-| 3.5 | Open | | | Add `capability_to_markdown()` and `landscape_to_markdown()` to `formatters/markdown.py`. |
-| 3.6 | Open | | | Add `capability` and `landscape` CLI subcommands to `cli.py`. Add formatter tests for capability and landscape to `test_formatters.py`. |
-| 3.7 | Open | | | Add `/capability/{slug}`, `/capability`, and `/landscape` API endpoints to `api.py`. |
-| 3.8 | Open | | | Run `pytest` — all tests pass. Run `ruff check` and `ruff format --check` — clean. |
-| 3.9 | Open | | | Stage all Phase 3 changes. |
+| 3.1 | Completed | 2026-03-29 03:40 PM | 2026-03-29 03:45 PM | Create `ai_benchmark/analysis/services/capability.py`: `get_capability_profile()` and `compare_capabilities()` with direct score extraction via `extract_benchmark_score()`, percentile normalization, and composite scoring. |
+| 3.2 | Completed | 2026-03-29 03:45 PM | 2026-03-29 03:50 PM | Create `ai_benchmark/analysis/services/landscape.py`: `get_landscape()` composing `get_activity_timeline`, `list_tracked_models`, `extract_benchmark_score` with per-org benchmark aggregation and trend computation. |
+| 3.3 | Completed | 2026-03-29 03:50 PM | 2026-03-29 03:55 PM | Create `tests/test_analysis/test_capability.py`: 8 tests — empty DB, single model, percentile computation, composite score, compare multi-model, model not found, no benchmark data, top scorer percentile. |
+| 3.4 | Completed | 2026-03-29 03:55 PM | 2026-03-29 04:00 PM | Create `tests/test_analysis/test_landscape.py`: 7 tests — empty DB, single org, multi-org, new model detection, pricing events, benchmark breadth, trend computation. |
+| 3.5 | Completed | 2026-03-29 04:00 PM | 2026-03-29 04:05 PM | Add `capability_to_markdown()` and `landscape_to_markdown()` to `formatters/markdown.py`. |
+| 3.6 | Completed | 2026-03-29 04:05 PM | 2026-03-29 04:10 PM | Add `capability` and `landscape` CLI subcommands to `cli.py`. Add formatter tests for capability and landscape to `test_formatters.py`. |
+| 3.7 | Completed | 2026-03-29 04:10 PM | 2026-03-29 04:15 PM | Add `/capability/{slug}`, `/capability`, and `/landscape` API endpoints to `api.py`. |
+| 3.8 | Completed | 2026-03-29 04:15 PM | 2026-03-29 04:30 PM | Run `pytest` — 842 passed. Run `ruff check` and `ruff format --check` — clean. |
+| 3.9 | Started | 2026-03-29 04:30 PM | | Stage all Phase 3 changes. |
 | 3.10 | Open | | | Commit: "Add capability profiles and competitive landscape (Tier 2a)". |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `capability.py` (percentile normalization, composite scoring via direct score extraction) and `landscape.py` (org-level benchmark aggregation, pricing context, trend computation). Added `capability_to_markdown()` and `landscape_to_markdown()` formatters. Added `capability` and `landscape` CLI subcommands and 3 API endpoints. 8 capability tests + 7 landscape tests + 4 formatter tests = 19 new tests. Total: 842 passed.
 - **Changes hosted at:** TBD
 - **Commit:** `Add capability profiles and competitive landscape (Tier 2a)`
 

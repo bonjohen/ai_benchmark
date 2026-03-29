@@ -660,6 +660,105 @@ def analyze_evolution(
     asyncio.run(_run())
 
 
+@analyze_group.command("capability")
+@click.argument("slug")
+@click.option("--compare", default=None, help="Comma-separated slugs to compare.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_capability(
+    ctx: click.Context, slug: str, compare: str | None, output_format: str
+) -> None:
+    """Show cross-benchmark capability profile for a model."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            if compare:
+                from .services.capability import compare_capabilities
+
+                slugs = [slug] + [s.strip() for s in compare.split(",")]
+                profiles = await compare_capabilities(session, slugs)
+                if output_format == "json":
+                    from .formatters.json_export import to_json
+
+                    click.echo(to_json(profiles))
+                else:
+                    from .formatters.markdown import capability_to_markdown
+
+                    for p in profiles:
+                        click.echo(capability_to_markdown(p))
+            else:
+                from .services.capability import get_capability_profile
+
+                profile = await get_capability_profile(session, slug)
+                if profile is None:
+                    click.echo(f"Model '{slug}' not found.")
+                    return
+                if output_format == "json":
+                    from .formatters.json_export import to_json
+
+                    click.echo(to_json(profile))
+                else:
+                    from .formatters.markdown import capability_to_markdown
+
+                    click.echo(capability_to_markdown(profile))
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+@analyze_group.command("landscape")
+@click.option("--days", default=30, help="Lookback window in days.")
+@click.option("--org", default=None, help="Filter by organization.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_landscape(ctx: click.Context, days: int, org: str | None, output_format: str) -> None:
+    """Show competitive landscape with benchmark context."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.landscape import get_landscape
+
+            report = await get_landscape(session, window_days=days, organization=org)
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(report))
+            else:
+                from .formatters.markdown import landscape_to_markdown
+
+                click.echo(landscape_to_markdown(report))
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
 def _digest_to_text(report) -> str:
     """Simple text rendering of a DigestReport."""
     lines = [

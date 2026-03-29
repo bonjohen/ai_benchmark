@@ -17,8 +17,10 @@ from ai_benchmark.analysis.formatters.csv_export import (
 from ai_benchmark.analysis.formatters.json_export import to_json
 from ai_benchmark.analysis.formatters.markdown import (
     activity_timeline_to_markdown,
+    capability_to_markdown,
     evolution_to_markdown,
     insights_to_markdown,
+    landscape_to_markdown,
     leaderboard_to_markdown,
     model_list_to_markdown,
     model_profile_to_markdown,
@@ -29,13 +31,17 @@ from ai_benchmark.analysis.models import AnalysisInsight
 from ai_benchmark.analysis.types import (
     ActivityTimeline,
     BenchmarkDataPoint,
+    BenchmarkPercentile,
+    CapabilityProfile,
     CompetitiveCluster,
     EvolutionSummary,
     FrontierEntry,
+    LandscapeReport,
     Leaderboard,
     ModelProfile,
     ModelSummary,
     OrgActivity,
+    OrgLandscapeEntry,
     PaperCitationEntry,
     PaperProductLink,
     ResearchTrends,
@@ -458,3 +464,75 @@ def test_evolution_to_csv_rows():
     rows = list(reader)
     assert len(rows) == 2  # header + 1 benchmark
     assert rows[1][0] == "SWE-bench Verified"
+
+
+# --- Markdown: capability ---
+
+
+def _make_capability():
+    return CapabilityProfile(
+        model_slug="gpt-5",
+        organization="OpenAI",
+        benchmark_count=2,
+        percentiles=[
+            BenchmarkPercentile("SWE-bench Verified", 92.3, 100.0, 3),
+            BenchmarkPercentile("MMLU", 95.1, 100.0, 2),
+        ],
+        composite_score=100.0,
+    )
+
+
+def test_capability_to_markdown_header():
+    """Capability markdown includes model name and composite."""
+    md = capability_to_markdown(_make_capability())
+    assert "gpt-5" in md
+    assert "100.0" in md
+
+
+def test_capability_to_markdown_percentiles():
+    """Capability markdown shows benchmark percentiles."""
+    md = capability_to_markdown(_make_capability())
+    assert "SWE-bench Verified" in md
+    assert "92.3" in md
+
+
+# --- Markdown: landscape ---
+
+
+def _make_landscape():
+    return LandscapeReport(
+        window_days=30,
+        window_start="2026-03-01",
+        window_end="2026-03-29",
+        entries=[
+            OrgLandscapeEntry(
+                organization="OpenAI",
+                total_models=3,
+                new_models=1,
+                active_model_slugs=["gpt-5"],
+                benchmark_breadth=2,
+                best_result_model="gpt-5",
+                best_result_benchmark="MMLU",
+                best_result_score=95.1,
+                pricing_events=1,
+                has_price_drop=True,
+                cluster_count=1,
+                trend="up",
+            ),
+        ],
+    )
+
+
+def test_landscape_to_markdown_header():
+    """Landscape markdown includes title and window."""
+    md = landscape_to_markdown(_make_landscape())
+    assert "# Competitive Landscape" in md
+    assert "30 days" in md
+
+
+def test_landscape_to_markdown_entries():
+    """Landscape markdown shows org entries."""
+    md = landscape_to_markdown(_make_landscape())
+    assert "OpenAI" in md
+    assert "95.1" in md
+    assert "drop" in md

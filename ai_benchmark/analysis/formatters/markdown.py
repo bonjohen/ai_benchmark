@@ -8,8 +8,10 @@ if TYPE_CHECKING:
     from ..models import AnalysisInsight
     from ..types import (
         ActivityTimeline,
+        CapabilityProfile,
         DigestReport,
         EvolutionSummary,
+        LandscapeReport,
         Leaderboard,
         ModelProfile,
         ModelSummary,
@@ -379,5 +381,62 @@ def evolution_to_markdown(summaries: list[EvolutionSummary]) -> str:
             for f in s.frontier:
                 lines.append(f"| {f.date} | {f.model_slug} | {f.score} |")
             lines.append("")
+
+    return "\n".join(lines)
+
+
+def capability_to_markdown(profile: CapabilityProfile) -> str:
+    """Render a capability profile as Markdown."""
+    lines = [
+        f"# Capability Profile: {profile.model_slug}",
+        "",
+        f"**Organization:** {profile.organization}",
+        f"**Benchmarks evaluated:** {profile.benchmark_count}",
+        f"**Composite score:** {profile.composite_score:.1f}",
+        "",
+    ]
+
+    if not profile.percentiles:
+        lines.append("No benchmark data available.\n")
+        return "\n".join(lines)
+
+    lines.append("| Benchmark | Raw Score | Percentile | Models |")
+    lines.append("|---|---|---|---|")
+    for p in sorted(profile.percentiles, key=lambda x: -x.percentile_rank):
+        raw = f"{p.raw_score}" if p.raw_score is not None else "—"
+        lines.append(
+            f"| {p.benchmark_variant} | {raw} | {p.percentile_rank:.1f}% "
+            f"| {p.models_in_benchmark} |"
+        )
+    lines.append("")
+
+    return "\n".join(lines)
+
+
+def landscape_to_markdown(report: LandscapeReport) -> str:
+    """Render a competitive landscape report as Markdown."""
+    lines = [
+        "# Competitive Landscape",
+        "",
+        f"**Window:** {report.window_days} days ({report.window_start} to {report.window_end})",
+        "",
+    ]
+
+    if not report.entries:
+        lines.append("No active organizations found.\n")
+        return "\n".join(lines)
+
+    lines.append("| Org | Models | New | Benchmarks | Best Score | Pricing | Trend |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for e in report.entries:
+        best = f"{e.best_result_score} ({e.best_result_benchmark})" if e.best_result_score else "—"
+        price = f"{e.pricing_events}"
+        if e.has_price_drop:
+            price += " (drop)"
+        lines.append(
+            f"| {e.organization} | {e.total_models} | {e.new_models} "
+            f"| {e.benchmark_breadth} | {best} | {price} | {e.trend} |"
+        )
+    lines.append("")
 
     return "\n".join(lines)

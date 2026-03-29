@@ -208,3 +208,45 @@ async def get_evolution(
 
     summaries = await get_benchmark_evolution(session, benchmark_name=benchmark, window_days=days)
     return [_to_dict(s) for s in summaries]
+
+
+@router.get("/capability/{slug}")
+async def get_capability(
+    slug: str,
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Cross-benchmark capability profile for a model."""
+    from .services.capability import get_capability_profile
+
+    profile = await get_capability_profile(session, slug)
+    if profile is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail=f"Model '{slug}' not found")
+    return _to_dict(profile)
+
+
+@router.get("/capability")
+async def compare_capability(
+    models: str = Query(..., description="Comma-separated model slugs"),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Compare capability profiles for multiple models."""
+    from .services.capability import compare_capabilities
+
+    slugs = [s.strip() for s in models.split(",")]
+    profiles = await compare_capabilities(session, slugs)
+    return [_to_dict(p) for p in profiles]
+
+
+@router.get("/landscape")
+async def get_landscape_report(
+    days: int = Query(30, ge=1, le=365),
+    org: str | None = Query(None),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Competitive landscape with benchmark context."""
+    from .services.landscape import get_landscape
+
+    report = await get_landscape(session, window_days=days, organization=org)
+    return _to_dict(report)
