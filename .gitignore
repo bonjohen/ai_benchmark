@@ -5,9 +5,11 @@ dist/
 build/
 .eggs/
 *.db
+*.log
 .env
 .venv/
 venv/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
+logs/
