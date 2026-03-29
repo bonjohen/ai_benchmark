@@ -10,11 +10,28 @@ from ...config.settings import PageConfig
 from ..base import RawItem, SourceCollector
 
 
+# Support/help thread patterns to filter out
+SUPPORT_THREAD_PATTERNS: list[re.Pattern] = [
+    re.compile(r"\bhow (do|can|to)\b", re.IGNORECASE),
+    re.compile(r"\bhelp\b.*\b(run|install|setup|configure)\b", re.IGNORECASE),
+    re.compile(r"\berror\b", re.IGNORECASE),
+    re.compile(r"\bbug\b", re.IGNORECASE),
+    re.compile(r"\bnot working\b", re.IGNORECASE),
+    re.compile(r"\bcan't\b.*\b(run|install|load)\b", re.IGNORECASE),
+]
+
+
+def _is_support_thread(title: str) -> bool:
+    """Check if a topic title matches support/help thread patterns."""
+    return any(p.search(title) for p in SUPPORT_THREAD_PATTERNS)
+
+
 class HFForumsCollector(SourceCollector):
     """Collector for Hugging Face community forums.
 
     Discovery-only source: ingests only minimal metadata (title, author,
     timestamp, tags, outbound links). Full content is not stored.
+    Filters out support/help threads.
     """
 
     CONFIDENCE_TIER = "low_discovery"
@@ -30,6 +47,9 @@ class HFForumsCollector(SourceCollector):
 
             title = title_el.get_text(strip=True)
             if not title:
+                continue
+
+            if _is_support_thread(title):
                 continue
 
             href = str(title_el.get("href", ""))

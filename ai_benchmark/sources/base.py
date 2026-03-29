@@ -83,5 +83,12 @@ class SourceCollector(abc.ABC):
         for item in items:
             if item.page_title is None:
                 item.page_title = page.page_type
+
+        # Lazy import to avoid circular dependency
+        from ..processing.quality_filter import is_low_value_page
+        if is_low_value_page(diff, items, page):
+            log.warning("low_value_page_filtered", count=len(items))
+            return [], diff
+
         log.info("items_extracted", count=len(items), change_ratio=diff.change_ratio)
         return items, diff

@@ -74,6 +74,12 @@ class SnapshotManager:
         if latest is not None and latest.content_hash == new_hash:
             # Content unchanged — store snapshot but report no change
             snapshot = await self.store_snapshot(page_id, cleaned, new_hash)
+            # Increment times_polled
+            page_result = await self.session.execute(select(Page).where(Page.id == page_id))
+            page_obj = page_result.scalar_one_or_none()
+            if page_obj:
+                page_obj.times_polled = (page_obj.times_polled or 0) + 1
+                page_obj.last_polled_at = datetime.now(timezone.utc)
             return DiffResult(changed=False), snapshot
 
         # Content changed (or first snapshot)
@@ -88,6 +94,7 @@ class SnapshotManager:
         page_result = await self.session.execute(select(Page).where(Page.id == page_id))
         page = page_result.scalar_one_or_none()
         if page:
+            page.times_polled = (page.times_polled or 0) + 1
             page.last_changed_at = datetime.now(timezone.utc)
             page.last_polled_at = datetime.now(timezone.utc)
 

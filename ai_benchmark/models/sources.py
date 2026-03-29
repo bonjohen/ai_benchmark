@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, Text, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -39,6 +39,7 @@ class Page(Base):
     priority: Mapped[bool] = mapped_column(default=False)
     last_polled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     last_changed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    times_polled: Mapped[int] = mapped_column(Integer, default=0)
     consecutive_failures: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 

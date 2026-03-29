@@ -119,3 +119,36 @@ def test_hf_leaderboard_docs_empty():
     page = PageConfig(canonical_url="https://huggingface.co/docs", page_type="docs")
     items = collector.extract_items("<html><body></body></html>", page)
     assert items == []
+
+
+# ─── HF Forums Support Thread Filtering ───
+
+HF_FORUMS_MIXED_HTML = """
+<html><body>
+<tr class="topic-list-item" data-topic-id="200">
+  <td><a class="title" href="/t/announce/200">Announcing new Llama 3.1 benchmarks</a></td>
+</tr>
+<tr class="topic-list-item" data-topic-id="201">
+  <td><a class="title" href="/t/help/201">How do I run Llama 3?</a></td>
+</tr>
+<tr class="topic-list-item" data-topic-id="202">
+  <td><a class="title" href="/t/error/202">Error loading model weights</a></td>
+</tr>
+<tr class="topic-list-item" data-topic-id="203">
+  <td><a class="title" href="/t/bug/203">Bug in tokenizer for special characters</a></td>
+</tr>
+</body></html>
+"""
+
+
+def test_hf_forums_filters_support_threads():
+    """Support thread titles are filtered out."""
+    collector = HFForumsCollector(_make_source("Hugging Face Forums"))
+    page = PageConfig(canonical_url="https://discuss.huggingface.co", page_type="forum")
+    items = collector.extract_items(HF_FORUMS_MIXED_HTML, page)
+    titles = [i.title for i in items]
+    assert "Announcing new Llama 3.1 benchmarks" in titles
+    assert "How do I run Llama 3?" not in titles
+    assert "Error loading model weights" not in titles
+    assert "Bug in tokenizer for special characters" not in titles
+    assert len(items) == 1
