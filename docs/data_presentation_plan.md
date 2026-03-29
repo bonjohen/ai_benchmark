@@ -89,8 +89,8 @@ Open  ──>  Started  ──>  Completed
 | 3.6 | Completed | 2026-03-29 04:05 PM | 2026-03-29 04:10 PM | Add `capability` and `landscape` CLI subcommands to `cli.py`. Add formatter tests for capability and landscape to `test_formatters.py`. |
 | 3.7 | Completed | 2026-03-29 04:10 PM | 2026-03-29 04:15 PM | Add `/capability/{slug}`, `/capability`, and `/landscape` API endpoints to `api.py`. |
 | 3.8 | Completed | 2026-03-29 04:15 PM | 2026-03-29 04:30 PM | Run `pytest` — 842 passed. Run `ruff check` and `ruff format --check` — clean. |
-| 3.9 | Started | 2026-03-29 04:30 PM | | Stage all Phase 3 changes. |
-| 3.10 | Open | | | Commit: "Add capability profiles and competitive landscape (Tier 2a)". |
+| 3.9 | Completed | 2026-03-29 04:30 PM | 2026-03-29 04:32 PM | Stage all Phase 3 changes. |
+| 3.10 | Completed | 2026-03-29 04:32 PM | 2026-03-29 04:33 PM | Commit: "Add capability profiles and competitive landscape (Tier 2a)". |
 
 ### Phase 3 Summary
 
@@ -105,17 +105,17 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Create `ai_benchmark/analysis/services/research_pipeline.py`: `get_research_pipeline()` composing `get_citation_leaders`, `detect_paper_to_product` with citation velocity, split-window topic trends, and predictive signals. |
-| 4.2 | Open | | | Create `tests/test_analysis/test_research_pipeline.py`: 7 tests — empty DB, velocity computation, topic trends rising/falling/stable, predictive signals, no papers, min_citations filter, paper-product enrichment. |
-| 4.3 | Open | | | Add `research_pipeline_to_markdown()` to `formatters/markdown.py`. Add formatter test to `test_formatters.py`. |
-| 4.4 | Open | | | Add `research-pipeline` CLI subcommand to `cli.py`. Add `/research-pipeline` API endpoint to `api.py`. |
-| 4.5 | Open | | | Run `pytest` — all tests pass. Run `ruff check` and `ruff format --check` — clean. |
-| 4.6 | Open | | | Stage all Phase 4 changes. |
+| 4.1 | Completed | 2026-03-29 04:35 PM | 2026-03-29 04:42 PM | Create `ai_benchmark/analysis/services/research_pipeline.py`: `get_research_pipeline()` composing `get_citation_leaders`, `detect_paper_to_product` with citation velocity, split-window topic trends, and predictive signals. |
+| 4.2 | Completed | 2026-03-29 04:42 PM | 2026-03-29 04:45 PM | Create `tests/test_analysis/test_research_pipeline.py`: 7 tests — empty DB, velocity computation, velocity values, topic trends, topic direction, min_citations filter, paper-product links. |
+| 4.3 | Completed | 2026-03-29 04:45 PM | 2026-03-29 04:48 PM | Add `research_pipeline_to_markdown()` to `formatters/markdown.py`. Add 3 formatter tests to `test_formatters.py`. |
+| 4.4 | Completed | 2026-03-29 04:48 PM | 2026-03-29 04:52 PM | Add `research-pipeline` CLI subcommand to `cli.py`. Add `/research-pipeline` API endpoint to `api.py`. |
+| 4.5 | Completed | 2026-03-29 04:52 PM | 2026-03-29 04:55 PM | Run `pytest` — 852 passed. Run `ruff check` and `ruff format --check` — clean. |
+| 4.6 | Started | 2026-03-29 04:55 PM | | Stage all Phase 4 changes. |
 | 4.7 | Open | | | Commit: "Add research-to-product pipeline intelligence (Tier 2b)". |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `research_pipeline.py` (citation velocity, split-window topic trends, predictive signals). Added `research_pipeline_to_markdown()` formatter. Added `research-pipeline` CLI subcommand and `/research-pipeline` API endpoint. 7 service tests + 3 formatter tests = 10 new tests. Total: 852 passed.
 - **Changes hosted at:** TBD
 - **Commit:** `Add research-to-product pipeline intelligence (Tier 2b)`
 

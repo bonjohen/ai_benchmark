@@ -24,6 +24,7 @@ from ai_benchmark.analysis.formatters.markdown import (
     leaderboard_to_markdown,
     model_list_to_markdown,
     model_profile_to_markdown,
+    research_pipeline_to_markdown,
     research_trends_to_markdown,
     spotlight_to_markdown,
 )
@@ -33,6 +34,7 @@ from ai_benchmark.analysis.types import (
     BenchmarkDataPoint,
     BenchmarkPercentile,
     CapabilityProfile,
+    CitationVelocityEntry,
     CompetitiveCluster,
     EvolutionSummary,
     FrontierEntry,
@@ -44,10 +46,12 @@ from ai_benchmark.analysis.types import (
     OrgLandscapeEntry,
     PaperCitationEntry,
     PaperProductLink,
+    ResearchPipelineReport,
     ResearchTrends,
     SpotlightEntry,
     SpotlightReport,
     TimelineEntry,
+    TopicTrend,
 )
 
 
@@ -536,3 +540,49 @@ def test_landscape_to_markdown_entries():
     assert "OpenAI" in md
     assert "95.1" in md
     assert "drop" in md
+
+
+# --- Markdown: research pipeline ---
+
+
+def _make_research_pipeline():
+    return ResearchPipelineReport(
+        window_days=90,
+        velocity_leaders=[
+            CitationVelocityEntry("Scaling Laws", "2001.08361", 1500, 350.0, "NeurIPS"),
+            CitationVelocityEntry("Constitutional AI", "2212.08073", 800, 120.0, "ICML"),
+        ],
+        topic_trends=[
+            TopicTrend("llm", 20, 12, 8, "rising"),
+            TopicTrend("safety", 10, 4, 6, "falling"),
+        ],
+        paper_product_links=[
+            PaperProductLink("Scaling Laws", "2001.08361", "gpt-5", "OpenAI", 30),
+        ],
+        predictive_signals=[
+            CitationVelocityEntry("Scaling Laws", "2001.08361", 1500, 350.0, "NeurIPS"),
+        ],
+    )
+
+
+def test_research_pipeline_to_markdown_header():
+    """Research pipeline markdown includes title and window."""
+    md = research_pipeline_to_markdown(_make_research_pipeline())
+    assert "# Research-to-Product Pipeline" in md
+    assert "90 days" in md
+
+
+def test_research_pipeline_to_markdown_velocity():
+    """Research pipeline markdown shows velocity leaders."""
+    md = research_pipeline_to_markdown(_make_research_pipeline())
+    assert "Citation Velocity Leaders" in md
+    assert "Scaling Laws" in md
+    assert "350.00" in md
+
+
+def test_research_pipeline_to_markdown_topics():
+    """Research pipeline markdown shows topic trends."""
+    md = research_pipeline_to_markdown(_make_research_pipeline())
+    assert "Topic Trends" in md
+    assert "llm" in md
+    assert "rising" in md

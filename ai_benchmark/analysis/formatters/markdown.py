@@ -15,6 +15,7 @@ if TYPE_CHECKING:
         Leaderboard,
         ModelProfile,
         ModelSummary,
+        ResearchPipelineReport,
         ResearchTrends,
         SpotlightReport,
     )
@@ -438,5 +439,66 @@ def landscape_to_markdown(report: LandscapeReport) -> str:
             f"| {e.benchmark_breadth} | {best} | {price} | {e.trend} |"
         )
     lines.append("")
+
+    return "\n".join(lines)
+
+
+def research_pipeline_to_markdown(report: ResearchPipelineReport) -> str:
+    """Render a research pipeline report as Markdown."""
+    lines = [
+        "# Research-to-Product Pipeline",
+        "",
+        f"**Window:** {report.window_days} days",
+        "",
+    ]
+
+    if report.velocity_leaders:
+        lines.append("## Citation Velocity Leaders")
+        lines.append("")
+        lines.append("| Title | Citations | Velocity/wk | Venue | arXiv |")
+        lines.append("|---|---|---|---|---|")
+        for e in report.velocity_leaders:
+            lines.append(
+                f"| {e.title} | {e.citation_count} | {e.velocity_per_week:.2f} "
+                f"| {e.venue or '—'} | {e.arxiv_id or '—'} |"
+            )
+        lines.append("")
+
+    if report.topic_trends:
+        lines.append("## Topic Trends")
+        lines.append("")
+        lines.append("| Topic | Total | Recent | Earlier | Direction |")
+        lines.append("|---|---|---|---|---|")
+        for t in report.topic_trends:
+            lines.append(
+                f"| {t.topic} | {t.total_count} | {t.recent_count} "
+                f"| {t.earlier_count} | {t.direction} |"
+            )
+        lines.append("")
+
+    if report.paper_product_links:
+        lines.append("## Paper-to-Product Links")
+        lines.append("")
+        for link in report.paper_product_links:
+            lines.append(
+                f"- {link.paper_title} -> {link.model_slug} "
+                f"({link.organization}, {link.lag_days}d lag)"
+            )
+        lines.append("")
+
+    if report.predictive_signals:
+        lines.append("## Predictive Signals")
+        lines.append("")
+        lines.append("| Title | Citations | Velocity/wk | arXiv |")
+        lines.append("|---|---|---|---|")
+        for e in report.predictive_signals:
+            lines.append(
+                f"| {e.title} | {e.citation_count} | {e.velocity_per_week:.2f} "
+                f"| {e.arxiv_id or '—'} |"
+            )
+        lines.append("")
+
+    if not report.velocity_leaders and not report.topic_trends and not report.paper_product_links:
+        lines.append("No research pipeline data available.\n")
 
     return "\n".join(lines)

@@ -250,3 +250,16 @@ async def get_landscape_report(
 
     report = await get_landscape(session, window_days=days, organization=org)
     return _to_dict(report)
+
+
+@router.get("/research-pipeline")
+async def get_research_pipeline_report(
+    days: int = Query(90, ge=1, le=365),
+    min_citations: int = Query(0, ge=0),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Research-to-product pipeline: citation velocity, topic trends, predictive signals."""
+    from .services.research_pipeline import get_research_pipeline
+
+    report = await get_research_pipeline(session, window_days=days, min_citations=min_citations)
+    return _to_dict(report)

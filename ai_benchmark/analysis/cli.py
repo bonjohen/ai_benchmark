@@ -759,6 +759,54 @@ def analyze_landscape(ctx: click.Context, days: int, org: str | None, output_for
     asyncio.run(_run())
 
 
+@analyze_group.command("research-pipeline")
+@click.option("--days", default=90, help="Lookback window in days.")
+@click.option("--min-citations", default=0, help="Minimum citation count.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_research_pipeline(
+    ctx: click.Context, days: int, min_citations: int, output_format: str
+) -> None:
+    """Show research-to-product pipeline: citation velocity, topic trends, predictive signals."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.research_pipeline import get_research_pipeline
+
+            report = await get_research_pipeline(
+                session, window_days=days, min_citations=min_citations
+            )
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(report))
+            elif output_format == "markdown":
+                from .formatters.markdown import research_pipeline_to_markdown
+
+                click.echo(research_pipeline_to_markdown(report))
+            else:
+                from .formatters.markdown import research_pipeline_to_markdown
+
+                click.echo(research_pipeline_to_markdown(report))
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
 def _digest_to_text(report) -> str:
     """Simple text rendering of a DigestReport."""
     lines = [
