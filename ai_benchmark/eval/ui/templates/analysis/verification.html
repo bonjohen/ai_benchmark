@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% set active_page = "intel_verification" %}
+{% block title %}Claim Verification{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Claim Verification Dashboard</h1>
+</div>
+
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ report.total_events }}</div>
+        <div class="stat-label">Events</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ report.total_claims }}</div>
+        <div class="stat-label">Claims</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ "%.1f"|format(report.confirmation_rate) }}%</div>
+        <div class="stat-label">Confirmation Rate</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value {% if report.conflict_rate > 10 %}text-danger{% endif %}">{{ "%.1f"|format(report.conflict_rate) }}%</div>
+        <div class="stat-label">Conflict Rate</div>
+    </div>
+</div>
+
+<!-- Tier Distribution -->
+{% if report.tier_distribution %}
+<h2 class="section-heading">Confidence Tier Distribution</h2>
+<div class="card-grid">
+    {% for tier, count in report.tier_distribution.items() %}
+    <div class="stat-card">
+        <div class="stat-value">{{ count }}</div>
+        <div class="stat-label">{{ tier | replace("_", " ") | title }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Per-Model Verification -->
+{% if report.model_verifications %}
+<h2 class="section-heading">Model Verification ({{ report.model_verifications|length }})</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Per-model claim verification metrics</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Model</th>
+                    <th data-sort="string">Organization</th>
+                    <th data-sort="number">Claims</th>
+                    <th data-sort="number">Confirmed</th>
+                    <th data-sort="number">Conflicted</th>
+                    <th data-sort="number">Sources</th>
+                    <th data-sort="string">Highest Tier</th>
+                    <th data-sort="number">XRef Confirms</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in report.model_verifications %}
+                <tr>
+                    <td><a href="/eval/analysis/models/{{ m.model_slug }}">{{ m.model_slug }}</a></td>
+                    <td>{{ m.organization }}</td>
+                    <td>{{ m.total_claims }}</td>
+                    <td>{{ "%.1f%%"|format(m.confirmed_pct) }}</td>
+                    <td>{% if m.conflicted_pct > 0 %}<span class="text-danger">{{ "%.1f%%"|format(m.conflicted_pct) }}</span>{% else %}0.0%{% endif %}</td>
+                    <td>{{ m.source_count }}</td>
+                    <td>{{ m.highest_confidence_tier | replace("_", " ") | title }}</td>
+                    <td>{{ m.xref_confirms_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Per-Benchmark Verification -->
+{% if report.benchmark_verifications %}
+<h2 class="section-heading">Benchmark Verification</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Per-benchmark verification status</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Benchmark</th>
+                    <th data-sort="number">Sources</th>
+                    <th data-sort="string">Has Conflicts</th>
+                    <th data-sort="number">Score Variance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in report.benchmark_verifications %}
+                <tr>
+                    <td>{{ b.benchmark_variant }}</td>
+                    <td>{{ b.source_count }}</td>
+                    <td>{% if b.has_conflicts %}<span class="text-danger">Yes</span>{% else %}No{% endif %}</td>
+                    <td>{{ "%.4f"|format(b.score_variance) if b.score_variance is not none else "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

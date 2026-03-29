@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% set active_page = "intel_models" %}
+{% block title %}{{ profile.model_slug }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ profile.model_slug }}</h1>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="metadata-grid">
+        <div><strong>Organization:</strong> {{ profile.organization }}</div>
+        <div><strong>Status:</strong> <span class="badge badge-{{ 'completed' if profile.status == 'active' else 'canceled' if profile.status == 'deprecated' else 'queued' }}">{{ profile.status }}</span></div>
+        <div><strong>First seen:</strong> {{ profile.first_seen or "—" }}</div>
+        <div><strong>Latest activity:</strong> {{ profile.latest_activity or "—" }}</div>
+    </div>
+</div>
+
+<!-- Claims -->
+{% if profile.claim_summary %}
+<h2 class="section-heading">Claims</h2>
+<div class="card-grid">
+    {% for status, count in profile.claim_summary.items() %}
+    <div class="stat-card">
+        <div class="stat-value">{{ count }}</div>
+        <div class="stat-label">{{ status | title }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Capability Profile -->
+{% if capability and capability.percentiles %}
+<h2 class="section-heading">Capability Profile (Composite: {{ "%.1f"|format(capability.composite_score) }})</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Benchmark percentile rankings</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Benchmark</th>
+                    <th data-sort="number">Raw Score</th>
+                    <th data-sort="number">Percentile</th>
+                    <th data-sort="number">Models in Benchmark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in capability.percentiles %}
+                <tr>
+                    <td>{{ p.benchmark_variant }}</td>
+                    <td>{{ p.raw_score if p.raw_score is not none else "—" }}</td>
+                    <td>{{ "%.1f%%"|format(p.percentile_rank) }}</td>
+                    <td>{{ p.models_in_benchmark }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Timeline -->
+{% if profile.milestones %}
+<h2 class="section-heading">Timeline</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Model event timeline</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Date</th>
+                    <th data-sort="string">Type</th>
+                    <th data-sort="string">Title</th>
+                    <th data-sort="string">Confidence</th>
+                    <th data-sort="string">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in profile.milestones %}
+                <tr>
+                    <td>{{ m.date }}</td>
+                    <td>{{ m.event_type }}</td>
+                    <td>{{ m.title }}</td>
+                    <td>{{ m.confidence_tier | replace("_", " ") | title }}</td>
+                    <td><span class="badge badge-{{ 'completed' if m.confirmation_status == 'confirmed' else 'failed' if m.confirmation_status == 'conflicted' else 'queued' }}">{{ m.confirmation_status }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Benchmark Scores -->
+{% if profile.benchmark_scores %}
+<h2 class="section-heading">Benchmark Scores</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Benchmark scores for this model</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Benchmark</th>
+                    <th data-sort="number">Score</th>
+                    <th data-sort="string">Date</th>
+                    <th data-sort="string">Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in profile.benchmark_scores %}
+                <tr>
+                    <td>{{ b.benchmark_variant }}</td>
+                    <td>{{ b.score if b.score is not none else "—" }}</td>
+                    <td>{{ b.date }}</td>
+                    <td>{{ b.source_name }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Related Models -->
+{% if profile.related_models %}
+<h2 class="section-heading">Related Models</h2>
+<div class="card" style="padding: 1rem;">
+    {% for slug in profile.related_models %}
+    <a href="/eval/analysis/models/{{ slug }}" class="btn btn-sm btn-outline" style="margin: 0.25rem;">{{ slug }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

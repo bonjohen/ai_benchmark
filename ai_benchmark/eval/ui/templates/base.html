@@ -62,6 +62,17 @@
         <li><a href="/eval/reports" {% if active_page == "reports" %}class="active"{% endif %}>
             <span class="nav-icon">&#9733;</span> <span>Reports</span>
         </a></li>
+
+        <li class="nav-section">Intelligence</li>
+        <li><a href="/eval/analysis" {% if active_page == "intelligence" %}class="active"{% endif %}>
+            <span class="nav-icon">&#9673;</span> <span>Overview</span>
+        </a></li>
+        <li><a href="/eval/analysis/models" {% if active_page == "intel_models" %}class="active"{% endif %}>
+            <span class="nav-icon">&#9671;</span> <span>Models</span>
+        </a></li>
+        <li><a href="/eval/analysis/verification" {% if active_page == "intel_verification" %}class="active"{% endif %}>
+            <span class="nav-icon">&#10003;</span> <span>Verification</span>
+        </a></li>
     </ul>
 </nav>
 

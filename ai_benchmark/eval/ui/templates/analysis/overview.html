@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% set active_page = "intelligence" %}
+{% block title %}Intelligence Overview{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Intelligence Overview</h1>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_models }}</div>
+        <div class="stat-label">Tracked Models</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_orgs }}</div>
+        <div class="stat-label">Organizations</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_events }}</div>
+        <div class="stat-label">Events Collected</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_claims }}</div>
+        <div class="stat-label">Claims</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_benchmarks }}</div>
+        <div class="stat-label">Benchmarks</div>
+    </div>
+</div>
+
+<!-- Verification Summary -->
+<h2 class="section-heading">Verification Health</h2>
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ "%.1f"|format(verification.confirmation_rate) }}%</div>
+        <div class="stat-label">Confirmed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value {% if verification.conflict_rate > 10 %}text-danger{% endif %}">{{ "%.1f"|format(verification.conflict_rate) }}%</div>
+        <div class="stat-label">Conflicted</div>
+    </div>
+    {% for tier, count in verification.tier_distribution.items() %}
+    <div class="stat-card">
+        <div class="stat-value">{{ count }}</div>
+        <div class="stat-label">{{ tier | replace("_", " ") | title }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- New Model Spotlight -->
+<h2 class="section-heading">New Model Spotlight ({{ spotlight.window_days }}d)</h2>
+
+{% if spotlight.entries %}
+<div class="card">
+    <div class="card-header">{{ spotlight.total_new_models }} New Model{{ "s" if spotlight.total_new_models != 1 }}</div>
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Recently appeared models with benchmark context</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Model</th>
+                    <th data-sort="string">Organization</th>
+                    <th data-sort="string">First Seen</th>
+                    <th data-sort="number">Benchmarks</th>
+                    <th data-sort="number">Debut Strength</th>
+                    <th data-sort="number">Cross-Refs</th>
+                    <th>Best Scores</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in spotlight.entries %}
+                <tr>
+                    <td><a href="/eval/analysis/models/{{ e.model_slug }}">{{ e.model_slug }}</a></td>
+                    <td>{{ e.organization }}</td>
+                    <td>{{ e.first_seen }}</td>
+                    <td>{{ e.benchmark_count }}</td>
+                    <td>{{ e.debut_strength }}</td>
+                    <td>{{ e.xref_count }}</td>
+                    <td>
+                        {% for bname, score in e.best_scores.items() %}
+                        <span class="badge badge-completed">{{ bname }}: {{ score }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p class="text-muted text-center">No new models in the last {{ spotlight.window_days }} days.</p>
+</div>
+{% endif %}
+
+<!-- Competitive Landscape -->
+<h2 class="section-heading">Competitive Landscape</h2>
+
+{% if landscape.entries %}
+<div class="card">
+    <div class="card-header">{{ landscape.entries|length }} Active Organization{{ "s" if landscape.entries|length != 1 }}</div>
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Organization competitive landscape summary</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Organization</th>
+                    <th data-sort="number">Models</th>
+                    <th data-sort="number">New</th>
+                    <th data-sort="number">Benchmarks</th>
+                    <th>Best Score</th>
+                    <th data-sort="number">Pricing Events</th>
+                    <th data-sort="string">Trend</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in landscape.entries %}
+                <tr>
+                    <td>{{ e.organization }}</td>
+                    <td>{{ e.total_models }}</td>
+                    <td>{{ e.new_models }}</td>
+                    <td>{{ e.benchmark_breadth }}</td>
+                    <td>
+                        {% if e.best_result_score %}
+                        {{ e.best_result_score }} ({{ e.best_result_benchmark }})
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td>{{ e.pricing_events }}{% if e.has_price_drop %} <span class="text-danger">(drop)</span>{% endif %}</td>
+                    <td>
+                        {% if e.trend == "up" %}
+                        <span style="color: var(--success);">&#9650; up</span>
+                        {% elif e.trend == "down" %}
+                        <span class="text-danger">&#9660; down</span>
+                        {% else %}
+                        &#9644; stable
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p class="text-muted text-center">No active organizations found.</p>
+</div>
+{% endif %}
+
+<!-- Benchmark Evolution -->
+{% if evolution %}
+<h2 class="section-heading">Benchmark Evolution</h2>
+<div class="card">
+    <div class="card-header">{{ evolution|length }} Tracked Benchmark{{ "s" if evolution|length != 1 }}</div>
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Benchmark evolution with rate of improvement</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Benchmark</th>
+                    <th data-sort="string">Leader</th>
+                    <th data-sort="number">Top Score</th>
+                    <th data-sort="number">Improvement</th>
+                    <th data-sort="number">Rate/mo</th>
+                    <th data-sort="number">Saturation</th>
+                    <th data-sort="number">Models</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in evolution %}
+                <tr>
+                    <td>{{ s.benchmark_name }}</td>
+                    <td>{{ s.current_leader or "—" }}</td>
+                    <td>{{ s.current_top_score if s.current_top_score is not none else "—" }}</td>
+                    <td>{{ "%.2f"|format(s.total_improvement) if s.total_improvement is not none else "—" }}</td>
+                    <td>{{ "%.2f"|format(s.improvement_rate_per_month) if s.improvement_rate_per_month is not none else "—" }}</td>
+                    <td>{{ "%.1f%%"|format(s.saturation_pct) if s.saturation_pct is not none else "—" }}</td>
+                    <td>{{ s.models_evaluated }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

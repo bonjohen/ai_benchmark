@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% set active_page = "intel_models" %}
+{% block title %}Tracked Models{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Tracked Models</h1>
+</div>
+
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ models|length }}</div>
+        <div class="stat-label">Total Models</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ models|selectattr("status", "equalto", "active")|list|length }}</div>
+        <div class="stat-label">Active</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ orgs|length }}</div>
+        <div class="stat-label">Organizations</div>
+    </div>
+</div>
+
+<!-- Filter by org -->
+<div class="card" style="margin-bottom: 1rem; padding: 0.75rem 1rem;">
+    <form method="get" action="/eval/analysis/models" style="display: flex; gap: 0.5rem; align-items: center;">
+        <label for="org-filter"><strong>Organization:</strong></label>
+        <select id="org-filter" name="org" onchange="this.form.submit()" style="padding: 0.25rem 0.5rem;">
+            <option value="">All</option>
+            {% for o in orgs %}
+            <option value="{{ o }}" {% if org_filter == o %}selected{% endif %}>{{ o }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{% if models %}
+<div class="card">
+    <div class="card-header">Models{% if org_filter %} — {{ org_filter }}{% endif %}</div>
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">All tracked AI models with event counts</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Model</th>
+                    <th data-sort="string">Organization</th>
+                    <th data-sort="string">First Seen</th>
+                    <th data-sort="string">Latest Activity</th>
+                    <th data-sort="number">Events</th>
+                    <th data-sort="string">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in models %}
+                <tr>
+                    <td><a href="/eval/analysis/models/{{ m.model_slug }}">{{ m.model_slug }}</a></td>
+                    <td>{{ m.organization }}</td>
+                    <td>{{ m.first_seen or "—" }}</td>
+                    <td>{{ m.latest_activity or "—" }}</td>
+                    <td>{{ m.event_count }}</td>
+                    <td><span class="badge badge-{{ 'completed' if m.status == 'active' else 'canceled' if m.status == 'deprecated' else 'queued' }}">{{ m.status }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p class="text-muted text-center">No models found.</p>
+</div>
+{% endif %}
+{% endblock %}

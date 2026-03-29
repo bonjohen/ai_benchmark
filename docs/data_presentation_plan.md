@@ -155,8 +155,8 @@ Open  ──>  Started  ──>  Completed
 | 6.3 | Completed | 2026-03-29 05:50 PM | 2026-03-29 05:53 PM | Update `tests/test_analysis/test_digest.py`: added `test_generate_digest_spotlight` and `test_generate_digest_evolution`. |
 | 6.4 | Completed | 2026-03-29 05:53 PM | 2026-03-29 05:58 PM | Update `CLAUDE.md`: added 7 new CLI commands, updated Analysis Architecture with 12 services, 31 dataclasses, 14 formatters, 7 CSV exporters, 16 CLI subcommands, 18 API endpoints, test count 879. |
 | 6.5 | Completed | 2026-03-29 05:58 PM | 2026-03-29 06:02 PM | Run `pytest` — 879 passed. Run `ruff check` and `ruff format --check` — clean. |
-| 6.6 | Started | 2026-03-29 06:02 PM | | Stage all Phase 6 changes. |
-| 6.7 | Open | | | Commit: "Integrate spotlight and evolution into digest, update documentation". |
+| 6.6 | Completed | 2026-03-29 06:02 PM | 2026-03-29 06:03 PM | Stage all Phase 6 changes. |
+| 6.7 | Completed | 2026-03-29 06:03 PM | 2026-03-29 06:04 PM | Commit: "Integrate spotlight and evolution into digest, update documentation". |
 
 ### Phase 6 Summary
 

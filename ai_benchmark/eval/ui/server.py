@@ -1261,6 +1261,258 @@ def _machine_to_dict(m) -> dict:
     }
 
 
+# ── Analysis / Intelligence ─────────────────────────────────────────────
+
+
+@router.get("/analysis", response_class=HTMLResponse)
+async def analysis_overview(request: Request, session: AsyncSession = Depends(get_session)):
+    """Intelligence overview — summary of collected data and key products."""
+    from ...analysis.services.evolution import get_benchmark_evolution
+    from ...analysis.services.landscape import get_landscape
+    from ...analysis.services.model_lifecycle import list_tracked_models
+    from ...analysis.services.spotlight import get_spotlight
+    from ...analysis.services.verification import get_verification_report
+
+    models = await list_tracked_models(session, limit=500)
+    orgs = sorted({m.organization for m in models})
+    verification = await get_verification_report(session)
+    spotlight = await get_spotlight(session, window_days=365)
+    landscape = await get_landscape(session, window_days=365)
+    evolution = await get_benchmark_evolution(session, window_days=365)
+
+    return templates.TemplateResponse(
+        "analysis/overview.html",
+        {
+            "request": request,
+            "stats": {
+                "total_models": len(models),
+                "total_orgs": len(orgs),
+                "total_events": verification.total_events,
+                "total_claims": verification.total_claims,
+                "total_benchmarks": len(evolution),
+            },
+            "verification": {
+                "confirmation_rate": verification.confirmation_rate,
+                "conflict_rate": verification.conflict_rate,
+                "tier_distribution": verification.tier_distribution,
+            },
+            "spotlight": {
+                "window_days": spotlight.window_days,
+                "total_new_models": spotlight.total_new_models,
+                "entries": [_spotlight_entry_to_dict(e) for e in spotlight.entries],
+            },
+            "landscape": {
+                "entries": [_landscape_entry_to_dict(e) for e in landscape.entries],
+            },
+            "evolution": [_evolution_to_dict(s) for s in evolution],
+        },
+    )
+
+
+@router.get("/analysis/models", response_class=HTMLResponse)
+async def analysis_models(
+    request: Request,
+    org: str | None = None,
+    session: AsyncSession = Depends(get_session),
+):
+    """Tracked models list with optional org filter."""
+    from ...analysis.services.model_lifecycle import list_tracked_models
+
+    models = await list_tracked_models(session, organization=org, limit=500)
+    all_models = await list_tracked_models(session, limit=500) if org else models
+    orgs = sorted({m.organization for m in all_models})
+
+    return templates.TemplateResponse(
+        "analysis/models.html",
+        {
+            "request": request,
+            "models": [_model_summary_to_dict(m) for m in models],
+            "orgs": orgs,
+            "org_filter": org or "",
+        },
+    )
+
+
+@router.get("/analysis/models/{slug}", response_class=HTMLResponse)
+async def analysis_model_detail(
+    request: Request,
+    slug: str,
+    session: AsyncSession = Depends(get_session),
+):
+    """Detailed model profile with capability analysis."""
+    from ...analysis.services.capability import get_capability_profile
+    from ...analysis.services.model_lifecycle import build_model_profile
+
+    profile = await build_model_profile(session, slug)
+    if profile is None:
+        return templates.TemplateResponse(
+            "analysis/models.html",
+            {"request": request, "models": [], "orgs": [], "org_filter": ""},
+        )
+
+    capability = await get_capability_profile(session, slug)
+
+    return templates.TemplateResponse(
+        "analysis/model_detail.html",
+        {
+            "request": request,
+            "profile": _model_profile_to_dict(profile),
+            "capability": _capability_to_dict(capability) if capability else None,
+        },
+    )
+
+
+@router.get("/analysis/verification", response_class=HTMLResponse)
+async def analysis_verification(
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+):
+    """Claim verification dashboard."""
+    from ...analysis.services.verification import get_verification_report
+
+    report = await get_verification_report(session)
+
+    return templates.TemplateResponse(
+        "analysis/verification.html",
+        {
+            "request": request,
+            "report": _verification_to_dict(report),
+        },
+    )
+
+
+def _model_summary_to_dict(m) -> dict:
+    return {
+        "model_slug": m.model_slug,
+        "organization": m.organization,
+        "first_seen": m.first_seen,
+        "latest_activity": m.latest_activity,
+        "event_count": m.event_count,
+        "status": m.status,
+    }
+
+
+def _spotlight_entry_to_dict(e) -> dict:
+    return {
+        "model_slug": e.model_slug,
+        "organization": e.organization,
+        "first_seen": e.first_seen,
+        "benchmark_count": e.benchmark_count,
+        "best_scores": e.best_scores,
+        "debut_strength": e.debut_strength,
+        "xref_count": e.xref_count,
+        "insight_flags": e.insight_flags,
+    }
+
+
+def _landscape_entry_to_dict(e) -> dict:
+    return {
+        "organization": e.organization,
+        "total_models": e.total_models,
+        "new_models": e.new_models,
+        "benchmark_breadth": e.benchmark_breadth,
+        "best_result_score": e.best_result_score,
+        "best_result_benchmark": e.best_result_benchmark,
+        "pricing_events": e.pricing_events,
+        "has_price_drop": e.has_price_drop,
+        "trend": e.trend,
+    }
+
+
+def _evolution_to_dict(s) -> dict:
+    return {
+        "benchmark_name": s.benchmark_name,
+        "current_leader": s.current_leader,
+        "current_top_score": s.current_top_score,
+        "total_improvement": s.total_improvement,
+        "improvement_rate_per_month": s.improvement_rate_per_month,
+        "saturation_pct": s.saturation_pct,
+        "models_evaluated": s.models_evaluated,
+    }
+
+
+def _model_profile_to_dict(p) -> dict:
+    return {
+        "model_slug": p.model_slug,
+        "organization": p.organization,
+        "status": p.status,
+        "first_seen": p.first_seen,
+        "latest_activity": p.latest_activity,
+        "claim_summary": p.claim_summary,
+        "milestones": [
+            {
+                "date": m.date,
+                "event_type": m.event_type,
+                "title": m.title,
+                "confidence_tier": m.confidence_tier,
+                "confirmation_status": m.confirmation_status,
+            }
+            for m in p.milestones
+        ],
+        "benchmark_scores": [
+            {
+                "benchmark_variant": b.benchmark_variant,
+                "score": b.score,
+                "date": b.date,
+                "source_name": b.source_name,
+            }
+            for b in p.benchmark_scores
+        ],
+        "related_models": p.related_models,
+    }
+
+
+def _capability_to_dict(c) -> dict:
+    if c is None:
+        return None
+    return {
+        "model_slug": c.model_slug,
+        "composite_score": c.composite_score,
+        "benchmark_count": c.benchmark_count,
+        "percentiles": [
+            {
+                "benchmark_variant": p.benchmark_variant,
+                "raw_score": p.raw_score,
+                "percentile_rank": p.percentile_rank,
+                "models_in_benchmark": p.models_in_benchmark,
+            }
+            for p in c.percentiles
+        ],
+    }
+
+
+def _verification_to_dict(r) -> dict:
+    return {
+        "total_events": r.total_events,
+        "total_claims": r.total_claims,
+        "confirmation_rate": r.confirmation_rate,
+        "conflict_rate": r.conflict_rate,
+        "tier_distribution": r.tier_distribution,
+        "model_verifications": [
+            {
+                "model_slug": m.model_slug,
+                "organization": m.organization,
+                "total_claims": m.total_claims,
+                "confirmed_pct": m.confirmed_pct,
+                "conflicted_pct": m.conflicted_pct,
+                "source_count": m.source_count,
+                "highest_confidence_tier": m.highest_confidence_tier,
+                "xref_confirms_count": m.xref_confirms_count,
+            }
+            for m in r.model_verifications
+        ],
+        "benchmark_verifications": [
+            {
+                "benchmark_variant": b.benchmark_variant,
+                "source_count": b.source_count,
+                "has_conflicts": b.has_conflicts,
+                "score_variance": b.score_variance,
+            }
+            for b in r.benchmark_verifications
+        ],
+    }
+
+
 def mount_ui(app):
     """Mount the UI routes and static files on the given FastAPI app."""
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
