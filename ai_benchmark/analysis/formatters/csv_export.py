@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..models import AnalysisInsight
-    from ..types import Leaderboard, ModelSummary
+    from ..types import EvolutionSummary, Leaderboard, ModelSummary, SpotlightReport
 
 
 def models_to_csv(models: list[ModelSummary]) -> str:
@@ -71,6 +71,68 @@ def insights_to_csv(insights: list[AnalysisInsight]) -> str:
                 i.related_model_slug or "",
                 i.related_org or "",
                 i.detected_at.isoformat() if i.detected_at else "",
+            ]
+        )
+    return output.getvalue()
+
+
+def spotlight_to_csv(report: SpotlightReport) -> str:
+    """Serialize spotlight report to CSV."""
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "model_slug",
+            "organization",
+            "first_seen",
+            "status",
+            "debut_strength",
+            "benchmark_count",
+            "xref_count",
+        ]
+    )
+    for e in report.entries:
+        writer.writerow(
+            [
+                e.model_slug,
+                e.organization,
+                e.first_seen,
+                e.status,
+                e.debut_strength,
+                e.benchmark_count,
+                e.xref_count,
+            ]
+        )
+    return output.getvalue()
+
+
+def evolution_to_csv(summaries: list[EvolutionSummary]) -> str:
+    """Serialize evolution summaries to CSV."""
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "benchmark_name",
+            "current_leader",
+            "current_top_score",
+            "total_improvement",
+            "improvement_rate_per_month",
+            "saturation_pct",
+            "models_evaluated",
+            "last_record_date",
+        ]
+    )
+    for s in summaries:
+        writer.writerow(
+            [
+                s.benchmark_name,
+                s.current_leader or "",
+                s.current_top_score if s.current_top_score is not None else "",
+                s.total_improvement if s.total_improvement is not None else "",
+                s.improvement_rate_per_month if s.improvement_rate_per_month is not None else "",
+                s.saturation_pct if s.saturation_pct is not None else "",
+                s.models_evaluated,
+                s.last_record_date or "",
             ]
         )
     return output.getvalue()

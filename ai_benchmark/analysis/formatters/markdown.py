@@ -9,10 +9,12 @@ if TYPE_CHECKING:
     from ..types import (
         ActivityTimeline,
         DigestReport,
+        EvolutionSummary,
         Leaderboard,
         ModelProfile,
         ModelSummary,
         ResearchTrends,
+        SpotlightReport,
     )
 
 
@@ -265,10 +267,117 @@ def digest_to_markdown(digest: DigestReport) -> str:
             lines.append(f"| {b.benchmark_variant} | {b.model_slug} | {score_str} | {b.date} |")
         lines.append("")
 
+    if digest.spotlight_models:
+        lines.append("## New Model Spotlight")
+        lines.append("")
+        lines.append("| Model | Org | Debut Strength | Benchmarks |")
+        lines.append("|---|---|---|---|")
+        for s in digest.spotlight_models:
+            lines.append(
+                f"| {s.model_slug} | {s.organization} | {s.debut_strength} | {s.benchmark_count} |"
+            )
+        lines.append("")
+
+    if digest.evolution_highlights:
+        lines.append("## Benchmark Evolution")
+        lines.append("")
+        for evo in digest.evolution_highlights:
+            if evo.current_leader:
+                rate_str = (
+                    f"{evo.improvement_rate_per_month:+.2f}/mo"
+                    if evo.improvement_rate_per_month is not None
+                    else "—"
+                )
+                lines.append(
+                    f"- **{evo.benchmark_name}**: {evo.current_leader} "
+                    f"({evo.current_top_score}) {rate_str}"
+                )
+        lines.append("")
+
     if digest.competitive_overview:
         lines.append(activity_timeline_to_markdown(digest.competitive_overview))
 
     if digest.research_highlights:
         lines.append(research_trends_to_markdown(digest.research_highlights))
+
+    return "\n".join(lines)
+
+
+def spotlight_to_markdown(report: SpotlightReport) -> str:
+    """Render a spotlight report as Markdown."""
+    lines = [
+        "# New Model Spotlight",
+        "",
+        f"**Window:** {report.window_days} days (since {report.cutoff_date})",
+        f"**New models:** {report.total_new_models}",
+        "",
+    ]
+
+    if not report.entries:
+        lines.append("No new models found in this window.\n")
+        return "\n".join(lines)
+
+    lines.append("| Model | Org | First Seen | Debut Strength | Benchmarks | Status |")
+    lines.append("|---|---|---|---|---|---|")
+    for e in report.entries:
+        lines.append(
+            f"| {e.model_slug} | {e.organization} | {e.first_seen} "
+            f"| {e.debut_strength} | {e.benchmark_count} | {e.status} |"
+        )
+    lines.append("")
+
+    # Detail: best scores per model
+    for e in report.entries:
+        if e.best_scores:
+            lines.append(f"### {e.model_slug}")
+            lines.append("")
+            lines.append("| Benchmark | Score |")
+            lines.append("|---|---|")
+            for bname, score in sorted(e.best_scores.items()):
+                lines.append(f"| {bname} | {score} |")
+            if e.xref_count:
+                lines.append(f"\n*Confirmed by {e.xref_count} cross-reference(s)*")
+            if e.insight_flags:
+                lines.append(f"*Flags: {', '.join(e.insight_flags)}*")
+            lines.append("")
+
+    return "\n".join(lines)
+
+
+def evolution_to_markdown(summaries: list[EvolutionSummary]) -> str:
+    """Render evolution summaries as Markdown."""
+    if not summaries:
+        return "No benchmark evolution data.\n"
+
+    lines = ["# Benchmark Evolution", ""]
+
+    lines.append("| Benchmark | Leader | Top Score | Improvement | Rate/mo | Saturation | Models |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for s in summaries:
+        leader = s.current_leader or "—"
+        top = f"{s.current_top_score}" if s.current_top_score is not None else "—"
+        imp = f"{s.total_improvement:+.2f}" if s.total_improvement is not None else "—"
+        rate = (
+            f"{s.improvement_rate_per_month:+.2f}"
+            if s.improvement_rate_per_month is not None
+            else "—"
+        )
+        sat = f"{s.saturation_pct:.1f}%" if s.saturation_pct is not None else "—"
+        lines.append(
+            f"| {s.benchmark_name} | {leader} | {top} | {imp} | {rate} | {sat} "
+            f"| {s.models_evaluated} |"
+        )
+    lines.append("")
+
+    # Frontier detail per benchmark
+    for s in summaries:
+        if s.frontier:
+            lines.append(f"### {s.benchmark_name} — Frontier Progression")
+            lines.append("")
+            lines.append("| Date | Model | Score |")
+            lines.append("|---|---|---|")
+            for f in s.frontier:
+                lines.append(f"| {f.date} | {f.model_slug} | {f.score} |")
+            lines.append("")
 
     return "\n".join(lines)

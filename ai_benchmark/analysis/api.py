@@ -179,3 +179,32 @@ async def create_digest(
     report = await generate_digest(session, window_days=days, persist=True)
     await session.commit()
     return _to_dict(report)
+
+
+@router.get("/spotlight")
+async def get_spotlight_report(
+    days: int = Query(30, ge=1, le=365),
+    min_benchmarks: int = Query(1, ge=0),
+    org: str | None = Query(None),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """New models ranked by benchmark performance."""
+    from .services.spotlight import get_spotlight
+
+    report = await get_spotlight(
+        session, window_days=days, min_benchmarks=min_benchmarks, organization=org
+    )
+    return _to_dict(report)
+
+
+@router.get("/evolution")
+async def get_evolution(
+    benchmark: str | None = Query(None),
+    days: int = Query(180, ge=1, le=730),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Benchmark evolution and frontier progression."""
+    from .services.evolution import get_benchmark_evolution
+
+    summaries = await get_benchmark_evolution(session, benchmark_name=benchmark, window_days=days)
+    return [_to_dict(s) for s in summaries]

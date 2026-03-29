@@ -8,24 +8,30 @@ import json
 from datetime import UTC, datetime
 
 from ai_benchmark.analysis.formatters.csv_export import (
+    evolution_to_csv,
     insights_to_csv,
     leaderboard_to_csv,
     models_to_csv,
+    spotlight_to_csv,
 )
 from ai_benchmark.analysis.formatters.json_export import to_json
 from ai_benchmark.analysis.formatters.markdown import (
     activity_timeline_to_markdown,
+    evolution_to_markdown,
     insights_to_markdown,
     leaderboard_to_markdown,
     model_list_to_markdown,
     model_profile_to_markdown,
     research_trends_to_markdown,
+    spotlight_to_markdown,
 )
 from ai_benchmark.analysis.models import AnalysisInsight
 from ai_benchmark.analysis.types import (
     ActivityTimeline,
     BenchmarkDataPoint,
     CompetitiveCluster,
+    EvolutionSummary,
+    FrontierEntry,
     Leaderboard,
     ModelProfile,
     ModelSummary,
@@ -33,6 +39,8 @@ from ai_benchmark.analysis.types import (
     PaperCitationEntry,
     PaperProductLink,
     ResearchTrends,
+    SpotlightEntry,
+    SpotlightReport,
     TimelineEntry,
 )
 
@@ -343,3 +351,110 @@ def test_insights_to_csv_rows():
     rows = list(reader)
     assert len(rows) == 3  # header + 2 insights
     assert rows[1][1] == "new_model"
+
+
+# --- Markdown: spotlight ---
+
+
+def _make_spotlight():
+    return SpotlightReport(
+        window_days=30,
+        cutoff_date="2026-03-01",
+        total_new_models=2,
+        entries=[
+            SpotlightEntry(
+                model_slug="gpt-5",
+                organization="OpenAI",
+                first_seen="2026-03-15",
+                status="active",
+                benchmark_count=2,
+                best_scores={"SWE-bench Verified": 92.3, "MMLU": 95.1},
+                debut_strength=2,
+                xref_count=1,
+                insight_flags=["new_model"],
+            ),
+            SpotlightEntry(
+                model_slug="claude-4",
+                organization="Anthropic",
+                first_seen="2026-03-16",
+                status="active",
+                benchmark_count=1,
+                best_scores={"SWE-bench Verified": 89.7},
+                debut_strength=0,
+                xref_count=0,
+                insight_flags=[],
+            ),
+        ],
+    )
+
+
+def test_spotlight_to_markdown_header():
+    """Spotlight markdown includes title and window."""
+    md = spotlight_to_markdown(_make_spotlight())
+    assert "# New Model Spotlight" in md
+    assert "30 days" in md
+
+
+def test_spotlight_to_markdown_entries():
+    """Spotlight markdown shows model entries."""
+    md = spotlight_to_markdown(_make_spotlight())
+    assert "gpt-5" in md
+    assert "claude-4" in md
+    assert "92.3" in md
+
+
+def test_spotlight_to_csv_rows():
+    """Spotlight CSV has correct row count."""
+    result = spotlight_to_csv(_make_spotlight())
+    reader = csv.reader(io.StringIO(result))
+    rows = list(reader)
+    assert len(rows) == 3  # header + 2 entries
+    assert rows[1][0] == "gpt-5"
+
+
+# --- Markdown: evolution ---
+
+
+def _make_evolution():
+    return [
+        EvolutionSummary(
+            benchmark_name="SWE-bench Verified",
+            window_days=180,
+            total_improvement=20.8,
+            improvement_rate_per_month=3.47,
+            current_leader="gpt-5",
+            current_top_score=92.3,
+            gap_to_second=2.6,
+            models_evaluated=3,
+            saturation_pct=92.3,
+            last_record_date="2026-03-17",
+            frontier=[
+                FrontierEntry("2026-01-15", "gpt-4o", 71.5),
+                FrontierEntry("2026-03-17", "gpt-5", 92.3),
+            ],
+        ),
+    ]
+
+
+def test_evolution_to_markdown_header():
+    """Evolution markdown includes title and table."""
+    md = evolution_to_markdown(_make_evolution())
+    assert "# Benchmark Evolution" in md
+    assert "SWE-bench Verified" in md
+
+
+def test_evolution_to_markdown_frontier():
+    """Evolution markdown shows frontier progression."""
+    md = evolution_to_markdown(_make_evolution())
+    assert "Frontier Progression" in md
+    assert "gpt-4o" in md
+    assert "71.5" in md
+
+
+def test_evolution_to_csv_rows():
+    """Evolution CSV has correct row count."""
+    result = evolution_to_csv(_make_evolution())
+    reader = csv.reader(io.StringIO(result))
+    rows = list(reader)
+    assert len(rows) == 2  # header + 1 benchmark
+    assert rows[1][0] == "SWE-bench Verified"

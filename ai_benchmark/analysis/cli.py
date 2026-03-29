@@ -555,6 +555,111 @@ def analyze_run_all(ctx: click.Context, days: int) -> None:
     asyncio.run(_run())
 
 
+@analyze_group.command("spotlight")
+@click.option("--days", default=30, help="Lookback window in days.")
+@click.option("--min-benchmarks", default=1, help="Minimum benchmark count.")
+@click.option("--org", default=None, help="Filter by organization.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown", "csv"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_spotlight(
+    ctx: click.Context, days: int, min_benchmarks: int, org: str | None, output_format: str
+) -> None:
+    """Show new models ranked by benchmark performance."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.spotlight import get_spotlight
+
+            report = await get_spotlight(
+                session, window_days=days, min_benchmarks=min_benchmarks, organization=org
+            )
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(report))
+            elif output_format == "markdown":
+                from .formatters.markdown import spotlight_to_markdown
+
+                click.echo(spotlight_to_markdown(report))
+            elif output_format == "csv":
+                from .formatters.csv_export import spotlight_to_csv
+
+                click.echo(spotlight_to_csv(report))
+            else:
+                from .formatters.markdown import spotlight_to_markdown
+
+                click.echo(spotlight_to_markdown(report))
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+@analyze_group.command("evolution")
+@click.option("--benchmark", default=None, help="Specific benchmark name.")
+@click.option("--days", default=180, help="Lookback window in days.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown", "csv"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_evolution(
+    ctx: click.Context, benchmark: str | None, days: int, output_format: str
+) -> None:
+    """Show benchmark evolution and frontier progression."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.evolution import get_benchmark_evolution
+
+            summaries = await get_benchmark_evolution(
+                session, benchmark_name=benchmark, window_days=days
+            )
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(summaries))
+            elif output_format == "markdown":
+                from .formatters.markdown import evolution_to_markdown
+
+                click.echo(evolution_to_markdown(summaries))
+            elif output_format == "csv":
+                from .formatters.csv_export import evolution_to_csv
+
+                click.echo(evolution_to_csv(summaries))
+            else:
+                from .formatters.markdown import evolution_to_markdown
+
+                click.echo(evolution_to_markdown(summaries))
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
 def _digest_to_text(report) -> str:
     """Simple text rendering of a DigestReport."""
     lines = [
