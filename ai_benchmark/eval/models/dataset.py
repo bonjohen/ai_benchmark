@@ -28,6 +28,7 @@ class Dataset(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     source: Mapped[str | None] = mapped_column(String(100), nullable=True)
     tags: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON array
+    is_local_only: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 

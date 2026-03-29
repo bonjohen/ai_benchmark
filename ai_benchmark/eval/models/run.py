@@ -27,7 +27,11 @@ class RunGroup(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    execution_type: Mapped[str] = mapped_column(String(30), nullable=False)  # batch | matrix
+    execution_type: Mapped[str] = mapped_column(
+        String(30), nullable=False
+    )  # batch | matrix | scheduled
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    tags: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON array
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     runs: Mapped[list[Run]] = relationship(back_populates="run_group")
@@ -51,9 +55,22 @@ class Run(Base):
         ForeignKey("dataset_versions.id"), nullable=False
     )
 
+    scorer_version_ids: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON array
+    runner_snapshot: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )  # JSON: runner version + metadata at execution time
+    requested_config: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )  # JSON: full target config snapshot as requested
+    effective_config: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )  # JSON: what the runner actually used (may differ from requested)
+
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="queued")
     trigger_type: Mapped[str] = mapped_column(String(30), nullable=False, default="manual")
     priority: Mapped[int] = mapped_column(Integer, default=0)
+    is_local_only: Mapped[bool] = mapped_column(Boolean, default=False)
+    tags: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON array
 
     started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     scoring_started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

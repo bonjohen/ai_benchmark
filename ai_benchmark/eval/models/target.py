@@ -35,6 +35,7 @@ class TargetConfiguration(Base):
     updated_at: Mapped[datetime | None] = mapped_column(
         DateTime, onupdate=func.now(), nullable=True
     )
+    is_local_only: Mapped[bool] = mapped_column(Boolean, default=False)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
     machine_profile: Mapped[MachineProfile | None] = relationship(  # noqa: F821
