@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 import structlog
 from sqlalchemy import select
@@ -21,7 +22,6 @@ from .builtin import (  # noqa: F401
     rubric,
     safety,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

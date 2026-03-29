@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
 from ...processing.triage import RELEVANCE_KEYWORDS
 from ..base import RawItem, SourceCollector
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ...config.settings import PageConfig

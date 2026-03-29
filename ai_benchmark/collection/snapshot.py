@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
 from ..models.sources import Page, Snapshot
 from .differ import DiffResult, clean_html, diff_snapshots
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -16,7 +17,6 @@ from ai_benchmark.eval.models.evaluation import EvaluationDefinition, Evaluation
 from ai_benchmark.eval.models.run import RunAggregateMetric
 from ai_benchmark.eval.models.target import TargetConfiguration
 from ai_benchmark.models.base import create_session_factory
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

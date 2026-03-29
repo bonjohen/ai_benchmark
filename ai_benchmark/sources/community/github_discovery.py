@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from ...collection.api_client import APIClient
 from ..base import RawItem, SourceCollector
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ...config.settings import PageConfig

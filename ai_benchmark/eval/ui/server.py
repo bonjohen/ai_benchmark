@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
@@ -10,7 +11,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ..api.app import get_session
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -14,7 +15,6 @@ from ..schemas.scorer import (
     ScorerVersionCreate,
     ScorerVersionResponse,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

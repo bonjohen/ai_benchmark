@@ -4,16 +4,15 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 import structlog
 
-from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
-    from ..config.settings import PageConfig, SourceConfig
-    from ..collection.snapshot import SnapshotManager
-    from ..collection.fetcher import Fetcher, FetchResult
     from ..collection.differ import DiffResult
+    from ..collection.fetcher import Fetcher, FetchResult
+    from ..collection.snapshot import SnapshotManager
+    from ..config.settings import PageConfig, SourceConfig
 
 logger = structlog.get_logger()
 

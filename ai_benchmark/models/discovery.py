@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import datetime  # noqa: TC003
 
 from sqlalchemy import DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column
-
-from datetime import datetime  # noqa: TC003
 
 from .base import Base
 

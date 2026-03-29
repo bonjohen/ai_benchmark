@@ -7,6 +7,7 @@ unique constraints, and JSON field round-trips.
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 import pytest
 from sqlalchemy import select
@@ -20,7 +21,6 @@ from ai_benchmark.eval.models.run import Run, RunAggregateMetric, RunGroup, RunI
 from ai_benchmark.eval.models.scorer import Scorer, ScorerVersion
 from ai_benchmark.eval.models.target import TargetConfiguration
 from ai_benchmark.models.base import create_session_factory
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

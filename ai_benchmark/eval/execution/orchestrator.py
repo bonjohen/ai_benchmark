@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from typing import TYPE_CHECKING
 
 import structlog
 from sqlalchemy import select
@@ -15,7 +16,6 @@ from ..models.run import Run, RunAggregateMetric
 from ..models.target import TargetConfiguration
 from ..services import run_service
 from .executor import ItemExecutor
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

@@ -5,7 +5,6 @@ from __future__ import annotations
 import csv
 import io
 import json
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

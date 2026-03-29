@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 import pytest
 from sqlalchemy import select
@@ -10,7 +11,6 @@ from sqlalchemy import select
 from ai_benchmark.eval.models.dataset import TestCase
 from ai_benchmark.eval.services import dataset_service
 from ai_benchmark.models.base import create_session_factory
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 
 from ...services import report_service
 from ..app import get_session
 from ..schemas.comparison import PresetCreate, PresetResponse, ReportRequest
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

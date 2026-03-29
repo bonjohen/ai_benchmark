@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -10,7 +12,6 @@ from ai_benchmark.models.events import ClaimRecord, EventRecord
 from ai_benchmark.models.sources import Page, Snapshot, Source
 from ai_benchmark.processing.deduplicator import find_exact_duplicate
 from ai_benchmark.sources.base import RawItem
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

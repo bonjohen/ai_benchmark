@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from ...services import target_service
 from ..app import get_session
 from ..schemas.target import TargetClone, TargetCreate, TargetResponse, TargetUpdate
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

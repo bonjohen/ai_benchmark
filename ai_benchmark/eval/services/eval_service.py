@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
 from ..models.dataset import DatasetVersion
 from ..models.evaluation import EvaluationDefinition, EvaluationVersion
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

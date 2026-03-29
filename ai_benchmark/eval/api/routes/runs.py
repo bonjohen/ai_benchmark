@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -17,7 +18,6 @@ from ..schemas.run import (
     RunMetricResponse,
     RunResponse,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
@@ -13,10 +14,10 @@ from ..processing.normalizer import (
     extract_model_slug,
     normalize_title,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
     from .base import RawItem
 
 

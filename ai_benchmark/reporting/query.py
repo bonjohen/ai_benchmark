@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import func, select
 
 from ..models.events import ClaimRecord, CrossReference, EventRecord
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -108,7 +108,7 @@ async def get_recent_changes(
     limit: int = 100,
 ) -> list[EventRecord]:
     """Get events observed in the last N hours."""
-    from datetime import timedelta, timezone
+    from datetime import timedelta
 
     cutoff = datetime.now(UTC) - timedelta(hours=hours)
     stmt = (

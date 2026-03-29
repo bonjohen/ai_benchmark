@@ -2,26 +2,23 @@
 
 from __future__ import annotations
 
-
-import structlog
+from datetime import UTC
+from typing import TYPE_CHECKING
 
 from ..models.run import RunItemResult
-from .adapters.base import GenerationResult, resolve_adapter
-
-logger = structlog.get_logger()
 
 # Ensure all adapters are registered
-from .adapters import (  # noqa: F401, E402
+from .adapters import (  # noqa: F401
     anthropic_adapter,
     generic_http_adapter,
     local_adapter,
     openai_adapter,
 )
-from datetime import UTC
-from typing import TYPE_CHECKING
+from .adapters.base import GenerationResult, resolve_adapter
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
     from ..models.dataset import TestCase
 
 
@@ -100,7 +97,7 @@ class ItemExecutor:
                 break
             result.retry_count = attempt
 
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         item_result = RunItemResult(
             run_id=run_id,

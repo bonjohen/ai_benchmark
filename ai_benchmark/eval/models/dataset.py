@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime  # noqa: TC003
 
 from sqlalchemy import (
     Boolean,
@@ -15,8 +16,6 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from datetime import datetime  # noqa: TC003
 
 from ...models.base import Base
 

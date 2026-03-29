@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from ...services import comparison_service
@@ -12,7 +14,6 @@ from ..schemas.comparison import (
     ConfigDiffRequest,
     ConfigDiffResponse,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

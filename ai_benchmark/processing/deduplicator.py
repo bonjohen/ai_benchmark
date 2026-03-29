@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
 from ..models.events import EventRecord
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

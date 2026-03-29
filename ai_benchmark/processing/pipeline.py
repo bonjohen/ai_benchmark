@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone, UTC
-
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from ..collection.snapshot import SnapshotManager
 from ..models.events import EventRecord
@@ -19,10 +19,10 @@ from .normalizer import (
 )
 from .triage import ingest_candidate
 from .verification import create_claim, update_confirmation_status
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
     from ..sources.base import RawItem
 
 

@@ -11,12 +11,12 @@ Relationship types: confirms, supplements, conflicts_with, cites
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 from sqlalchemy import and_, or_, select
 
 from ..models.events import CrossReference, EventRecord
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from .anthropic import AnthropicCollector
 from .benchmarks.artificial_analysis import ArtificialAnalysisCollector
 from .benchmarks.gaia import GAIACollector
@@ -24,11 +26,10 @@ from .research.arxiv import ArxivCollector
 from .research.hf_papers import HFPapersCollector
 from .research.semantic_scholar import SemanticScholarCollector
 from .xai import XAICollector
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .base import SourceCollector
     from ..config.settings import SourceConfig
+    from .base import SourceCollector
 
 # Map organization names to collector classes
 COLLECTOR_CLASSES: dict[str, type[SourceCollector]] = {
