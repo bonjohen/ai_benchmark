@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from ..types import (
         ActivityTimeline,
         CapabilityProfile,
+        CorrelationMatrix,
         DigestReport,
         EvolutionSummary,
         LandscapeReport,
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
         ResearchPipelineReport,
         ResearchTrends,
         SpotlightReport,
+        VerificationReport,
     )
 
 
@@ -500,5 +502,92 @@ def research_pipeline_to_markdown(report: ResearchPipelineReport) -> str:
 
     if not report.velocity_leaders and not report.topic_trends and not report.paper_product_links:
         lines.append("No research pipeline data available.\n")
+
+    return "\n".join(lines)
+
+
+def verification_to_markdown(report: VerificationReport) -> str:
+    """Render a verification report as Markdown."""
+    lines = [
+        "# Claim Verification Dashboard",
+        "",
+        f"**Events:** {report.total_events}",
+        f"**Claims:** {report.total_claims}",
+        f"**Confirmation rate:** {report.confirmation_rate:.1f}%",
+        f"**Conflict rate:** {report.conflict_rate:.1f}%",
+        "",
+    ]
+
+    if report.tier_distribution:
+        lines.append("## Confidence Tier Distribution")
+        lines.append("")
+        for tier, count in sorted(report.tier_distribution.items()):
+            lines.append(f"- **{tier}:** {count}")
+        lines.append("")
+
+    if report.model_verifications:
+        lines.append("## Model Verification")
+        lines.append("")
+        lines.append("| Model | Org | Claims | Confirmed | Conflicted | Sources | Tier | XRefs |")
+        lines.append("|---|---|---|---|---|---|---|---|")
+        for m in report.model_verifications:
+            lines.append(
+                f"| {m.model_slug} | {m.organization} | {m.total_claims} "
+                f"| {m.confirmed_pct:.1f}% | {m.conflicted_pct:.1f}% "
+                f"| {m.source_count} | {m.highest_confidence_tier} "
+                f"| {m.xref_confirms_count} |"
+            )
+        lines.append("")
+
+    if report.benchmark_verifications:
+        lines.append("## Benchmark Verification")
+        lines.append("")
+        lines.append("| Benchmark | Sources | Conflicts | Score Variance |")
+        lines.append("|---|---|---|---|")
+        for b in report.benchmark_verifications:
+            var_str = f"{b.score_variance:.4f}" if b.score_variance is not None else "—"
+            conflict_str = "Yes" if b.has_conflicts else "No"
+            lines.append(
+                f"| {b.benchmark_variant} | {b.source_count} | {conflict_str} | {var_str} |"
+            )
+        lines.append("")
+
+    if report.total_events == 0:
+        lines.append("No verification data available.\n")
+
+    return "\n".join(lines)
+
+
+def correlation_to_markdown(matrix: CorrelationMatrix) -> str:
+    """Render a correlation matrix as Markdown."""
+    lines = [
+        "# Benchmark Correlation Matrix",
+        "",
+        f"**Benchmarks:** {matrix.benchmark_count}",
+        f"**Min overlap:** {matrix.min_overlap}",
+        "",
+    ]
+
+    if not matrix.entries:
+        lines.append("No benchmark pairs with sufficient overlap.\n")
+        return "\n".join(lines)
+
+    lines.append("## Pairwise Correlations")
+    lines.append("")
+    lines.append("| Benchmark A | Benchmark B | Correlation | Overlap | Label |")
+    lines.append("|---|---|---|---|---|")
+    for e in sorted(matrix.entries, key=lambda x: -abs(x.correlation)):
+        lines.append(
+            f"| {e.benchmark_a} | {e.benchmark_b} | {e.correlation:.4f} "
+            f"| {e.overlap_count} | {e.label} |"
+        )
+    lines.append("")
+
+    if matrix.clusters:
+        lines.append("## Benchmark Clusters")
+        lines.append("")
+        for i, cluster in enumerate(matrix.clusters, 1):
+            lines.append(f"- **Cluster {i}:** {', '.join(cluster)}")
+        lines.append("")
 
     return "\n".join(lines)

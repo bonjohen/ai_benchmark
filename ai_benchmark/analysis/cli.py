@@ -759,6 +759,103 @@ def analyze_landscape(ctx: click.Context, days: int, org: str | None, output_for
     asyncio.run(_run())
 
 
+@analyze_group.command("verification")
+@click.option("--org", default=None, help="Filter by organization.")
+@click.option("--model", "model_slug", default=None, help="Filter by model slug.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown", "csv"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_verification(
+    ctx: click.Context, org: str | None, model_slug: str | None, output_format: str
+) -> None:
+    """Show claim verification dashboard."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.verification import get_verification_report
+
+            report = await get_verification_report(session, organization=org, model_slug=model_slug)
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(report))
+            elif output_format == "markdown":
+                from .formatters.markdown import verification_to_markdown
+
+                click.echo(verification_to_markdown(report))
+            elif output_format == "csv":
+                from .formatters.csv_export import verification_to_csv
+
+                click.echo(verification_to_csv(report))
+            else:
+                from .formatters.markdown import verification_to_markdown
+
+                click.echo(verification_to_markdown(report))
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+@analyze_group.command("correlations")
+@click.option("--min-overlap", default=5, help="Minimum model overlap for correlation.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown", "csv"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_correlations(ctx: click.Context, min_overlap: int, output_format: str) -> None:
+    """Show benchmark correlation matrix."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.correlation import get_correlation_matrix
+
+            matrix = await get_correlation_matrix(session, min_overlap=min_overlap)
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(matrix))
+            elif output_format == "markdown":
+                from .formatters.markdown import correlation_to_markdown
+
+                click.echo(correlation_to_markdown(matrix))
+            elif output_format == "csv":
+                from .formatters.csv_export import correlation_to_csv
+
+                click.echo(correlation_to_csv(matrix))
+            else:
+                from .formatters.markdown import correlation_to_markdown
+
+                click.echo(correlation_to_markdown(matrix))
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
 @analyze_group.command("research-pipeline")
 @click.option("--days", default=90, help="Lookback window in days.")
 @click.option("--min-citations", default=0, help="Minimum citation count.")

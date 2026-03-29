@@ -263,3 +263,28 @@ async def get_research_pipeline_report(
 
     report = await get_research_pipeline(session, window_days=days, min_citations=min_citations)
     return _to_dict(report)
+
+
+@router.get("/verification")
+async def get_verification_report(
+    org: str | None = Query(None),
+    model: str | None = Query(None, description="Filter by model slug"),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Claim verification dashboard: confirmation depth and confidence tiers."""
+    from .services.verification import get_verification_report as _get_report
+
+    report = await _get_report(session, organization=org, model_slug=model)
+    return _to_dict(report)
+
+
+@router.get("/correlations")
+async def get_correlations(
+    min_overlap: int = Query(5, ge=2),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Benchmark correlation matrix."""
+    from .services.correlation import get_correlation_matrix
+
+    matrix = await get_correlation_matrix(session, min_overlap=min_overlap)
+    return _to_dict(matrix)

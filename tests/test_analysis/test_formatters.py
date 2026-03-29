@@ -8,16 +8,19 @@ import json
 from datetime import UTC, datetime
 
 from ai_benchmark.analysis.formatters.csv_export import (
+    correlation_to_csv,
     evolution_to_csv,
     insights_to_csv,
     leaderboard_to_csv,
     models_to_csv,
     spotlight_to_csv,
+    verification_to_csv,
 )
 from ai_benchmark.analysis.formatters.json_export import to_json
 from ai_benchmark.analysis.formatters.markdown import (
     activity_timeline_to_markdown,
     capability_to_markdown,
+    correlation_to_markdown,
     evolution_to_markdown,
     insights_to_markdown,
     landscape_to_markdown,
@@ -27,21 +30,26 @@ from ai_benchmark.analysis.formatters.markdown import (
     research_pipeline_to_markdown,
     research_trends_to_markdown,
     spotlight_to_markdown,
+    verification_to_markdown,
 )
 from ai_benchmark.analysis.models import AnalysisInsight
 from ai_benchmark.analysis.types import (
     ActivityTimeline,
     BenchmarkDataPoint,
     BenchmarkPercentile,
+    BenchmarkVerification,
     CapabilityProfile,
     CitationVelocityEntry,
     CompetitiveCluster,
+    CorrelationEntry,
+    CorrelationMatrix,
     EvolutionSummary,
     FrontierEntry,
     LandscapeReport,
     Leaderboard,
     ModelProfile,
     ModelSummary,
+    ModelVerification,
     OrgActivity,
     OrgLandscapeEntry,
     PaperCitationEntry,
@@ -52,6 +60,7 @@ from ai_benchmark.analysis.types import (
     SpotlightReport,
     TimelineEntry,
     TopicTrend,
+    VerificationReport,
 )
 
 
@@ -586,3 +595,89 @@ def test_research_pipeline_to_markdown_topics():
     assert "Topic Trends" in md
     assert "llm" in md
     assert "rising" in md
+
+
+# --- Markdown + CSV: verification ---
+
+
+def _make_verification():
+    return VerificationReport(
+        total_events=10,
+        total_claims=15,
+        confirmation_rate=66.7,
+        conflict_rate=6.7,
+        tier_distribution={"official_self_report": 8, "benchmark_owner_report": 5},
+        model_verifications=[
+            ModelVerification("gpt-5", "OpenAI", 8, 75.0, 0.0, 3, "official_self_report", 2),
+            ModelVerification(
+                "claude-4-sonnet", "Anthropic", 5, 60.0, 20.0, 2, "official_self_report", 1
+            ),
+        ],
+        benchmark_verifications=[
+            BenchmarkVerification("SWE-bench Verified", 2, True, 3.38),
+            BenchmarkVerification("MMLU", 2, False, None),
+        ],
+    )
+
+
+def test_verification_to_markdown_header():
+    """Verification markdown includes title and rates."""
+    md = verification_to_markdown(_make_verification())
+    assert "# Claim Verification Dashboard" in md
+    assert "66.7%" in md
+
+
+def test_verification_to_markdown_models():
+    """Verification markdown shows model verification table."""
+    md = verification_to_markdown(_make_verification())
+    assert "gpt-5" in md
+    assert "claude-4-sonnet" in md
+    assert "75.0%" in md
+
+
+def test_verification_to_csv_rows():
+    """Verification CSV has correct row count."""
+    result = verification_to_csv(_make_verification())
+    reader = csv.reader(io.StringIO(result))
+    rows = list(reader)
+    assert len(rows) == 3  # header + 2 models
+    assert rows[1][0] == "gpt-5"
+
+
+# --- Markdown + CSV: correlation ---
+
+
+def _make_correlation():
+    return CorrelationMatrix(
+        min_overlap=5,
+        benchmark_count=3,
+        entries=[
+            CorrelationEntry("MMLU", "SWE-bench Verified", 0.85, 10, "redundant"),
+            CorrelationEntry("MMLU", "GAIA", 0.42, 8, "moderate"),
+        ],
+        clusters=[["MMLU", "SWE-bench Verified"]],
+    )
+
+
+def test_correlation_to_markdown_header():
+    """Correlation markdown includes title."""
+    md = correlation_to_markdown(_make_correlation())
+    assert "# Benchmark Correlation Matrix" in md
+    assert "Benchmarks:** 3" in md
+
+
+def test_correlation_to_markdown_entries():
+    """Correlation markdown shows pairwise entries."""
+    md = correlation_to_markdown(_make_correlation())
+    assert "0.8500" in md
+    assert "redundant" in md
+    assert "Cluster 1" in md
+
+
+def test_correlation_to_csv_rows():
+    """Correlation CSV has correct row count."""
+    result = correlation_to_csv(_make_correlation())
+    reader = csv.reader(io.StringIO(result))
+    rows = list(reader)
+    assert len(rows) == 3  # header + 2 entries
+    assert rows[1][4] in ("redundant", "moderate")

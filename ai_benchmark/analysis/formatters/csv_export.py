@@ -8,7 +8,14 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..models import AnalysisInsight
-    from ..types import EvolutionSummary, Leaderboard, ModelSummary, SpotlightReport
+    from ..types import (
+        CorrelationMatrix,
+        EvolutionSummary,
+        Leaderboard,
+        ModelSummary,
+        SpotlightReport,
+        VerificationReport,
+    )
 
 
 def models_to_csv(models: list[ModelSummary]) -> str:
@@ -135,4 +142,46 @@ def evolution_to_csv(summaries: list[EvolutionSummary]) -> str:
                 s.last_record_date or "",
             ]
         )
+    return output.getvalue()
+
+
+def verification_to_csv(report: VerificationReport) -> str:
+    """Serialize verification report model summaries to CSV."""
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "model_slug",
+            "organization",
+            "total_claims",
+            "confirmed_pct",
+            "conflicted_pct",
+            "source_count",
+            "highest_confidence_tier",
+            "xref_confirms_count",
+        ]
+    )
+    for m in report.model_verifications:
+        writer.writerow(
+            [
+                m.model_slug,
+                m.organization,
+                m.total_claims,
+                m.confirmed_pct,
+                m.conflicted_pct,
+                m.source_count,
+                m.highest_confidence_tier,
+                m.xref_confirms_count,
+            ]
+        )
+    return output.getvalue()
+
+
+def correlation_to_csv(matrix: CorrelationMatrix) -> str:
+    """Serialize correlation matrix to CSV."""
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["benchmark_a", "benchmark_b", "correlation", "overlap_count", "label"])
+    for e in matrix.entries:
+        writer.writerow([e.benchmark_a, e.benchmark_b, e.correlation, e.overlap_count, e.label])
     return output.getvalue()

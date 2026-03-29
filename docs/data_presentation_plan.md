@@ -110,8 +110,8 @@ Open  ──>  Started  ──>  Completed
 | 4.3 | Completed | 2026-03-29 04:45 PM | 2026-03-29 04:48 PM | Add `research_pipeline_to_markdown()` to `formatters/markdown.py`. Add 3 formatter tests to `test_formatters.py`. |
 | 4.4 | Completed | 2026-03-29 04:48 PM | 2026-03-29 04:52 PM | Add `research-pipeline` CLI subcommand to `cli.py`. Add `/research-pipeline` API endpoint to `api.py`. |
 | 4.5 | Completed | 2026-03-29 04:52 PM | 2026-03-29 04:55 PM | Run `pytest` — 852 passed. Run `ruff check` and `ruff format --check` — clean. |
-| 4.6 | Started | 2026-03-29 04:55 PM | | Stage all Phase 4 changes. |
-| 4.7 | Open | | | Commit: "Add research-to-product pipeline intelligence (Tier 2b)". |
+| 4.6 | Completed | 2026-03-29 04:55 PM | 2026-03-29 04:56 PM | Stage all Phase 4 changes. |
+| 4.7 | Completed | 2026-03-29 04:56 PM | 2026-03-29 04:57 PM | Commit: "Add research-to-product pipeline intelligence (Tier 2b)". |
 
 ### Phase 4 Summary
 
@@ -126,20 +126,20 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Create `ai_benchmark/analysis/services/verification.py`: `get_verification_report()` querying EventRecord, ClaimRecord, CrossReference for confirmation depth, confidence tier distribution, and score variance. |
-| 5.2 | Open | | | Create `ai_benchmark/analysis/services/correlation.py`: `get_correlation_matrix()` with `extract_benchmark_score()`, Spearman rank correlation, label assignment, and cluster detection. |
-| 5.3 | Open | | | Create `tests/test_analysis/test_verification.py`: 8 tests — empty DB, model verification, confirmed pct, conflicted pct, source count, confidence tier ordering, benchmark variance, system summary. |
-| 5.4 | Open | | | Create `tests/test_analysis/test_correlation.py`: 7 tests — empty DB, sufficient overlap, insufficient overlap, correlation computation, label assignment, cluster detection, single benchmark. |
-| 5.5 | Open | | | Add `verification_to_markdown()` and `correlation_to_markdown()` to `formatters/markdown.py`. Add `verification_to_csv()` and `correlation_to_csv()` to `formatters/csv_export.py`. |
-| 5.6 | Open | | | Add `verification` and `correlations` CLI subcommands to `cli.py`. Add formatter tests to `test_formatters.py`. |
-| 5.7 | Open | | | Add `/verification` and `/correlations` API endpoints to `api.py`. |
-| 5.8 | Open | | | Run `pytest` — all tests pass. Run `ruff check` and `ruff format --check` — clean. |
-| 5.9 | Open | | | Stage all Phase 5 changes. |
+| 5.1 | Completed | 2026-03-29 05:00 PM | 2026-03-29 05:08 PM | Create `ai_benchmark/analysis/services/verification.py`: `get_verification_report()` querying EventRecord, ClaimRecord, CrossReference for confirmation depth, confidence tier distribution, and score variance. |
+| 5.2 | Completed | 2026-03-29 05:08 PM | 2026-03-29 05:15 PM | Create `ai_benchmark/analysis/services/correlation.py`: `get_correlation_matrix()` with `extract_benchmark_score()`, Spearman rank correlation, label assignment, and cluster detection. |
+| 5.3 | Completed | 2026-03-29 05:15 PM | 2026-03-29 05:20 PM | Create `tests/test_analysis/test_verification.py`: 11 tests — empty DB, model counts, confirmed pct, conflicted pct, model detail, source count, tier distribution, xref count, benchmark detail, org filter, model filter. |
+| 5.4 | Completed | 2026-03-29 05:20 PM | 2026-03-29 05:25 PM | Create `tests/test_analysis/test_correlation.py`: 8 tests — empty DB, with data, entries validation, high min_overlap, perfect positive/negative correlation, rank ties, label assignment. |
+| 5.5 | Completed | 2026-03-29 05:25 PM | 2026-03-29 05:30 PM | Add `verification_to_markdown()`, `correlation_to_markdown()` to `formatters/markdown.py`. Add `verification_to_csv()`, `correlation_to_csv()` to `formatters/csv_export.py`. |
+| 5.6 | Completed | 2026-03-29 05:30 PM | 2026-03-29 05:35 PM | Add `verification` and `correlations` CLI subcommands to `cli.py`. Add 6 formatter tests to `test_formatters.py`. |
+| 5.7 | Completed | 2026-03-29 05:35 PM | 2026-03-29 05:38 PM | Add `/verification` and `/correlations` API endpoints to `api.py`. |
+| 5.8 | Completed | 2026-03-29 05:38 PM | 2026-03-29 05:42 PM | Run `pytest` — 877 passed. Run `ruff check` and `ruff format --check` — clean. |
+| 5.9 | Started | 2026-03-29 05:42 PM | | Stage all Phase 5 changes. |
 | 5.10 | Open | | | Commit: "Add claim verification and benchmark correlation (Tier 3)". |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `verification.py` (per-model/per-benchmark claim analysis, confidence tier distribution, CrossReference confirms count, score variance) and `correlation.py` (Spearman rank correlation, label assignment, clique-based cluster detection). Added formatters (markdown + CSV) for both. Added `verification` and `correlations` CLI subcommands and 2 API endpoints. 11 verification tests + 8 correlation tests + 6 formatter tests = 25 new tests. Total: 877 passed.
 - **Changes hosted at:** TBD
 - **Commit:** `Add claim verification and benchmark correlation (Tier 3)`
 
