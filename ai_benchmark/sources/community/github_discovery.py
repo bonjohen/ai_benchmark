@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from ..base import RawItem, SourceCollector
 from ...collection.api_client import APIClient
 from ...config.settings import PageConfig
-
+from ..base import RawItem, SourceCollector
 
 # Default organizations to watch for AI model activity
 WATCHED_ORGS = [

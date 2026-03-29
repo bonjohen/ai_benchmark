@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from sqlalchemy import select
 
-from ai_benchmark.models.events import ClaimRecord, CrossReference, EventRecord
-from ai_benchmark.models.research import CandidatePaper, EnrichedPaper
-from ai_benchmark.models.sources import Page, Snapshot, Source
+from ai_benchmark.models.events import EventRecord
+from ai_benchmark.models.research import CandidatePaper
+from ai_benchmark.models.sources import Source
 
 
 @pytest.mark.asyncio

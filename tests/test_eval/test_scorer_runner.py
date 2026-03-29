@@ -8,22 +8,20 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ai_benchmark.eval.scoring.base import resolve_scorer, _SCORER_REGISTRY
-from ai_benchmark.eval.scoring.builtin.exact_match import ExactMatchScorer, FuzzyMatchScorer
-from ai_benchmark.eval.scoring.builtin.format_validator import FormatValidatorScorer
-from ai_benchmark.eval.scoring.builtin.latency_cost import LatencyCostScorer
-from ai_benchmark.eval.scoring.builtin.rubric import RubricScorer
-from ai_benchmark.eval.scoring.builtin.safety import SafetyScorer
-from ai_benchmark.eval.scoring.builtin.model_judge import ModelJudgeScorer
-from ai_benchmark.eval.scoring.scorer_runner import ScorerRunner
 from ai_benchmark.eval.models.artifact import Artifact  # noqa: F401
 from ai_benchmark.eval.models.dataset import Dataset, DatasetVersion, TestCase
 from ai_benchmark.eval.models.evaluation import EvaluationDefinition, EvaluationVersion
 from ai_benchmark.eval.models.run import Run, RunAggregateMetric, RunItemResult
 from ai_benchmark.eval.models.scorer import Scorer, ScorerVersion
 from ai_benchmark.eval.models.target import TargetConfiguration
+from ai_benchmark.eval.scoring.base import _SCORER_REGISTRY, resolve_scorer
+from ai_benchmark.eval.scoring.builtin.exact_match import ExactMatchScorer, FuzzyMatchScorer
+from ai_benchmark.eval.scoring.builtin.format_validator import FormatValidatorScorer
+from ai_benchmark.eval.scoring.builtin.latency_cost import LatencyCostScorer
+from ai_benchmark.eval.scoring.builtin.model_judge import ModelJudgeScorer
+from ai_benchmark.eval.scoring.builtin.safety import SafetyScorer
+from ai_benchmark.eval.scoring.scorer_runner import ScorerRunner
 from ai_benchmark.models.base import create_session_factory
-
 
 # ── Fixtures ──
 

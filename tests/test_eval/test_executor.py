@@ -2,25 +2,20 @@
 
 from __future__ import annotations
 
-import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_benchmark.eval.execution.adapters.base import (
-    GenerationResult,
-    register_adapter,
-    resolve_adapter,
     _ADAPTER_REGISTRY,
-    ModelAdapter,
+    GenerationResult,
+    resolve_adapter,
 )
 from ai_benchmark.eval.execution.executor import ItemExecutor
 from ai_benchmark.eval.models.artifact import Artifact  # noqa: F401 — resolve mapper
 from ai_benchmark.eval.models.dataset import Dataset, DatasetVersion, TestCase
-from ai_benchmark.eval.models.run import RunItemResult
 from ai_benchmark.models.base import create_session_factory
-
 
 # ── Fixtures ──
 
@@ -66,10 +61,10 @@ class TestAdapterRegistry:
         """All four adapters are registered after import."""
         # Trigger registration
         from ai_benchmark.eval.execution.adapters import (  # noqa: F401
-            openai_adapter,
             anthropic_adapter,
-            local_adapter,
             generic_http_adapter,
+            local_adapter,
+            openai_adapter,
         )
 
         assert "openai" in _ADAPTER_REGISTRY
@@ -174,8 +169,8 @@ class TestItemExecution:
                 EvaluationDefinition,
                 EvaluationVersion,
             )
-            from ai_benchmark.eval.models.target import TargetConfiguration
             from ai_benchmark.eval.models.run import Run
+            from ai_benchmark.eval.models.target import TargetConfiguration
 
             ed = EvaluationDefinition(name="test-eval", execution_mode="sequential")
             db_session.add(ed)
@@ -242,8 +237,8 @@ class TestItemExecution:
                 EvaluationDefinition,
                 EvaluationVersion,
             )
-            from ai_benchmark.eval.models.target import TargetConfiguration
             from ai_benchmark.eval.models.run import Run
+            from ai_benchmark.eval.models.target import TargetConfiguration
 
             ed = EvaluationDefinition(name="err-eval", execution_mode="sequential")
             db_session.add(ed)
@@ -308,8 +303,8 @@ class TestItemExecution:
                 EvaluationDefinition,
                 EvaluationVersion,
             )
-            from ai_benchmark.eval.models.target import TargetConfiguration
             from ai_benchmark.eval.models.run import Run
+            from ai_benchmark.eval.models.target import TargetConfiguration
 
             ed = EvaluationDefinition(name="retry-eval", execution_mode="sequential")
             db_session.add(ed)

@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...services import comparison_service
 from ..app import get_session
 from ..schemas.comparison import (
     CompareRequest,
@@ -12,7 +13,6 @@ from ..schemas.comparison import (
     ConfigDiffRequest,
     ConfigDiffResponse,
 )
-from ...services import comparison_service
 
 router = APIRouter()
 

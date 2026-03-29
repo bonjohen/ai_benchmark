@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, UTC
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -105,7 +105,7 @@ async def get_recent_changes(
 ) -> list[EventRecord]:
     """Get events observed in the last N hours."""
     from datetime import timedelta, timezone
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    cutoff = datetime.now(UTC) - timedelta(hours=hours)
     stmt = (
         select(EventRecord)
         .where(EventRecord.observed_at >= cutoff)

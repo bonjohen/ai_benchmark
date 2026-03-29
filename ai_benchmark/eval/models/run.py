@@ -71,20 +71,20 @@ class Run(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now(), nullable=True)
 
     run_group: Mapped[RunGroup | None] = relationship(back_populates="runs")
-    evaluation_version: Mapped["EvaluationVersion"] = relationship(  # noqa: F821
+    evaluation_version: Mapped[EvaluationVersion] = relationship(  # noqa: F821
         back_populates="runs"
     )
-    target_config: Mapped["TargetConfiguration"] = relationship(  # noqa: F821
+    target_config: Mapped[TargetConfiguration] = relationship(  # noqa: F821
         back_populates="runs"
     )
-    machine_snapshot: Mapped["MachineSnapshot | None"] = relationship()  # noqa: F821
+    machine_snapshot: Mapped[MachineSnapshot | None] = relationship()  # noqa: F821
     item_results: Mapped[list[RunItemResult]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
     aggregate_metrics: Mapped[list[RunAggregateMetric]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
-    artifacts: Mapped[list["Artifact"]] = relationship(  # noqa: F821
+    artifacts: Mapped[list[Artifact]] = relationship(  # noqa: F821
         back_populates="run", cascade="all, delete-orphan"
     )
 
@@ -122,7 +122,7 @@ class RunItemResult(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     run: Mapped[Run] = relationship(back_populates="item_results")
-    test_case: Mapped["TestCase"] = relationship()  # noqa: F821
+    test_case: Mapped[TestCase] = relationship()  # noqa: F821
 
 
 class RunAggregateMetric(Base):

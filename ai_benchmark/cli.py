@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import signal
-import sys
 from pathlib import Path
 
 import click
@@ -104,7 +103,7 @@ def status(ctx: click.Context) -> None:
         from .reporting.query import count_events_by_org
 
         engine = create_engine(settings.database_url)
-        from .models import events, research, sources as src_models  # noqa: F401
+        from .models import events, research  # noqa: F401
 
         session_factory = create_session_factory(engine)
         async with session_factory() as session:
@@ -135,11 +134,11 @@ def query(ctx: click.Context, org: str | None, event_type: str | None,
     settings: PipelineSettings = ctx.obj["settings"]
 
     async def _query() -> None:
+        from .reporting.export import events_to_csv, events_to_json
         from .reporting.query import get_events
-        from .reporting.export import events_to_json, events_to_csv
 
         engine = create_engine(settings.database_url)
-        from .models import events as ev_models, research, sources as src_models  # noqa: F401
+        from .models import events as ev_models  # noqa: F401
 
         session_factory = create_session_factory(engine)
         async with session_factory() as session:
@@ -174,11 +173,11 @@ def export(ctx: click.Context, fmt: str, output_path: Path | None, limit: int) -
     settings: PipelineSettings = ctx.obj["settings"]
 
     async def _export() -> None:
+        from .reporting.export import events_to_csv, events_to_json
         from .reporting.query import get_events
-        from .reporting.export import events_to_json, events_to_csv
 
         engine = create_engine(settings.database_url)
-        from .models import events as ev_models, research, sources as src_models  # noqa: F401
+        from .models import events as ev_models  # noqa: F401
 
         session_factory = create_session_factory(engine)
         async with session_factory() as session:

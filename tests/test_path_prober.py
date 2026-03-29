@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
-from sqlalchemy import select
 
 from ai_benchmark.collection.fetcher import FetchResult
 from ai_benchmark.models.sources import Page, Source

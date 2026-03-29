@@ -44,11 +44,10 @@ class APIClient:
             "User-Agent": "ai-benchmark-pipeline/0.1",
             **self.auth_header(),
         }
-        async with self._semaphore:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(url, headers=headers, params=params)
-                response.raise_for_status()
-                return response.json()
+        async with self._semaphore, httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.get(url, headers=headers, params=params)
+            response.raise_for_status()
+            return response.json()
 
     async def get_paginated(
         self,

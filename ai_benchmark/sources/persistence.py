@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,7 +57,7 @@ async def persist_events(
             published_date=published,
             event_type=event_type,
             model_slug=model,
-            observed_at=datetime.now(timezone.utc),
+            observed_at=datetime.now(UTC),
             raw_content=item.body[:2000] if item.body else None,
         )
         session.add(event)

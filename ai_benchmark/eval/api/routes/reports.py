@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...services import report_service
 from ..app import get_session
 from ..schemas.comparison import PresetCreate, PresetResponse, ReportRequest
-from ...services import report_service
 
 router = APIRouter()
 

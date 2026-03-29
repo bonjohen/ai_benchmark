@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import time
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +13,13 @@ from .adapters.base import GenerationResult, resolve_adapter
 logger = structlog.get_logger()
 
 # Ensure all adapters are registered
-from .adapters import anthropic_adapter, generic_http_adapter, local_adapter, openai_adapter  # noqa: F401, E402
+from .adapters import (  # noqa: F401, E402
+    anthropic_adapter,
+    generic_http_adapter,
+    local_adapter,
+    openai_adapter,
+)
+from datetime import UTC
 
 
 class ItemExecutor:
@@ -113,8 +117,8 @@ class ItemExecutor:
             cost_estimate_usd=result.cost_estimate_usd if result else None,
             retry_count=result.retry_count if result else 0,
             trace_id=result.trace_id if result else None,
-            started_at=datetime.now(timezone.utc),
-            completed_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
+            completed_at=datetime.now(UTC),
         )
         session.add(item_result)
         await session.flush()

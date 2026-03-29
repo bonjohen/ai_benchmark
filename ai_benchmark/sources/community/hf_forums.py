@@ -9,7 +9,6 @@ from bs4 import BeautifulSoup
 from ...config.settings import PageConfig
 from ..base import RawItem, SourceCollector
 
-
 # Support/help thread patterns to filter out
 SUPPORT_THREAD_PATTERNS: list[re.Pattern] = [
     re.compile(r"\bhow (do|can|to)\b", re.IGNORECASE),

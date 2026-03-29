@@ -26,7 +26,7 @@ router = APIRouter()
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request, session: AsyncSession = Depends(get_session)):
     """Main dashboard — active runs, recent completions, alerts."""
-    from ..services import run_service, machine_service
+    from ..services import machine_service, run_service
 
     active_runs = []
     for status in ("queued", "running", "scoring"):
@@ -76,9 +76,10 @@ async def evaluation_create_form(request: Request, session: AsyncSession = Depen
 @router.get("/evaluations/{eval_id}", response_class=HTMLResponse)
 async def evaluation_detail(request: Request, eval_id: int,
                             session: AsyncSession = Depends(get_session)):
-    from ..services import eval_service, run_service
-    from ..models.evaluation import EvaluationVersion
     from sqlalchemy import select
+
+    from ..models.evaluation import EvaluationVersion
+    from ..services import eval_service, run_service
 
     ev = await eval_service.get_evaluation(session, eval_id)
     if ev is None:
@@ -119,9 +120,10 @@ async def dataset_list(request: Request, session: AsyncSession = Depends(get_ses
 @router.get("/datasets/{dataset_id}", response_class=HTMLResponse)
 async def dataset_detail(request: Request, dataset_id: int,
                          session: AsyncSession = Depends(get_session)):
-    from ..services import dataset_service
-    from ..models.dataset import DatasetVersion
     from sqlalchemy import select
+
+    from ..models.dataset import DatasetVersion
+    from ..services import dataset_service
 
     ds = await dataset_service.get_dataset(session, dataset_id)
     if ds is None:
@@ -176,7 +178,7 @@ async def target_list(request: Request, session: AsyncSession = Depends(get_sess
 @router.get("/targets/{target_id}", response_class=HTMLResponse)
 async def target_detail(request: Request, target_id: int,
                         session: AsyncSession = Depends(get_session)):
-    from ..services import target_service, run_service
+    from ..services import run_service, target_service
     t = await target_service.get_target(session, target_id)
     if t is None:
         return HTMLResponse("<h1>Not Found</h1>", status_code=404)
@@ -308,7 +310,6 @@ async def comparison_page(request: Request, runs: str | None = None,
                     })
 
             # Config diff
-            from ..services import target_service
             target_ids = []
             for rid in run_ids:
                 r = await run_service.get_run(session, rid)
@@ -362,7 +363,7 @@ async def reports_page(request: Request, session: AsyncSession = Depends(get_ses
 async def report_export(request: Request, format: str = "json",
                         session: AsyncSession = Depends(get_session)):
     """Export recent run data as JSON/CSV/HTML download."""
-    from ..services import run_service, report_service
+    from ..services import report_service, run_service
 
     runs = await run_service.list_runs(session, limit=100)
     rows = []

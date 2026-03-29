@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import pytest
+from sqlalchemy import select
 
-from ai_benchmark.models.events import ClaimRecord, CrossReference, EventRecord
+from ai_benchmark.models.events import ClaimRecord, CrossReference
 from ai_benchmark.processing.pipeline import process_item, process_items
 from ai_benchmark.sources.base import RawItem
-
-from sqlalchemy import select
 
 
 @pytest.mark.asyncio

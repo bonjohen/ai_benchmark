@@ -26,10 +26,16 @@ async def integration_client():
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
-    from ai_benchmark.models import events, research, sources  # noqa: F401
     from ai_benchmark.eval.models import (  # noqa: F401
-        artifact, dataset, evaluation, machine, run, scorer, target,
+        artifact,
+        dataset,
+        evaluation,
+        machine,
+        run,
+        scorer,
+        target,
     )
+    from ai_benchmark.models import events, research, sources  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -273,6 +279,7 @@ class TestCLISmoke:
     @pytest.mark.asyncio
     async def test_eval_run_help(self):
         from click.testing import CliRunner
+
         from ai_benchmark.cli import cli
 
         runner = CliRunner()
@@ -284,6 +291,7 @@ class TestCLISmoke:
     @pytest.mark.asyncio
     async def test_eval_status_help(self):
         from click.testing import CliRunner
+
         from ai_benchmark.cli import cli
 
         runner = CliRunner()
@@ -294,6 +302,7 @@ class TestCLISmoke:
     @pytest.mark.asyncio
     async def test_eval_compare_help(self):
         from click.testing import CliRunner
+
         from ai_benchmark.cli import cli
 
         runner = CliRunner()
@@ -304,6 +313,7 @@ class TestCLISmoke:
     @pytest.mark.asyncio
     async def test_eval_export_help(self):
         from click.testing import CliRunner
+
         from ai_benchmark.cli import cli
 
         runner = CliRunner()
@@ -315,6 +325,7 @@ class TestCLISmoke:
     @pytest.mark.asyncio
     async def test_eval_serve_help(self):
         from click.testing import CliRunner
+
         from ai_benchmark.cli import cli
 
         runner = CliRunner()

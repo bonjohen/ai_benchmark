@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from ai_benchmark.config.settings import PageConfig, SourceConfig
-from ai_benchmark.sources.benchmarks import BenchmarkCollector, LeaderboardEntry
 from ai_benchmark.sources.benchmarks.artificial_analysis import ArtificialAnalysisCollector
 from ai_benchmark.sources.benchmarks.gaia import GAIACollector
 from ai_benchmark.sources.benchmarks.hle import HLECollector
@@ -11,7 +10,6 @@ from ai_benchmark.sources.benchmarks.livebench import LiveBenchCollector
 from ai_benchmark.sources.benchmarks.lmarena import LMArenaCollector
 from ai_benchmark.sources.benchmarks.swebench import SWEBenchCollector
 from ai_benchmark.sources.benchmarks.terminal_bench import TerminalBenchCollector
-
 
 LEADERBOARD_HTML = """
 <html><body>

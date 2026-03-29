@@ -7,6 +7,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...services import machine_service
 from ..app import get_session
 from ..schemas.machine import (
     MachineCreate,
@@ -15,7 +16,6 @@ from ..schemas.machine import (
     MachineUpdate,
     SnapshotCaptureRequest,
 )
-from ...services import machine_service
 
 router = APIRouter()
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from typing import TYPE_CHECKING
 
 import structlog
@@ -19,7 +19,7 @@ logger = structlog.get_logger()
 
 def has_recent_date(items: list[RawItem], max_age_days: int = 90) -> bool:
     """Check if at least one item has a date within the threshold."""
-    cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    cutoff = datetime.now(UTC) - timedelta(days=max_age_days)
     cutoff_str = cutoff.strftime("%Y-%m-%d")
 
     for item in items:

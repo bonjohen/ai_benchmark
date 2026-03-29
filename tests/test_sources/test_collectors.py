@@ -17,7 +17,6 @@ from ai_benchmark.sources.mistral import MistralCollector
 from ai_benchmark.sources.openai import OpenAICollector
 from ai_benchmark.sources.registry import get_collector, list_registered_organizations
 
-
 # ─── Normalizer tests ───
 
 def test_normalize_title():

@@ -14,10 +14,9 @@ from ai_benchmark.eval.execution.orchestrator import RunOrchestrator
 from ai_benchmark.eval.models.artifact import Artifact  # noqa: F401 — resolve mapper
 from ai_benchmark.eval.models.dataset import Dataset, DatasetVersion, TestCase
 from ai_benchmark.eval.models.evaluation import EvaluationDefinition, EvaluationVersion
-from ai_benchmark.eval.models.run import Run, RunAggregateMetric, RunGroup
+from ai_benchmark.eval.models.run import RunAggregateMetric
 from ai_benchmark.eval.models.target import TargetConfiguration
 from ai_benchmark.models.base import create_session_factory
-
 
 # ── Fixtures ──
 

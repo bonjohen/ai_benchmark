@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 
 import structlog
 
 from ..collection.differ import DiffResult
-from ..collection.fetcher import FetchResult, Fetcher
+from ..collection.fetcher import Fetcher, FetchResult
 from ..collection.snapshot import SnapshotManager
 from ..config.settings import PageConfig, SourceConfig
 

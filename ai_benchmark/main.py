@@ -35,8 +35,8 @@ async def bootstrap_pipeline():
     Used by the scheduler and CLI for programmatic setup.
     """
     from .config.settings import PipelineSettings
-    from .models.base import Base, create_engine, create_session_factory
     from .models import events, research, sources  # noqa: F401
+    from .models.base import create_engine, create_session_factory
 
     settings = PipelineSettings()
     configure_logging(settings.log_level, settings.log_format)

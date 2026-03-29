@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...services import eval_service
 from ..app import get_session
 from ..schemas.evaluation import (
     EvaluationCreate,
@@ -15,7 +16,6 @@ from ..schemas.evaluation import (
     EvaluationVersionCreate,
     EvaluationVersionResponse,
 )
-from ...services import eval_service
 
 router = APIRouter()
 

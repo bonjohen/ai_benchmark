@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -84,7 +84,7 @@ async def enrich_candidate(
     except Exception:
         # API failures don't reject — leave as pending for retry
         candidate.retry_count = (candidate.retry_count or 0) + 1
-        candidate.last_retry_at = datetime.now(timezone.utc)
+        candidate.last_retry_at = datetime.now(UTC)
         return candidate
 
 
@@ -107,7 +107,7 @@ async def promote_to_enriched(
         venue=paper_data.get("venue"),
         citation_count=paper_data.get("citationCount", 0),
         code_url=paper_data.get("externalIds", {}).get("GitHub"),
-        enriched_at=datetime.now(timezone.utc),
+        enriched_at=datetime.now(UTC),
     )
     session.add(enriched)
     candidate.status = "promoted"

@@ -5,7 +5,6 @@ from __future__ import annotations
 import csv
 import io
 import json
-from datetime import datetime, timezone
 
 from ..models.events import ClaimRecord, EventRecord
 

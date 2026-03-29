@@ -6,8 +6,7 @@ error tracking with circuit breaker, and health monitoring.
 
 from __future__ import annotations
 
-import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from typing import Any
 
 import structlog
@@ -36,12 +35,12 @@ class SourceHealthTracker:
 
     def record_success(self, organization: str) -> None:
         state = self._state.setdefault(organization, {})
-        state["last_success_at"] = datetime.now(timezone.utc)
+        state["last_success_at"] = datetime.now(UTC)
         state["consecutive_failures"] = 0
 
     def record_failure(self, organization: str, error: str) -> None:
         state = self._state.setdefault(organization, {})
-        state["last_failure_at"] = datetime.now(timezone.utc)
+        state["last_failure_at"] = datetime.now(UTC)
         state["last_error"] = error
         state["consecutive_failures"] = state.get("consecutive_failures", 0) + 1
 
@@ -114,15 +113,14 @@ class PipelineScheduler:
                     log.warning("page_error", page=page.canonical_url, error=str(e))
 
             if all_items:
-                async with self._session_factory() as session:
-                    async with session.begin():
-                        await process_items(
-                            session, all_items,
-                            source_id=0, page_id=None,
-                            organization=organization,
-                            source_type=source_config.classification,
-                            classification=source_config.classification,
-                        )
+                async with self._session_factory() as session, session.begin():
+                    await process_items(
+                        session, all_items,
+                        source_id=0, page_id=None,
+                        organization=organization,
+                        source_type=source_config.classification,
+                        classification=source_config.classification,
+                    )
 
             self.health.record_success(organization)
             log.info("collection_complete", items=len(all_items))

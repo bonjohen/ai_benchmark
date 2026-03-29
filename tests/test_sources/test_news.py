@@ -6,7 +6,6 @@ from ai_benchmark.config.settings import PageConfig, SourceConfig
 from ai_benchmark.sources.news.reuters import ReutersCollector
 from ai_benchmark.sources.news.techcrunch import TechCrunchCollector
 
-
 REUTERS_HTML = """
 <html><body>
 <article>

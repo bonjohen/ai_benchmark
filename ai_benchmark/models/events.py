@@ -71,7 +71,7 @@ class ClaimRecord(Base):
     )  # unconfirmed, confirmed, conflicted
 
     event: Mapped[EventRecord | None] = relationship(back_populates="claims")
-    snapshot: Mapped["Snapshot | None"] = relationship()
+    snapshot: Mapped[Snapshot | None] = relationship()
 
 
 class CrossReference(Base):

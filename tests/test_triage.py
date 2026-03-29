@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
-from ai_benchmark.models.research import CandidatePaper, EnrichedPaper
 from ai_benchmark.models.events import EventRecord
+from ai_benchmark.models.research import CandidatePaper, EnrichedPaper
 from ai_benchmark.processing.pipeline import route_research_item
 from ai_benchmark.processing.triage import (
     enrich_candidate,
@@ -285,8 +285,8 @@ async def test_route_research_item_creates_candidate(db_session):
 @pytest.mark.asyncio
 async def test_hf_papers_relevance_filtering():
     """HFPapersCollector skips papers with no relevance keywords."""
+    from ai_benchmark.config.settings import PageConfig, SourceConfig
     from ai_benchmark.sources.research.hf_papers import HFPapersCollector
-    from ai_benchmark.config.settings import SourceConfig, PageConfig
 
     config = SourceConfig(
         source_name="HF Papers", category="research",

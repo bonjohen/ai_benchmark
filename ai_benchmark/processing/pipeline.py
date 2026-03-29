@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..collection.snapshot import SnapshotManager
 from ..models.events import EventRecord
+from ..sources.base import RawItem
 from .cross_reference import build_cross_references
 from .deduplicator import is_duplicate
+from .discovery_queue import check_and_enqueue
 from .normalizer import (
     classify_event_type,
     confidence_tier_for_classification,
@@ -16,11 +19,8 @@ from .normalizer import (
     extract_model_slug,
     normalize_title,
 )
-from .discovery_queue import check_and_enqueue
 from .triage import ingest_candidate
 from .verification import create_claim, update_confirmation_status
-from ..collection.snapshot import SnapshotManager
-from ..sources.base import RawItem
 
 
 async def route_research_item(session: AsyncSession, item: RawItem) -> None:
@@ -115,7 +115,7 @@ async def process_item(
         model_slug=model_slug,
         benchmark_variant=item.metadata.get("benchmark_variant") or item.metadata.get("variant"),
         evaluation_conditions=item.metadata.get("evaluation_conditions") or item.metadata.get("conditions"),
-        observed_at=datetime.now(timezone.utc),
+        observed_at=datetime.now(UTC),
         raw_content=item.body[:2000] if item.body else None,
     )
     session.add(event)

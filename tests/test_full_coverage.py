@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from ai_benchmark.sources.registry import COLLECTOR_CLASSES, list_registered_organizations
 
-
 # All organizations with collectors in the registry.
 # 22 sources, 22 collectors (Semantic Scholar now has a collector class).
 ALL_ORGANIZATIONS = [

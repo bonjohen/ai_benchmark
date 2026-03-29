@@ -6,7 +6,6 @@ from ai_benchmark.config.settings import PageConfig, SourceConfig
 from ai_benchmark.sources.research.arxiv import ArxivCollector
 from ai_benchmark.sources.research.hf_papers import HFPapersCollector
 
-
 ARXIV_HTML = """
 <html><body>
 <dd>

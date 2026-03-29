@@ -12,13 +12,12 @@ Five verification chains:
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.events import ClaimRecord, EventRecord
-
 
 # Source type ordering for each verification chain
 VERIFICATION_CHAINS: dict[str, list[str]] = {
@@ -74,7 +73,7 @@ async def create_claim(
         page_title=page_title,
         confidence_tier=confidence_tier,
         confirmation_status="unconfirmed",
-        observed_at=datetime.now(timezone.utc),
+        observed_at=datetime.now(UTC),
     )
     session.add(claim)
     await session.flush()

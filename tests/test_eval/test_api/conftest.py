@@ -24,10 +24,16 @@ async def app_client():
         cursor.close()
 
     # Import models
-    from ai_benchmark.models import events, research, sources  # noqa: F401
     from ai_benchmark.eval.models import (  # noqa: F401
-        artifact, dataset, evaluation, machine, run, scorer, target,
+        artifact,
+        dataset,
+        evaluation,
+        machine,
+        run,
+        scorer,
+        target,
     )
+    from ai_benchmark.models import events, research, sources  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

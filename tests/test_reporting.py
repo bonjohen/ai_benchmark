@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 import pytest
 
@@ -33,7 +33,7 @@ def _make_event(session, **kwargs) -> EventRecord:
         "source_type": "changelog",
         "canonical_path": "/test",
         "event_type": "model_release",
-        "observed_at": datetime.now(timezone.utc),
+        "observed_at": datetime.now(UTC),
     }
     defaults.update(kwargs)
     event = EventRecord(**defaults)
@@ -49,7 +49,7 @@ def _make_claim(session, event_id: int, **kwargs) -> ClaimRecord:
         "source_name": "OpenAI",
         "confidence_tier": "official_self_report",
         "confirmation_status": "unconfirmed",
-        "observed_at": datetime.now(timezone.utc),
+        "observed_at": datetime.now(UTC),
     }
     defaults.update(kwargs)
     claim = ClaimRecord(**defaults)
@@ -120,7 +120,7 @@ async def test_get_claims(db_session):
 
 @pytest.mark.asyncio
 async def test_get_recent_changes(db_session):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     _make_event(db_session, observed_at=now, canonical_path="/recent")
     _make_event(
         db_session,
@@ -166,7 +166,7 @@ def test_events_to_json():
         source_type="changelog", canonical_path="/test",
         event_type="model_release", model_slug="gpt-5",
         published_date="2026-03-28",
-        observed_at=datetime(2026, 3, 28, tzinfo=timezone.utc),
+        observed_at=datetime(2026, 3, 28, tzinfo=UTC),
     )
     result = events_to_json([event])
     data = json.loads(result)
@@ -181,7 +181,7 @@ def test_events_to_csv():
         normalized_title="gpt-5", organization="OpenAI",
         source_type="changelog", canonical_path="/test",
         event_type="model_release",
-        observed_at=datetime(2026, 3, 28, tzinfo=timezone.utc),
+        observed_at=datetime(2026, 3, 28, tzinfo=UTC),
     )
     result = events_to_csv([event])
     lines = result.strip().split("\n")
@@ -195,7 +195,7 @@ def test_claims_to_json():
         source_type="changelog", source_name="OpenAI",
         confidence_tier="official_self_report",
         confirmation_status="confirmed",
-        observed_at=datetime(2026, 3, 28, tzinfo=timezone.utc),
+        observed_at=datetime(2026, 3, 28, tzinfo=UTC),
     )
     result = claims_to_json([claim])
     data = json.loads(result)
@@ -209,7 +209,7 @@ def test_claims_to_csv():
         source_type="changelog", source_name="OpenAI",
         confidence_tier="official_self_report",
         confirmation_status="confirmed",
-        observed_at=datetime(2026, 3, 28, tzinfo=timezone.utc),
+        observed_at=datetime(2026, 3, 28, tzinfo=UTC),
     )
     result = claims_to_csv([claim])
     lines = result.strip().split("\n")

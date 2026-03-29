@@ -32,7 +32,7 @@ class TargetConfiguration(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now(), nullable=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    machine_profile: Mapped["MachineProfile | None"] = relationship(  # noqa: F821
+    machine_profile: Mapped[MachineProfile | None] = relationship(  # noqa: F821
         back_populates="target_configs"
     )
-    runs: Mapped[list["Run"]] = relationship(back_populates="target_config")  # noqa: F821
+    runs: Mapped[list[Run]] = relationship(back_populates="target_config")  # noqa: F821

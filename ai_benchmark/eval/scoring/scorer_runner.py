@@ -11,10 +11,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.evaluation import EvaluationVersion
 from ..models.run import Run, RunAggregateMetric, RunItemResult
 from ..models.scorer import Scorer, ScorerVersion
-from .base import ScorerResult, resolve_scorer
+from .base import resolve_scorer
 
 # Ensure all built-in scorers are registered
-from .builtin import exact_match, format_validator, latency_cost, rubric, safety, model_judge  # noqa: F401
+from .builtin import (  # noqa: F401
+    exact_match,
+    format_validator,
+    latency_cost,
+    model_judge,
+    rubric,
+    safety,
+)
 
 logger = structlog.get_logger()
 

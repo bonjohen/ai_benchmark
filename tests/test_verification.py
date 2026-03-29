@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 import pytest
 
@@ -24,7 +24,7 @@ def _make_event(session, **kwargs) -> EventRecord:
         "source_type": "changelog",
         "canonical_path": "/changelog",
         "event_type": "model_release",
-        "observed_at": datetime.now(timezone.utc),
+        "observed_at": datetime.now(UTC),
     }
     defaults.update(kwargs)
     event = EventRecord(**defaults)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 import httpx
 import structlog
@@ -22,7 +22,7 @@ class FetchResult:
     headers: dict[str, str] = field(default_factory=dict)
     body_text: str = ""
     elapsed_ms: float = 0.0
-    fetched_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    fetched_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     error: str | None = None
 
     @property

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_benchmark.models.events import ClaimRecord, EventRecord
 from ai_benchmark.models.sources import Page, Snapshot, Source
-from ai_benchmark.processing.deduplicator import find_exact_duplicate, is_duplicate
+from ai_benchmark.processing.deduplicator import find_exact_duplicate
 from ai_benchmark.sources.base import RawItem
 
 

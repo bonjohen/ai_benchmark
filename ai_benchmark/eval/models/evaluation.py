@@ -57,6 +57,6 @@ class EvaluationVersion(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     evaluation: Mapped[EvaluationDefinition] = relationship(back_populates="versions")
-    dataset_version: Mapped["DatasetVersion"] = relationship()  # noqa: F821
+    dataset_version: Mapped[DatasetVersion] = relationship()  # noqa: F821
 
-    runs: Mapped[list["Run"]] = relationship(back_populates="evaluation_version")  # noqa: F821
+    runs: Mapped[list[Run]] = relationship(back_populates="evaluation_version")  # noqa: F821

@@ -11,7 +11,7 @@ Relationship types: confirms, supplements, conflicts_with, cites
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -166,7 +166,7 @@ async def create_cross_reference(
         record_a_id=event_a.id,
         record_b_id=event_b.id,
         relationship_type=relationship_type,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     session.add(xref)
     await session.flush()

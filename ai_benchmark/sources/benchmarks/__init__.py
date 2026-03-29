@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from ..base import RawItem, SourceCollector
 from ...config.settings import PageConfig
+from ..base import RawItem, SourceCollector
 
 
 @dataclass

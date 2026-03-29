@@ -43,7 +43,6 @@ def run_eval(ctx: click.Context, evaluation: str, target: str, priority: int):
 
         session_factory = create_session_factory(engine)
         async with session_factory() as session:
-            from ..services import eval_service, target_service
             from ..execution.orchestrator import RunOrchestrator
 
             # Resolve names to IDs
@@ -90,8 +89,8 @@ def run_matrix(ctx: click.Context, evaluation: str, targets: str, name: str | No
         session_factory = create_session_factory(engine)
 
         async with session_factory() as session:
-            from ..services import run_service
             from ..execution.orchestrator import RunOrchestrator
+            from ..services import run_service
 
             ev_id = await _resolve_eval(session, evaluation)
             # Get dataset_version_id from eval version
@@ -271,7 +270,7 @@ def eval_export(ctx: click.Context, run_id: int, fmt: str, output_path: Path | N
         session_factory = create_session_factory(engine)
 
         async with session_factory() as session:
-            from ..services import run_service, report_service
+            from ..services import report_service, run_service
 
             run = await run_service.get_run(session, run_id)
             if run is None:
@@ -336,9 +335,9 @@ def eval_rescore(ctx: click.Context, run_id: int, scorer_config: Path):
         config = json.loads(scorer_config.read_text(encoding="utf-8"))
 
         async with session_factory() as session:
-            from ..services import run_service
-            from ..models.evaluation import EvaluationVersion
             from ..execution.orchestrator import RunOrchestrator
+            from ..models.evaluation import EvaluationVersion
+            from ..services import run_service
 
             run = await run_service.get_run(session, run_id)
             if run is None:
@@ -383,9 +382,10 @@ def eval_serve(host: str, port: int):
 
 async def _resolve_eval(session, name_or_id: str) -> int:
     """Resolve evaluation name or ID to the latest version ID."""
-    from ..services import eval_service
-    from ..models.evaluation import EvaluationVersion
     from sqlalchemy import select
+
+    from ..models.evaluation import EvaluationVersion
+    from ..services import eval_service
 
     try:
         eval_id = int(name_or_id)

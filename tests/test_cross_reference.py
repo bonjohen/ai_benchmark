@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 
 import pytest
 
-from ai_benchmark.models.events import CrossReference, EventRecord
+from ai_benchmark.models.events import EventRecord
 from ai_benchmark.models.sources import Snapshot  # noqa: F401 — ensure mapper resolves
 from ai_benchmark.processing.cross_reference import (
     build_cross_references,
@@ -14,7 +14,6 @@ from ai_benchmark.processing.cross_reference import (
     determine_relationship,
     find_related_by_model,
     find_related_by_org_event_type,
-    xref_exists,
 )
 
 
@@ -27,7 +26,7 @@ def _make_event(session, **kwargs) -> EventRecord:
         "source_type": "changelog",
         "canonical_path": "/changelog",
         "event_type": "model_release",
-        "observed_at": datetime.now(timezone.utc),
+        "observed_at": datetime.now(UTC),
     }
     defaults.update(kwargs)
     event = EventRecord(**defaults)
@@ -52,7 +51,7 @@ async def test_find_related_by_model(db_session):
 
 @pytest.mark.asyncio
 async def test_find_related_by_model_time_window(db_session):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     event_a = _make_event(db_session, model_slug="gpt-5", observed_at=now)
     _make_event(
         db_session, model_slug="gpt-5",
@@ -90,12 +89,12 @@ def test_determine_relationship_confirms():
     event_a = EventRecord(
         source_id=1, title="A", normalized_title="a", organization="OpenAI",
         source_type="changelog", canonical_path="/a", event_type="model_release",
-        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+        model_slug="gpt-5", observed_at=datetime.now(UTC),
     )
     event_b = EventRecord(
         source_id=1, title="B", normalized_title="b", organization="OpenAI",
         source_type="newsroom", canonical_path="/b", event_type="model_release",
-        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+        model_slug="gpt-5", observed_at=datetime.now(UTC),
     )
     assert determine_relationship(event_a, event_b) == "confirms"
 
@@ -104,12 +103,12 @@ def test_determine_relationship_supplements_same_org():
     event_a = EventRecord(
         source_id=1, title="A", normalized_title="a", organization="OpenAI",
         source_type="changelog", canonical_path="/a", event_type="model_release",
-        observed_at=datetime.now(timezone.utc),
+        observed_at=datetime.now(UTC),
     )
     event_b = EventRecord(
         source_id=1, title="B", normalized_title="b", organization="OpenAI",
         source_type="changelog", canonical_path="/b", event_type="model_release",
-        observed_at=datetime.now(timezone.utc),
+        observed_at=datetime.now(UTC),
     )
     assert determine_relationship(event_a, event_b) == "supplements"
 
@@ -173,13 +172,13 @@ def test_determine_relationship_conflicts_with():
     event_a = EventRecord(
         source_id=1, title="A", normalized_title="a", organization="SWE-bench",
         source_type="leaderboard", canonical_path="/a", event_type="benchmark_result",
-        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+        model_slug="gpt-5", observed_at=datetime.now(UTC),
         raw_content="GPT-5 achieves 95.0% on SWE-bench Verified",
     )
     event_b = EventRecord(
         source_id=1, title="B", normalized_title="b", organization="OpenAI",
         source_type="blog", canonical_path="/b", event_type="benchmark_result",
-        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+        model_slug="gpt-5", observed_at=datetime.now(UTC),
         raw_content="GPT-5 achieves 80.0% on SWE-bench Verified",
     )
     assert determine_relationship(event_a, event_b) == "conflicts_with"
@@ -190,11 +189,11 @@ def test_determine_relationship_confirms_same_model_different_source():
     event_a = EventRecord(
         source_id=1, title="A", normalized_title="a", organization="OpenAI",
         source_type="changelog", canonical_path="/a", event_type="model_release",
-        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+        model_slug="gpt-5", observed_at=datetime.now(UTC),
     )
     event_b = EventRecord(
         source_id=1, title="B", normalized_title="b", organization="OpenAI",
         source_type="newsroom", canonical_path="/b", event_type="model_release",
-        model_slug="gpt-5", observed_at=datetime.now(timezone.utc),
+        model_slug="gpt-5", observed_at=datetime.now(UTC),
     )
     assert determine_relationship(event_a, event_b) == "confirms"

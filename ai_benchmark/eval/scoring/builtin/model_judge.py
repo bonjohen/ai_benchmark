@@ -7,11 +7,15 @@ import re
 
 import structlog
 
+# Ensure adapters are registered
+from ...execution.adapters import (  # noqa: F401
+    anthropic_adapter,
+    generic_http_adapter,
+    local_adapter,
+    openai_adapter,
+)
 from ...execution.adapters.base import resolve_adapter
 from ..base import BaseScorer, ScorerResult, register_scorer
-
-# Ensure adapters are registered
-from ...execution.adapters import anthropic_adapter, generic_http_adapter, local_adapter, openai_adapter  # noqa: F401
 
 logger = structlog.get_logger()
 

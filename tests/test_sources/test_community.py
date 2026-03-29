@@ -6,7 +6,6 @@ from ai_benchmark.config.settings import PageConfig, SourceConfig
 from ai_benchmark.sources.community.hf_forums import HFForumsCollector
 from ai_benchmark.sources.community.hf_leaderboard_docs import HFLeaderboardDocsCollector
 
-
 HF_FORUMS_HTML = """
 <html><body>
 <tr class="topic-list-item" data-topic-id="123">
@@ -46,7 +45,7 @@ def _make_source(org: str) -> SourceConfig:
         source_name=org,
         category="community",
         organization=org,
-        homepage_url=f"https://huggingface.co",
+        homepage_url="https://huggingface.co",
         base_domain="huggingface.co",
         trust_rating=3.0,
         source_role="test",

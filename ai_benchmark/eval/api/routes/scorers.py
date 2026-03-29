@@ -7,6 +7,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...services import scorer_service
 from ..app import get_session
 from ..schemas.scorer import (
     ScorerCreate,
@@ -14,7 +15,6 @@ from ..schemas.scorer import (
     ScorerVersionCreate,
     ScorerVersionResponse,
 )
-from ...services import scorer_service
 
 router = APIRouter()
 

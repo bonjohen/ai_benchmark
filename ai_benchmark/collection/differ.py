@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 
 from bs4 import BeautifulSoup, Tag
 
-
 # Tags that typically contain noise, not content
 NOISE_TAGS = {"script", "style", "nav", "footer", "header", "noscript", "svg", "iframe"}
 

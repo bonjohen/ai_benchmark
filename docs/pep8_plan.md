@@ -11,16 +11,16 @@ Applies all safe auto-fixable violations. Run `ruff check ai_benchmark/ tests/ -
 
 | No. | Status | Started (PST) | Completed (PST) | Description                                                                                                                                          |
 | --: | ------ | ------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-|   1 | Open   |               |                 | Fix 64 I001 (unsorted imports) violations across all source and test files via `ruff check --fix --select I001`.                                     |
-|   2 | Open   |               |                 | Fix 44 F401 (unused imports) violations: remove `sys` from `cli.py`, `AsyncSession` from `eval/api/app.py`, `Query` from evaluations route, `json`/`time` from executor, `field` from adapter base, `asyncio` from scheduler, `datetime`/`timezone` from `sources/base.py` and `reporting/export.py`, and 25 unused imports across test files. |
-|   3 | Open   |               |                 | Fix 38 UP017 (datetime-timezone-utc) violations: replace `datetime.timezone.utc` with `datetime.UTC` in `collection/fetcher.py`, `collection/snapshot.py` (4 sites), `sources/persistence.py`, `processing/` modules, and 19 test files.                          |
-|   4 | Open   |               |                 | Fix 12 UP037 (quoted-annotation) violations: remove unnecessary string quoting from type annotations in `eval/api/schemas/`, `eval/models/`, and `eval/services/`. |
-|   5 | Open   |               |                 | Fix 2 SIM117 (multiple-with-statements) violations: merge nested `with` blocks in `collection/api_client.py:47` and `eval/scoring/scorer_runner.py:40`. |
-|   6 | Open   |               |                 | Fix 1 F541 (f-string-missing-placeholders) violation in `tests/test_sources/test_community.py:49` — convert to plain string or add interpolation.    |
-|   7 | Open   |               |                 | Run full test suite (`pytest`) to confirm no regressions from auto-fixes.                                                                            |
-|   8 | Open   |               |                 | Stage all Phase 1 changes.                                                                                                                           |
-|   9 | Open   |               |                 | Commit all Phase 1 changes with a phase-complete commit message.                                                                                     |
-|  10 | Open   |               |                 | Immediately begin Phase 2.                                                                                                                           |
+|   1 | Completed | 2026-03-28 05:57 PM | 2026-03-28 05:57 PM | Fix 64 I001 (unsorted imports) violations across all source and test files via `ruff check --fix --select I001`.                                     |
+|   2 | Completed | 2026-03-28 05:57 PM | 2026-03-28 05:57 PM | Fix 44 F401 (unused imports) violations: remove `sys` from `cli.py`, `AsyncSession` from `eval/api/app.py`, `Query` from evaluations route, `json`/`time` from executor, `field` from adapter base, `asyncio` from scheduler, `datetime`/`timezone` from `sources/base.py` and `reporting/export.py`, and 25 unused imports across test files. |
+|   3 | Completed | 2026-03-28 05:57 PM | 2026-03-28 05:58 PM | Fix 38 UP017 (datetime-timezone-utc) violations: replace `datetime.timezone.utc` with `datetime.UTC` in `collection/fetcher.py`, `collection/snapshot.py` (4 sites), `sources/persistence.py`, `processing/` modules, and 19 test files.                          |
+|   4 | Completed | 2026-03-28 05:58 PM | 2026-03-28 05:58 PM | Fix 12 UP037 (quoted-annotation) violations: remove unnecessary string quoting from type annotations in `eval/api/schemas/`, `eval/models/`, and `eval/services/`. |
+|   5 | Completed | 2026-03-28 05:58 PM | 2026-03-28 05:58 PM | Fix 2 SIM117 (multiple-with-statements) violations: merge nested `with` blocks in `collection/api_client.py:47` and `eval/scoring/scorer_runner.py:40`. |
+|   6 | Completed | 2026-03-28 05:58 PM | 2026-03-28 05:58 PM | Fix 1 F541 (f-string-missing-placeholders) violation in `tests/test_sources/test_community.py:49` — convert to plain string or add interpolation.    |
+|   7 | Completed | 2026-03-28 05:58 PM | 2026-03-28 05:59 PM | Run full test suite (`pytest`) to confirm no regressions from auto-fixes. 340 passed, 2 pre-existing failures.                                       |
+|   8 | Completed | 2026-03-28 05:59 PM | 2026-03-28 05:59 PM | Stage all Phase 1 changes.                                                                                                                           |
+|   9 | Completed | 2026-03-28 05:59 PM | 2026-03-28 05:59 PM | Commit all Phase 1 changes with a phase-complete commit message.                                                                                     |
+|  10 | Completed | 2026-03-28 05:59 PM | 2026-03-28 05:59 PM | Immediately begin Phase 2.                                                                                                                           |
 
 ## Phase 2 — Code Formatting (ruff format)
 

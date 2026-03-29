@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -120,8 +119,8 @@ async def list_runs(
 
     # Post-query filters requiring target config lookup
     if model_name or hardware_class:
-        from ..models.target import TargetConfiguration
         from ..models.machine import MachineProfile
+        from ..models.target import TargetConfiguration
 
         filtered = []
         for run in runs:
@@ -151,7 +150,7 @@ async def update_status(
     if run is None:
         return None
     run.status = status
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if status == "running" and run.started_at is None:
         run.started_at = now
     elif status == "scoring":

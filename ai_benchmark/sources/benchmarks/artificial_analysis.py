@@ -5,8 +5,8 @@ from __future__ import annotations
 from bs4 import BeautifulSoup
 
 from ...config.settings import PageConfig
-from . import BenchmarkCollector, LeaderboardEntry
 from ..base import RawItem
+from . import BenchmarkCollector, LeaderboardEntry
 
 
 class ArtificialAnalysisCollector(BenchmarkCollector):

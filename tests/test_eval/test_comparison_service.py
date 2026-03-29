@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_benchmark.eval.models.dataset import Dataset, DatasetVersion, TestCase
 from ai_benchmark.eval.models.evaluation import EvaluationDefinition, EvaluationVersion
-from ai_benchmark.eval.models.machine import MachineProfile, MachineSnapshot
 from ai_benchmark.eval.models.run import Run, RunAggregateMetric, RunItemResult
 from ai_benchmark.eval.models.scorer import Scorer, ScorerVersion
 from ai_benchmark.eval.models.target import TargetConfiguration

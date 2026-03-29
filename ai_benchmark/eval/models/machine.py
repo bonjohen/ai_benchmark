@@ -31,7 +31,7 @@ class MachineProfile(Base):
     snapshots: Mapped[list[MachineSnapshot]] = relationship(
         back_populates="machine_profile", cascade="all, delete-orphan"
     )
-    target_configs: Mapped[list["TargetConfiguration"]] = relationship(  # noqa: F821
+    target_configs: Mapped[list[TargetConfiguration]] = relationship(  # noqa: F821
         back_populates="machine_profile"
     )
 

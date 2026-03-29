@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,7 +36,7 @@ class SnapshotManager:
             page_id=page_id,
             content=content,
             content_hash=content_hash,
-            fetched_at=datetime.now(timezone.utc),
+            fetched_at=datetime.now(UTC),
         )
         self.session.add(snapshot)
         await self.session.flush()
@@ -79,7 +79,7 @@ class SnapshotManager:
             page_obj = page_result.scalar_one_or_none()
             if page_obj:
                 page_obj.times_polled = (page_obj.times_polled or 0) + 1
-                page_obj.last_polled_at = datetime.now(timezone.utc)
+                page_obj.last_polled_at = datetime.now(UTC)
             return DiffResult(changed=False), snapshot
 
         # Content changed (or first snapshot)
@@ -95,7 +95,7 @@ class SnapshotManager:
         page = page_result.scalar_one_or_none()
         if page:
             page.times_polled = (page.times_polled or 0) + 1
-            page.last_changed_at = datetime.now(timezone.utc)
-            page.last_polled_at = datetime.now(timezone.utc)
+            page.last_changed_at = datetime.now(UTC)
+            page.last_polled_at = datetime.now(UTC)
 
         return diff, snapshot
