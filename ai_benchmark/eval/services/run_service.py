@@ -154,9 +154,9 @@ async def update_status(
         return None
     run.status = status
     now = datetime.now(UTC)
-    if status == "running" and run.started_at is None:
+    if status in ("running", "running_generation") and run.started_at is None:
         run.started_at = now
-    elif status == "scoring":
+    elif status in ("scoring", "running_scorers"):
         run.scoring_started_at = now
     elif status in ("completed", "failed", "canceled", "partially_completed"):
         run.completed_at = now

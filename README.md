@@ -137,7 +137,7 @@ ai_benchmark/eval/
   services/       13 async service modules (dataset, scorer, eval, machine, target,
                   runner, run, comparison, report, compatibility, seed, validation,
                   matrix)
-  execution/      RunOrchestrator, ItemExecutor, 12 model adapters
+  execution/      RunOrchestrator, ItemExecutor, Dispatch engine, 12 model adapters
     adapters/     OpenAI, Anthropic, Local (legacy), GenericHTTP,
                   Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang,
                   TensorRT-LLM, OpenVINO GenAI
@@ -200,7 +200,7 @@ machine tracking.
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all 401 tests
+pytest                       # Run all 415 tests
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint
