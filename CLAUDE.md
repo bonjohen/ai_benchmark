@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install -e ".[dev]"          # Install with dev dependencies
 pip install -e ".[dev,research]" # Include research extras (S2, PDF)
-pytest                           # Run all tests (666 pass, 0 failures)
+pytest                           # Run all tests (799 pass, 0 failures)
 pytest tests/test_config.py      # Single file
 pytest -x -v                     # Verbose, stop on first failure
 ai-benchmark init-db             # Create database
@@ -31,6 +31,17 @@ ai-benchmark eval export --run 1 --format json    # Export results
 ai-benchmark eval list --evaluations --targets    # List entities
 ai-benchmark eval rescore --run 1 --scorer-config new.json  # Rescore
 ai-benchmark eval run-matrix --evaluation X --targets 1,2,3  # Matrix run
+
+# Analysis pipeline commands
+ai-benchmark analyze models [--org OpenAI] [--format text|json|markdown|csv]
+ai-benchmark analyze model <slug> [--format text|json|markdown]
+ai-benchmark analyze benchmarks
+ai-benchmark analyze benchmark <name> [--format text|json|markdown|csv]
+ai-benchmark analyze competitive [--days 30] [--org OpenAI]
+ai-benchmark analyze research [--days 90] [--format text|json|markdown]
+ai-benchmark analyze anomalies [--days 7] [--severity notable]
+ai-benchmark analyze digest [--days 7] [--format markdown] [--output file]
+ai-benchmark analyze run-all [--days 7]
 ```
 
 ## Core Domain Concepts
@@ -78,6 +89,7 @@ ai_benchmark/
   scheduling/       APScheduler async scheduler, cron cadence config, health tracker with circuit breaker
   reporting/        Query functions (events, claims, cross-refs, research counts), JSON/CSV export
   eval/             Model evaluation pipeline (see Eval Architecture below)
+  analysis/         Intelligence analysis pipeline (see Analysis Architecture below)
 ```
 
 ## Eval Architecture
@@ -115,6 +127,46 @@ ai_benchmark/eval/
                     rescore, serve, runners, machines
 ```
 
+## Analysis Architecture
+
+```
+ai_benchmark/analysis/
+  models.py           2 SQLAlchemy tables: AnalysisSnapshot (cached results), AnalysisInsight
+                      (flagged findings with type/severity/related entities)
+  types.py            15 result dataclasses: ModelSummary, TimelineEntry, BenchmarkDataPoint,
+                      ModelProfile, ModelComparisonMatrix, BenchmarkSummary, Leaderboard,
+                      OrgActivity, CompetitiveCluster, ActivityTimeline, PaperCitationEntry,
+                      PaperProductLink, ResearchTrends, DigestReport
+  services/
+    model_lifecycle.py    list_tracked_models, build_model_profile, get_model_timeline,
+                          compare_models — model event aggregation and lifecycle assembly
+    benchmark_trends.py   extract_benchmark_score (4-priority regex), list_benchmarks,
+                          get_benchmark_leaderboard, get_benchmark_timeline
+    competitive_intel.py  get_activity_timeline, detect_competitive_clusters (iso-week
+                          bucketing), org_activity_summary
+    research_pulse.py     get_research_trends, get_citation_leaders, detect_paper_to_product
+    anomaly_detector.py   detect_anomalies (6 rules: new_org, rapid_iteration,
+                          benchmark_record, conflict_detected, price_drop, new_model),
+                          get_recent_insights — idempotent persistence
+    digest.py             generate_digest — orchestrates all 5 services into DigestReport
+  formatters/
+    markdown.py       7 renderers: model_list, model_profile, leaderboard,
+                      activity_timeline, research_trends, insights, digest
+    json_export.py    to_json() with dataclasses.asdict support
+    csv_export.py     models_to_csv, leaderboard_to_csv, insights_to_csv
+  cli.py              9 Click subcommands: models, model, benchmarks, benchmark,
+                      competitive, research, anomalies, digest, run-all
+  api.py              FastAPI router at /api/analysis/ with 11 endpoints
+```
+
+## Analysis Key Patterns
+
+- **Service pattern**: Each service accepts `AsyncSession`, returns dataclasses or ORM models. All queries are async. Read-only against collection tables (EventRecord, ClaimRecord, EnrichedPaper), read-write on analysis tables (AnalysisSnapshot, AnalysisInsight).
+- **Score extraction**: `extract_benchmark_score(raw_content, benchmark_name)` in benchmark_trends.py. Regex-based with 4 priority levels: percentage > Elo-like > decimal fraction > bare integer.
+- **Anomaly idempotency**: Each rule checks `_already_exists(insight_type, related_event_ids)` before creating. Running detection twice produces no duplicates.
+- **Digest orchestration**: `generate_digest` calls all 5 services, assembles DigestReport, optionally persists as AnalysisSnapshot with `scope_key=weekly-{year}-W{week}`.
+- **API pattern**: Router uses `Depends(get_session)` from eval app. Dataclasses converted via `dataclasses.asdict()`. Mounted at `/api/analysis/` in eval app factory.
+
 ## Eval Key Patterns
 
 - **Model Adapters**: ABC in `execution/adapters/base.py`. Implement `async generate(prompt, params, options) -> GenerationResult`. Registry resolves by provider string. 13 adapters: OpenAI, Anthropic, Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang, TensorRT-LLM, OpenVINO GenAI, GenericHTTP, OpenAI-compat, Local (legacy).
@@ -130,6 +182,7 @@ ai_benchmark/eval/
 - `events.py`: **EventRecord**, **ClaimRecord**, **CrossReference** — normalized events, per-source claims, inter-event links
 - `research.py`: **CandidatePaper**, **EnrichedPaper** — research triage pipeline (candidate → enriched → promoted)
 - `discovery.py`: **FollowUpTask** — model slug discovery follow-up tasks
+- `analysis/models.py`: **AnalysisSnapshot**, **AnalysisInsight** — cached analysis results and flagged findings
 
 ## Key Patterns
 

@@ -171,17 +171,17 @@ Open  ──>  Started  ──>  Completed
 
 | # | Status | Started (PST) | Completed (PST) | Description |
 |---|--------|---------------|------------------|-------------|
-| 6.1 | Open | | | Update `CLAUDE.md` — add Analysis Architecture section documenting package, services, CLI, API |
-| 6.2 | Open | | | Update `README.md` — add Analysis Pipeline section with CLI examples |
-| 6.3 | Open | | | Run full `pytest` — all existing 666+ plus new analysis tests pass |
-| 6.4 | Open | | | Run `ruff check ai_benchmark/ tests/` + `ruff format --check ai_benchmark/ tests/` — clean |
-| 6.5 | Open | | | Verify `ai-benchmark analyze --help` shows all subcommands |
-| 6.6 | Open | | | Verify `alembic upgrade head` applies migration cleanly on fresh DB |
-| 6.7 | Open | | | Stage all Phase 6 changes |
-| 6.8 | Open | | | Commit: "Update documentation for analysis pipeline" |
+| 6.1 | Completed | 2026-03-29 08:00 PM | 2026-03-29 08:05 PM | Update `CLAUDE.md` — add Analysis Architecture section documenting package, services, CLI, API |
+| 6.2 | Completed | 2026-03-29 08:05 PM | 2026-03-29 08:10 PM | Update `README.md` — add Analysis Pipeline section with CLI examples |
+| 6.3 | Completed | 2026-03-29 08:10 PM | 2026-03-29 08:12 PM | Run full `pytest` — 799 passed, 0 failures |
+| 6.4 | Completed | 2026-03-29 08:10 PM | 2026-03-29 08:12 PM | Run `ruff check ai_benchmark/ tests/` + `ruff format --check ai_benchmark/ tests/` — clean |
+| 6.5 | Completed | 2026-03-29 08:12 PM | 2026-03-29 08:12 PM | Verify `ai-benchmark analyze --help` shows all subcommands |
+| 6.6 | Completed | 2026-03-29 08:12 PM | 2026-03-29 08:12 PM | Verify `alembic upgrade head` applies migration cleanly on fresh DB |
+| 6.7 | Completed | 2026-03-29 08:12 PM | 2026-03-29 08:13 PM | Stage all Phase 6 changes |
+| 6.8 | Completed | 2026-03-29 08:13 PM | 2026-03-29 08:13 PM | Commit: "Update documentation for analysis pipeline" |
 
 ### Phase 6 Summary
 
-- **Changes:** TBD
+- **Changes:** Updated `CLAUDE.md` with Analysis Architecture section (package layout, key patterns, 11 ORM models count, 799 test count, 9 CLI commands). Updated `README.md` with Analysis Pipeline section (quick start, architecture, REST API table, implementation plan entry).
 - **Changes hosted at:** TBD
-- **Commit:** TBD
+- **Commit:** `Update documentation for analysis pipeline`

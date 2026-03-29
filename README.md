@@ -281,12 +281,64 @@ Schedule config: `ai_benchmark/config/schedules.toml` (24 cron entries)
 
 ## Database Models
 
-9 SQLAlchemy 2.0 async ORM models across 4 modules:
+11 SQLAlchemy 2.0 async ORM models across 5 modules:
 
 - **sources.py**: `Source`, `Page`, `Snapshot` — catalog, monitored pages, HTML content snapshots
 - **events.py**: `EventRecord`, `ClaimRecord`, `CrossReference` — normalized events, per-source claims, inter-event links
 - **research.py**: `CandidatePaper`, `EnrichedPaper` — research triage pipeline (discovered → enriched → promoted/rejected)
 - **discovery.py**: `FollowUpTask` — model slug discovery queue follow-up tasks
+- **analysis/models.py**: `AnalysisSnapshot`, `AnalysisInsight` — cached analysis results and flagged findings
+
+## Analysis Pipeline
+
+Transforms raw collected events into six structured intelligence products: model lifecycle profiles, benchmark leaderboards, competitive activity timelines, research pulse trends, automated anomaly detection, and periodic digests.
+
+### Quick Start
+
+```bash
+ai-benchmark analyze models                        # List tracked AI models
+ai-benchmark analyze model gpt-5                   # Model lifecycle profile
+ai-benchmark analyze benchmarks                    # List tracked benchmarks
+ai-benchmark analyze benchmark "SWE-bench"         # Benchmark leaderboard
+ai-benchmark analyze competitive --days 30         # Cross-org activity
+ai-benchmark analyze research --days 90            # Research trends
+ai-benchmark analyze anomalies --days 7            # Detect anomalies
+ai-benchmark analyze digest --days 7 --format md   # Full digest
+ai-benchmark analyze run-all --days 7              # Run all services
+```
+
+All commands support `--format text|json|markdown|csv` where applicable.
+
+### Analysis Architecture
+
+```
+ai_benchmark/analysis/
+  models.py           AnalysisSnapshot + AnalysisInsight ORM tables
+  types.py            15 result dataclasses (pure data, no DB dependency)
+  services/           6 async service modules (model_lifecycle, benchmark_trends,
+                      competitive_intel, research_pulse, anomaly_detector, digest)
+  formatters/         Markdown, JSON, CSV output formatters
+  cli.py              9 Click subcommands registered under 'analyze' group
+  api.py              FastAPI router with 11 endpoints at /api/analysis/
+```
+
+### REST API
+
+The analysis pipeline exposes 11 endpoints mounted at `/api/analysis/` on the eval server:
+
+| Endpoint | Description |
+|---|---|
+| `GET /models` | List tracked models |
+| `GET /models/{slug}` | Model lifecycle profile |
+| `GET /models/{slug}/timeline` | Model event timeline |
+| `GET /benchmarks` | List benchmarks |
+| `GET /benchmarks/{name}` | Benchmark leaderboard |
+| `GET /benchmarks/{name}/timeline` | Score time series |
+| `GET /competitive` | Cross-org activity |
+| `GET /research` | Research trends |
+| `GET /insights` | Recent anomalies |
+| `GET /digest` | Generate digest (no persist) |
+| `POST /digest` | Generate and persist digest |
 
 ## Model Evaluation Pipeline
 
@@ -384,12 +436,13 @@ All implementation plans are complete and archived in `docs/archive/`:
 - **PEP8 compliance:** 7 phases complete
 - **Runner comparison:** 14 phases complete
 - **Code review remediation:** 4 phases complete (49 tasks)
+- **Analysis pipeline:** 6 phases complete — model lifecycle, benchmark trends, competitive intel, research pulse, anomaly detection, digest + API
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all tests (666 tests, 0 failures)
+pytest                       # Run all tests (799 tests, 0 failures)
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint
