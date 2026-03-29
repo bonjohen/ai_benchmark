@@ -15,9 +15,12 @@ import re
 from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.events import ClaimRecord, EventRecord
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 # Source type ordering for each verification chain
 VERIFICATION_CHAINS: dict[str, list[str]] = {

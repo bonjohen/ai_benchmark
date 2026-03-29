@@ -6,7 +6,6 @@ import json
 
 import structlog
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.evaluation import EvaluationVersion
 from ..models.run import Run, RunAggregateMetric, RunItemResult
@@ -22,6 +21,10 @@ from .builtin import (  # noqa: F401
     rubric,
     safety,
 )
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = structlog.get_logger()
 

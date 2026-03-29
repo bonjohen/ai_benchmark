@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from bs4 import BeautifulSoup
 
-from ...config.settings import PageConfig
 from ..base import RawItem
 from . import BenchmarkCollector, LeaderboardEntry
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...config.settings import PageConfig
 
 
 class GAIACollector(BenchmarkCollector):

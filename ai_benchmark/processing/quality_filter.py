@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 
 import structlog
 
-from ..collection.differ import DiffResult
-from ..config.settings import PageConfig
 from .normalizer import extract_date
 
 if TYPE_CHECKING:
+    from ..collection.differ import DiffResult
+    from ..config.settings import PageConfig
     from ..sources.base import RawItem
 
 logger = structlog.get_logger()

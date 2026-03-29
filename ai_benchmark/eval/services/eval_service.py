@@ -5,10 +5,13 @@ from __future__ import annotations
 import json
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.dataset import DatasetVersion
 from ..models.evaluation import EvaluationDefinition, EvaluationVersion
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def create_evaluation(

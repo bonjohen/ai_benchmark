@@ -14,9 +14,12 @@ import re
 from datetime import datetime, timedelta, timezone, UTC
 
 from sqlalchemy import and_, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.events import CrossReference, EventRecord
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def find_related_by_model(

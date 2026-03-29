@@ -6,11 +6,14 @@ import json
 
 import pytest
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_benchmark.eval.models.dataset import TestCase
 from ai_benchmark.eval.services import dataset_service
 from ai_benchmark.models.base import create_session_factory
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.fixture

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from datetime import datetime  # noqa: TC003
 
 from .base import Base
 

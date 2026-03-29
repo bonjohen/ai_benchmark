@@ -5,14 +5,16 @@ from __future__ import annotations
 import csv
 import io
 import json
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.evaluation import EvaluationVersion
 from ..models.run import Run, RunAggregateMetric
 from ..models.target import TargetConfiguration
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 # In-memory preset storage (will be promoted to DB in a later phase if needed)
 _presets: dict[str, dict[str, Any]] = {

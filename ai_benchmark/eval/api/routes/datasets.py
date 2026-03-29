@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...services import dataset_service
 from ..app import get_session
@@ -17,6 +16,10 @@ from ..schemas.dataset import (
     ItemFilterRequest,
     TestCaseResponse,
 )
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 

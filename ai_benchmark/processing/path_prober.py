@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import structlog
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..collection.fetcher import Fetcher
 from ..models.sources import Page, Source
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from ..collection.fetcher import Fetcher
 
 logger = structlog.get_logger()
 

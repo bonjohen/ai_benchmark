@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from bs4 import BeautifulSoup
 
-from ...config.settings import PageConfig
 from . import BenchmarkCollector, LeaderboardEntry
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...config.settings import PageConfig
 
 # Known SWE-bench variants
 SWEBENCH_VARIANTS = {"verified", "lite", "full", "pro", "multilingual", "multimodal"}
@@ -42,8 +45,7 @@ class SWEBenchCollector(BenchmarkCollector):
                         rank=len(entries) + 1,
                         variant=variant,
                         conditions=(
-                            f"SWE-bench {variant}; "
-                            "contamination risk noted for public subsets"
+                            f"SWE-bench {variant}; contamination risk noted for public subsets"
                         ),
                     )
                 )

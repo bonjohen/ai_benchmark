@@ -11,7 +11,6 @@ import json
 import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_benchmark.eval.models.artifact import Artifact
 from ai_benchmark.eval.models.dataset import Dataset, DatasetVersion, TestCase
@@ -21,6 +20,10 @@ from ai_benchmark.eval.models.run import Run, RunAggregateMetric, RunGroup, RunI
 from ai_benchmark.eval.models.scorer import Scorer, ScorerVersion
 from ai_benchmark.eval.models.target import TargetConfiguration
 from ai_benchmark.models.base import create_session_factory
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.fixture

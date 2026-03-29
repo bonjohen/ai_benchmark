@@ -6,7 +6,10 @@ import csv
 import io
 import json
 
-from ..models.events import ClaimRecord, EventRecord
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..models.events import ClaimRecord, EventRecord
 
 
 def events_to_json(events: list[EventRecord]) -> str:

@@ -6,8 +6,11 @@ import re
 
 from bs4 import BeautifulSoup
 
-from ...config.settings import PageConfig
 from ..base import RawItem, SourceCollector
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...config.settings import PageConfig
 
 
 class ArxivCollector(SourceCollector):

@@ -6,10 +6,13 @@ import hashlib
 from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.sources import Page, Snapshot
 from .differ import DiffResult, clean_html, diff_snapshots
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def compute_content_hash(content: str) -> str:

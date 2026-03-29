@@ -6,7 +6,6 @@ import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_benchmark.eval.models.artifact import Artifact  # noqa: F401
 from ai_benchmark.eval.models.dataset import Dataset, DatasetVersion, TestCase
@@ -22,6 +21,10 @@ from ai_benchmark.eval.scoring.builtin.model_judge import ModelJudgeScorer
 from ai_benchmark.eval.scoring.builtin.safety import SafetyScorer
 from ai_benchmark.eval.scoring.scorer_runner import ScorerRunner
 from ai_benchmark.models.base import create_session_factory
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 # ── Fixtures ──
 

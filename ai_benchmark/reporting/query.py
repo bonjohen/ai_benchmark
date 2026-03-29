@@ -5,9 +5,12 @@ from __future__ import annotations
 from datetime import datetime, UTC
 
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.events import ClaimRecord, CrossReference, EventRecord
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_events(

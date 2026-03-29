@@ -5,10 +5,13 @@ from __future__ import annotations
 from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.run import Run, RunAggregateMetric, RunGroup, RunItemResult
 from . import machine_service
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def create_run(

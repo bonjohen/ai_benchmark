@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.events import EventRecord
 from ..processing.normalizer import (
@@ -14,7 +13,11 @@ from ..processing.normalizer import (
     extract_model_slug,
     normalize_title,
 )
-from .base import RawItem
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from .base import RawItem
 
 
 async def persist_events(

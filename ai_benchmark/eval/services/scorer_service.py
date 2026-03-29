@@ -5,9 +5,12 @@ from __future__ import annotations
 import json
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.scorer import Scorer, ScorerVersion
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def create_scorer(

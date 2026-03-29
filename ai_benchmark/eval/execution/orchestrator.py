@@ -7,7 +7,6 @@ import json
 
 import structlog
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import EvalSettings
 from ..models.dataset import TestCase
@@ -16,6 +15,10 @@ from ..models.run import Run, RunAggregateMetric
 from ..models.target import TargetConfiguration
 from ..services import run_service
 from .executor import ItemExecutor
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = structlog.get_logger()
 

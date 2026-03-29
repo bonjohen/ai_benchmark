@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...services import scorer_service
 from ..app import get_session
@@ -15,6 +14,10 @@ from ..schemas.scorer import (
     ScorerVersionCreate,
     ScorerVersionResponse,
 )
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 

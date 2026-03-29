@@ -5,9 +5,12 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.events import EventRecord
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def find_exact_duplicate(

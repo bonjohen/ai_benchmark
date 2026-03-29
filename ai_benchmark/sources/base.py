@@ -7,10 +7,13 @@ from dataclasses import dataclass, field
 
 import structlog
 
-from ..collection.differ import DiffResult
-from ..collection.fetcher import Fetcher, FetchResult
-from ..collection.snapshot import SnapshotManager
-from ..config.settings import PageConfig, SourceConfig
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..config.settings import PageConfig, SourceConfig
+    from ..collection.snapshot import SnapshotManager
+    from ..collection.fetcher import Fetcher, FetchResult
+    from ..collection.differ import DiffResult
 
 logger = structlog.get_logger()
 

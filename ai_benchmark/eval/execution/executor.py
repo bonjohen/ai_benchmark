@@ -4,9 +4,7 @@ from __future__ import annotations
 
 
 import structlog
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.dataset import TestCase
 from ..models.run import RunItemResult
 from .adapters.base import GenerationResult, resolve_adapter
 
@@ -20,6 +18,11 @@ from .adapters import (  # noqa: F401, E402
     openai_adapter,
 )
 from datetime import UTC
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from ..models.dataset import TestCase
 
 
 class ItemExecutor:

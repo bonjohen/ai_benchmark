@@ -4,11 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime, timezone, UTC
 
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..collection.snapshot import SnapshotManager
 from ..models.events import EventRecord
-from ..sources.base import RawItem
 from .cross_reference import build_cross_references
 from .deduplicator import is_duplicate
 from .discovery_queue import check_and_enqueue
@@ -21,6 +19,11 @@ from .normalizer import (
 )
 from .triage import ingest_candidate
 from .verification import create_claim, update_confirmation_status
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from ..sources.base import RawItem
 
 
 async def route_research_item(session: AsyncSession, item: RawItem) -> None:

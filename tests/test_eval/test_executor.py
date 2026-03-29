@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_benchmark.eval.execution.adapters.base import (
     _ADAPTER_REGISTRY,
@@ -16,6 +15,10 @@ from ai_benchmark.eval.execution.executor import ItemExecutor
 from ai_benchmark.eval.models.artifact import Artifact  # noqa: F401 — resolve mapper
 from ai_benchmark.eval.models.dataset import Dataset, DatasetVersion, TestCase
 from ai_benchmark.models.base import create_session_factory
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 # ── Fixtures ──
 

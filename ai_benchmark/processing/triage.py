@@ -5,10 +5,13 @@ from __future__ import annotations
 from datetime import datetime, timezone, UTC
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.research import CandidatePaper, EnrichedPaper
-from ..sources.research.semantic_scholar import SemanticScholarClient
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from ..sources.research.semantic_scholar import SemanticScholarClient
 
 # Keywords that indicate relevance to tracked models/benchmarks
 RELEVANCE_KEYWORDS = {
