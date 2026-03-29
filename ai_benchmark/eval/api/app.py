@@ -118,6 +118,7 @@ async def lifespan(app: FastAPI):
     )
 
     # Import models to register them with Base.metadata
+    from ...analysis import models as analysis_models  # noqa: F401
     from ...models import discovery  # noqa: F401
     from ..models import artifact, dataset, evaluation, machine, run, scorer, target  # noqa: F401
 
@@ -211,6 +212,11 @@ def create_app(settings: EvalSettings | None = None) -> FastAPI:
     app.include_router(runs.router, prefix="/api/eval/runs", tags=["runs"])
     app.include_router(comparisons.router, prefix="/api/eval/comparisons", tags=["comparisons"])
     app.include_router(reports.router, prefix="/api/eval/reports", tags=["reports"])
+
+    # Mount analysis router
+    from ...analysis.api import router as analysis_router
+
+    app.include_router(analysis_router, prefix="/api/analysis", tags=["analysis"])
 
     # Mount UI templates and static files
     from ..ui.server import mount_ui

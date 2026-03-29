@@ -145,24 +145,24 @@ Open  ──>  Started  ──>  Completed
 
 | # | Status | Started (PST) | Completed (PST) | Description |
 |---|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Create `ai_benchmark/analysis/services/digest.py` — `generate_digest` orchestrating all 5 services per PDR §5.6 |
-| 5.2 | Open | | | Add `digest_to_markdown` formatter |
-| 5.3 | Open | | | Add CLI subcommands — `analyze digest` (with `--format`, `--output`) and `analyze run-all` |
-| 5.4 | Open | | | Create `ai_benchmark/analysis/api.py` — FastAPI router with 11 endpoints per PDR §8 |
-| 5.5 | Open | | | Modify `ai_benchmark/eval/api/app.py` — import analysis models in lifespan, mount router at `/api/analysis` |
-| 5.6 | Open | | | Create `tests/test_analysis/test_digest.py` — integration test: digest orchestrates all services |
-| 5.7 | Open | | | Create `tests/test_analysis/test_cli.py` — CLI invocation tests via Click CliRunner |
-| 5.8 | Open | | | Create `tests/test_analysis/test_api.py` — API endpoint tests via httpx AsyncClient |
-| 5.9 | Open | | | Run `pytest` — all tests pass |
-| 5.10 | Open | | | Run `ruff check` + `ruff format --check` — clean |
-| 5.11 | Open | | | Stage all Phase 5 changes |
-| 5.12 | Open | | | Commit: "Add digest service, REST API, and integration tests" |
+| 5.1 | Completed | 2026-03-29 07:35 PM | 2026-03-29 07:40 PM | Create `ai_benchmark/analysis/services/digest.py` — `generate_digest` orchestrating all 5 services per PDR §5.6 |
+| 5.2 | Completed | 2026-03-29 07:40 PM | 2026-03-29 07:42 PM | Add `digest_to_markdown` formatter |
+| 5.3 | Completed | 2026-03-29 07:42 PM | 2026-03-29 07:47 PM | Add CLI subcommands — `analyze digest` (with `--format`, `--output`) and `analyze run-all` |
+| 5.4 | Completed | 2026-03-29 07:40 PM | 2026-03-29 07:47 PM | Create `ai_benchmark/analysis/api.py` — FastAPI router with 11 endpoints per PDR §8 |
+| 5.5 | Completed | 2026-03-29 07:47 PM | 2026-03-29 07:48 PM | Modify `ai_benchmark/eval/api/app.py` — import analysis models in lifespan, mount router at `/api/analysis` |
+| 5.6 | Completed | 2026-03-29 07:48 PM | 2026-03-29 07:52 PM | Create `tests/test_analysis/test_digest.py` — integration test: digest orchestrates all services |
+| 5.7 | Completed | 2026-03-29 07:48 PM | 2026-03-29 07:52 PM | Create `tests/test_analysis/test_cli.py` — CLI invocation tests via Click CliRunner |
+| 5.8 | Completed | 2026-03-29 07:48 PM | 2026-03-29 07:55 PM | Create `tests/test_analysis/test_api.py` — API endpoint tests via httpx AsyncClient |
+| 5.9 | Completed | 2026-03-29 07:55 PM | 2026-03-29 07:57 PM | Run `pytest` — 799 passed, 0 failures |
+| 5.10 | Completed | 2026-03-29 07:55 PM | 2026-03-29 07:57 PM | Run `ruff check` + `ruff format --check` — clean |
+| 5.11 | Completed | 2026-03-29 07:57 PM | 2026-03-29 07:58 PM | Stage all Phase 5 changes |
+| 5.12 | Completed | 2026-03-29 07:58 PM | 2026-03-29 07:58 PM | Commit: "Add digest service, REST API, and integration tests" |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `ai_benchmark/analysis/services/digest.py` (generate_digest orchestrating all 5 services, AnalysisSnapshot persistence, DigestReport assembly), `ai_benchmark/analysis/api.py` (FastAPI router with 11 endpoints: models, model profile, timeline, benchmarks, leaderboard, benchmark timeline, competitive, research, insights, digest GET/POST), added `digest_to_markdown` to formatters, added `analyze digest` and `analyze run-all` CLI subcommands. Modified `ai_benchmark/eval/api/app.py` to import analysis models and mount router at `/api/analysis`. 26 new tests (6 digest + 9 CLI + 11 API), 799 total passing.
 - **Changes hosted at:** TBD
-- **Commit:** TBD
+- **Commit:** `Add digest service, REST API, and integration tests`
 
 ## Phase 6: Documentation + Final Verification
 

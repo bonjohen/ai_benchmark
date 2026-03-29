@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from ..models import AnalysisInsight
     from ..types import (
         ActivityTimeline,
+        DigestReport,
         Leaderboard,
         ModelProfile,
         ModelSummary,
@@ -213,5 +214,61 @@ def insights_to_markdown(insights: list[AnalysisInsight]) -> str:
         if details:
             lines.append(f"*{', '.join(details)}*")
         lines.append("")
+
+    return "\n".join(lines)
+
+
+def digest_to_markdown(digest: DigestReport) -> str:
+    """Render a full periodic digest as Markdown."""
+    lines = [
+        "# Intelligence Digest",
+        "",
+        f"**Period:** {digest.period_start} to {digest.period_end}",
+        "",
+    ]
+
+    if digest.stats:
+        lines.append("## Summary")
+        lines.append("")
+        for key, value in digest.stats.items():
+            lines.append(f"- **{key.replace('_', ' ').title()}:** {value}")
+        lines.append("")
+
+    if digest.headline_insights:
+        lines.append("## Headline Insights")
+        lines.append("")
+        for insight in digest.headline_insights:
+            severity_badge = {"critical": "!!!", "notable": "!!", "info": "i"}.get(
+                insight.get("severity", ""), ""
+            )
+            lines.append(f"- [{severity_badge}] **{insight.get('title', '')}**")
+            if insight.get("description"):
+                lines.append(f"  {insight['description']}")
+        lines.append("")
+
+    if digest.model_updates:
+        lines.append("## Model Updates")
+        lines.append("")
+        lines.append("| Model | Organization | Events | Status |")
+        lines.append("|---|---|---|---|")
+        for m in digest.model_updates:
+            lines.append(f"| {m.model_slug} | {m.organization} | {m.event_count} | {m.status} |")
+        lines.append("")
+
+    if digest.benchmark_movements:
+        lines.append("## Benchmark Movements")
+        lines.append("")
+        lines.append("| Benchmark | Model | Score | Date |")
+        lines.append("|---|---|---|---|")
+        for b in digest.benchmark_movements:
+            score_str = f"{b.score}" if b.score is not None else "—"
+            lines.append(f"| {b.benchmark_variant} | {b.model_slug} | {score_str} | {b.date} |")
+        lines.append("")
+
+    if digest.competitive_overview:
+        lines.append(activity_timeline_to_markdown(digest.competitive_overview))
+
+    if digest.research_highlights:
+        lines.append(research_trends_to_markdown(digest.research_highlights))
 
     return "\n".join(lines)

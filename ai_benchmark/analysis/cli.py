@@ -453,3 +453,136 @@ def _insight_to_dict(insight) -> dict:
         "related_org": insight.related_org,
         "detected_at": str(insight.detected_at) if insight.detected_at else None,
     }
+
+
+@analyze_group.command("digest")
+@click.option("--days", default=7, help="Lookback window in days.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown"]),
+    default="text",
+    help="Output format.",
+)
+@click.option("--output", "output_file", default=None, help="Write output to file.")
+@click.pass_context
+def analyze_digest(
+    ctx: click.Context, days: int, output_format: str, output_file: str | None
+) -> None:
+    """Generate a full periodic intelligence digest."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.digest import generate_digest
+
+            report = await generate_digest(session, window_days=days, persist=True)
+            await session.commit()
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                content = to_json(report)
+            elif output_format == "markdown":
+                from .formatters.markdown import digest_to_markdown
+
+                content = digest_to_markdown(report)
+            else:
+                content = _digest_to_text(report)
+
+            if output_file:
+                from pathlib import Path
+
+                Path(output_file).write_text(content, encoding="utf-8")
+                click.echo(f"Digest written to {output_file}")
+            else:
+                click.echo(content)
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+@analyze_group.command("run-all")
+@click.option("--days", default=7, help="Lookback window in days.")
+@click.pass_context
+def analyze_run_all(ctx: click.Context, days: int) -> None:
+    """Run all analysis services and persist results."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.anomaly_detector import detect_anomalies
+            from .services.benchmark_trends import list_benchmarks
+            from .services.competitive_intel import get_activity_timeline
+            from .services.digest import generate_digest
+            from .services.model_lifecycle import list_tracked_models
+            from .services.research_pulse import get_research_trends
+
+            click.echo("Running all analysis services...")
+
+            models = await list_tracked_models(session)
+            click.echo(f"  Models: {len(models)} tracked")
+
+            benchmarks = await list_benchmarks(session)
+            click.echo(f"  Benchmarks: {len(benchmarks)} tracked")
+
+            timeline = await get_activity_timeline(session, window_days=days)
+            click.echo(f"  Activity: {len(timeline.org_activities)} orgs active")
+
+            trends = await get_research_trends(session, window_days=max(days, 30))
+            click.echo(f"  Research: {trends.total_papers} papers")
+
+            anomalies = await detect_anomalies(session, window_days=days)
+            click.echo(f"  Anomalies: {len(anomalies)} detected")
+
+            report = await generate_digest(session, window_days=days, persist=True)
+            await session.commit()
+            click.echo(f"\nDigest generated: {report.period_start} to {report.period_end}")
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+def _digest_to_text(report) -> str:
+    """Simple text rendering of a DigestReport."""
+    lines = [
+        f"Intelligence Digest: {report.period_start} to {report.period_end}",
+        "",
+    ]
+    if report.stats:
+        for key, value in report.stats.items():
+            lines.append(f"  {key.replace('_', ' ').title()}: {value}")
+        lines.append("")
+
+    if report.headline_insights:
+        lines.append("Headline Insights:")
+        for insight in report.headline_insights:
+            lines.append(f"  [{insight.get('severity', '')}] {insight.get('title', '')}")
+        lines.append("")
+
+    if report.model_updates:
+        lines.append("Model Updates:")
+        for m in report.model_updates:
+            lines.append(f"  {m.model_slug} ({m.organization}) — {m.event_count} events")
+        lines.append("")
+
+    if report.benchmark_movements:
+        lines.append("Benchmark Movements:")
+        for b in report.benchmark_movements:
+            score_str = f"{b.score}" if b.score is not None else "—"
+            lines.append(f"  {b.benchmark_variant}: {b.model_slug} = {score_str}")
+        lines.append("")
+
+    return "\n".join(lines)
