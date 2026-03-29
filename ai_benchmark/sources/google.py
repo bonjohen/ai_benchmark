@@ -16,6 +16,8 @@ class GoogleCollector(SourceCollector):
             return self._extract_changelog(html)
         if "pricing" in page.page_type:
             return self._extract_pricing(html)
+        if "rate limit" in page.page_type:
+            return self._extract_rate_limits(html)
         if "model" in page.page_type:
             return self._extract_models(html)
         if "blog" in page.page_type:
@@ -45,6 +47,20 @@ class GoogleCollector(SourceCollector):
                     title=cells[0],
                     body=" | ".join(cells),
                     item_type="pricing_row",
+                    model_hint=cells[0] if cells[0] else None,
+                ))
+        return items
+
+    def _extract_rate_limits(self, html: str) -> list[RawItem]:
+        soup = BeautifulSoup(html, "lxml")
+        items: list[RawItem] = []
+        for row in soup.select("tr"):
+            cells = [td.get_text(strip=True) for td in row.select("td, th")]
+            if len(cells) >= 2:
+                items.append(RawItem(
+                    title=cells[0],
+                    body=" | ".join(cells),
+                    item_type="rate_limit_entry",
                     model_hint=cells[0] if cells[0] else None,
                 ))
         return items

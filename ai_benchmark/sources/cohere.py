@@ -16,6 +16,10 @@ class CohereCollector(SourceCollector):
             return self._extract_release_notes(html)
         if "blog" in page.page_type:
             return self._extract_blog(html)
+        if "pricing" in page.page_type:
+            return self._extract_pricing(html)
+        if "model" in page.page_type:
+            return self._extract_model_docs(html)
         return []
 
     def _extract_release_notes(self, html: str) -> list[RawItem]:
@@ -45,5 +49,32 @@ class CohereCollector(SourceCollector):
                     url=str(article.get("href", "")),
                     body=article.get_text(strip=True),
                     item_type="blog_post",
+                ))
+        return items
+
+    def _extract_pricing(self, html: str) -> list[RawItem]:
+        soup = BeautifulSoup(html, "lxml")
+        items: list[RawItem] = []
+        for row in soup.select("tr"):
+            cells = [td.get_text(strip=True) for td in row.select("td, th")]
+            if len(cells) >= 2:
+                items.append(RawItem(
+                    title=cells[0],
+                    body=" | ".join(cells),
+                    item_type="pricing_row",
+                    model_hint=cells[0] if cells[0] else None,
+                ))
+        return items
+
+    def _extract_model_docs(self, html: str) -> list[RawItem]:
+        soup = BeautifulSoup(html, "lxml")
+        items: list[RawItem] = []
+        for section in soup.select("tr, .model-card, section, h3"):
+            text = section.get_text(strip=True)
+            if text and len(text) > 5:
+                items.append(RawItem(
+                    title=text[:200],
+                    body=text,
+                    item_type="model_entry",
                 ))
         return items

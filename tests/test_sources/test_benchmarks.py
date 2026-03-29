@@ -84,11 +84,15 @@ def test_artificial_analysis_leaderboard():
     assert entries[0].variant == "performance"
 
 
-def test_artificial_analysis_skips_methodology():
+def test_artificial_analysis_methodology_extraction():
     collector = ArtificialAnalysisCollector(_make_benchmark_source("Artificial Analysis"))
     page = PageConfig(canonical_url="https://example.com/methodology", page_type="methodology")
-    entries = collector.extract_leaderboard(LEADERBOARD_HTML, page)
-    assert entries == []
+    items = collector.extract_items(
+        "<html><body><section>This is our evaluation methodology for ranking models by quality and speed.</section></body></html>",
+        page,
+    )
+    assert len(items) > 0
+    assert items[0].item_type == "methodology_description"
 
 
 def test_lmarena_leaderboard():

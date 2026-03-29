@@ -25,6 +25,8 @@ class OpenAICollector(SourceCollector):
             return self._extract_newsroom(html)
         if "pricing" in page.page_type:
             return self._extract_pricing(html)
+        if "system" in page.page_type:
+            return self._extract_system_cards(html)
         if "model" in page.page_type:
             return self._extract_models(html)
         return []
@@ -73,6 +75,24 @@ class OpenAICollector(SourceCollector):
                     body=" | ".join(cells),
                     item_type="pricing_row",
                     model_hint=cells[0] if cells[0] else None,
+                ))
+        return items
+
+    def _extract_system_cards(self, html: str) -> list[RawItem]:
+        soup = BeautifulSoup(html, "lxml")
+        items: list[RawItem] = []
+        for link in soup.select("a[href*='system-card'], a[href*='safety'], article"):
+            title_el = link.select_one("h2, h3, .title")
+            if title_el:
+                title = title_el.get_text(strip=True)
+            else:
+                title = link.get_text(strip=True)[:200]
+            if title and len(title) > 5:
+                items.append(RawItem(
+                    title=title,
+                    url=str(link.get("href", "")),
+                    body=link.get_text(strip=True),
+                    item_type="system_card",
                 ))
         return items
 

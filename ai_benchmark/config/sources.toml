@@ -37,6 +37,11 @@ page_type = "pricing"
 polling_frequency = "daily"
 priority = true
 
+[[sources.pages]]
+canonical_url = "https://openai.com/index/system-cards/"
+page_type = "system-card index"
+polling_frequency = "daily"
+
 [[sources]]
 source_name = "Anthropic"
 category = "official company source"
@@ -106,6 +111,11 @@ polling_frequency = "daily"
 [[sources.pages]]
 canonical_url = "https://blog.google/technology/google-deepmind/"
 page_type = "research blog"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://ai.google.dev/gemini-api/docs/rate-limits"
+page_type = "rate limits"
 polling_frequency = "daily"
 
 [[sources]]
@@ -184,6 +194,16 @@ canonical_url = "https://cohere.com/blog"
 page_type = "blog"
 polling_frequency = "daily"
 
+[[sources.pages]]
+canonical_url = "https://cohere.com/pricing"
+page_type = "pricing"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://docs.cohere.com/docs/models"
+page_type = "model catalog"
+polling_frequency = "daily"
+
 [[sources]]
 source_name = "Meta Open Source AI"
 category = "official company source"
@@ -246,6 +266,31 @@ canonical_url = "https://lmarena.ai/leaderboard/"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/expert"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/hard-prompts"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/coding"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/math"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/longer-query"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
 [[sources]]
 source_name = "LiveBench"
 category = "benchmark / evaluation project"
@@ -284,6 +329,26 @@ page_type = "leaderboard"
 polling_frequency = "daily"
 priority = true
 
+[[sources.pages]]
+canonical_url = "https://www.swebench.com/lite.html"
+page_type = "leaderboard"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://www.swebench.com/full.html"
+page_type = "leaderboard"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://www.swebench.com/multilingual.html"
+page_type = "leaderboard"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://www.swebench.com/multimodal.html"
+page_type = "leaderboard"
+polling_frequency = "daily"
+
 [[sources]]
 source_name = "GAIA"
 category = "benchmark / agent evaluation"
@@ -321,6 +386,11 @@ canonical_url = "https://scale.com/leaderboard/humanitys_last_exam"
 page_type = "leaderboard"
 polling_frequency = "daily"
 priority = true
+
+[[sources.pages]]
+canonical_url = "https://scale.com/leaderboard"
+page_type = "leaderboard hub"
+polling_frequency = "daily"
 
 [[sources]]
 source_name = "Terminal-Bench"
@@ -427,6 +497,11 @@ page_type = "news index"
 polling_frequency = "3h"
 priority = true
 
+[[sources.pages]]
+canonical_url = "https://www.reuters.com/technology/artificial-intelligencer-newsletter/"
+page_type = "newsletter"
+polling_frequency = "daily"
+
 [[sources]]
 source_name = "TechCrunch AI"
 category = "reputable trade-press source"
@@ -473,6 +548,16 @@ polling_frequency = "12h"
 
 [[sources.pages]]
 canonical_url = "https://github.com/mistralai"
+page_type = "github org"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/xai-org"
+page_type = "github org"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/cohere-ai"
 page_type = "github org"
 polling_frequency = "12h"
 
