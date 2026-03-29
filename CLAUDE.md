@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install -e ".[dev]"          # Install with dev dependencies
 pip install -e ".[dev,research]" # Include research extras (S2, PDF)
-pytest                           # Run all 297 tests
+pytest                           # Run all 342 tests
 pytest tests/test_config.py      # Single file
 pytest -x -v                     # Verbose, stop on first failure
 ai-benchmark init-db             # Create database
@@ -35,12 +35,14 @@ ai-benchmark eval run-matrix --evaluation X --targets 1,2,3  # Matrix run
 
 ## Core Domain Concepts
 
-- **Source catalog**: 22 monitored sources across 5 categories — 21 polled collectors + Semantic Scholar enrichment client
+- **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector)
 - **Source classifications**: primary (official vendor pages), secondary (independent benchmarks, reputable news), discovery-only (community forums, arXiv, trending feeds)
 - **Trust tiers**: sources rated 1-5; official vendor pages are 5, community sources as low as 3
 - **Event records**: normalized change records with source, title, path, observed timestamp, and extracted model/version names
 - **Claim records**: separate records per source for conflicting claims, with source_type, confidence tier, and cross-references — never merge conflicting claims prematurely
-- **Confidence tiers**: official_self_report (primary), high_secondary (Reuters), medium_discovery (TechCrunch), low_discovery (forums, GitHub)
+- **Confidence tiers**: official_self_report (primary), benchmark_owner_report (benchmark sources), high_secondary (Reuters), medium_discovery (TechCrunch), low_discovery (forums, GitHub) — with source-specific overrides via `SOURCE_TIER_OVERRIDES`
+- **Discovery queue**: new model slugs trigger automatic follow-up tasks (pricing, release notes, system card, benchmark coverage searches)
+- **Quality filter**: low-value pages filtered at ingestion (trivial change ratio, stale dates, garbage titles)
 
 ## Verification Hierarchy
 
@@ -54,21 +56,22 @@ This ordering is load-bearing for the entire pipeline:
 
 ## Processing Pipeline
 
-Each collected item goes through: normalize → deduplicate → create event → create claim → update confirmation status → build cross-references. Duplicates from different sources still create claims on the existing event, enabling multi-source confirmation.
+Each collected item goes through: normalize → discovery check → deduplicate → create event → create claim → update confirmation status → build cross-references. Research items (`candidate_paper`) are routed through the triage pipeline instead. New model slugs trigger follow-up task creation. Low-value pages are filtered at ingestion. Duplicates from different sources still create claims on the existing event, enabling multi-source confirmation.
 
 ## Architecture
 
 ```
 ai_benchmark/
   config/           Pydantic settings (env vars), TOML source catalog + schedule definitions
-  models/           SQLAlchemy 2.0 async ORM — 8 models across 3 modules
+  models/           SQLAlchemy 2.0 async ORM — 9 models across 4 modules
   collection/       HTTP fetcher (httpx, retry/backoff), HTML differ, snapshot manager, API client
-  sources/          21 registered source collectors + Semantic Scholar enrichment client
+  sources/          22 registered source collectors
     benchmarks/     7 benchmark collectors (Artificial Analysis, LMArena, LiveBench, SWE-bench, GAIA, HLE, Terminal-Bench)
-    research/       arXiv, Semantic Scholar, HF Papers
+    research/       arXiv, Semantic Scholar (collector + enrichment client), HF Papers
     news/           Reuters, TechCrunch
     community/      HF Forums, GitHub discovery, HF Leaderboard Docs
-  processing/       Normalizer, deduplicator, verification, cross-reference builder, triage, pipeline orchestrator
+  processing/       Normalizer, deduplicator, verification, cross-reference builder, triage,
+                    quality filter, discovery queue, path prober, pipeline orchestrator
   scheduling/       APScheduler async scheduler, cron cadence config, health tracker with circuit breaker
   reporting/        Query functions (events, claims, cross-refs), JSON/CSV export
   eval/             Model evaluation pipeline (see Eval Architecture below)
@@ -116,6 +119,7 @@ ai_benchmark/eval/
 - `sources.py`: **Source**, **Page**, **Snapshot** — source catalog, monitored pages, HTML snapshots
 - `events.py`: **EventRecord**, **ClaimRecord**, **CrossReference** — normalized events, per-source claims, inter-event links
 - `research.py`: **CandidatePaper**, **EnrichedPaper** — research triage pipeline (candidate → enriched → promoted)
+- `discovery.py`: **FollowUpTask** — model slug discovery follow-up tasks
 
 ## Key Patterns
 
@@ -133,7 +137,7 @@ Defined in `config/schedules.toml`. Vendors every 6-12h, Reuters every 3h, bench
 
 ## Deduplication Strategy
 
-Three-layer: (1) exact composite key `{normalized_title, org, source_type, path, date}`, (2) model slug + org + date, (3) fuzzy title match (0.85 threshold via SequenceMatcher). Cross-reference table links related records — do not flatten into a merged record.
+Three-layer: (1) exact composite key `{normalized_title, org, source_type, path, date, model_slug}`, (2) model slug + org + date, (3) fuzzy title match (0.85 threshold via SequenceMatcher). Cross-reference table links related records — do not flatten into a merged record.
 
 ## Configuration
 
@@ -164,6 +168,8 @@ Also supports `.env` file in project root.
 
 - Source details and intake guidance: `docs/core_requirements.md`
 - Implementation plan (all phases complete): `docs/core_requirements_plan.md`
+- Gap analysis: `docs/gap_remediation_analysis.md`
+- Gap remediation plan (all 6 phases complete): `docs/gap_remediation_plan.md`
 - Model eval pipeline design: `docs/model_eval_pipeline_design.md`
 - Model eval pipeline PDR: `docs/model_eval_pipeline_pdr.md`
 - Model eval pipeline plan: `docs/model_eval_pipeline_plan.md`

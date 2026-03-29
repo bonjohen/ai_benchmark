@@ -43,15 +43,16 @@ ai_benchmark/
                     ClaimRecord, CrossReference, CandidatePaper, EnrichedPaper)
   collection/       HTTP fetcher (httpx, retry/backoff), HTML differ, snapshot manager,
                     base API client
-  sources/          Source-specific collectors (21 registered)
+  sources/          Source-specific collectors (22 registered)
     openai.py, anthropic.py, google.py, xai.py, mistral.py, cohere.py, meta.py
     benchmarks/     Artificial Analysis, LMArena, LiveBench, SWE-bench, GAIA, HLE,
                     Terminal-Bench
-    research/       arXiv, Semantic Scholar (enrichment client), HF Papers
+    research/       arXiv, Semantic Scholar (collector + enrichment client), HF Papers
     news/           Reuters, TechCrunch
     community/      HF Forums, GitHub discovery, HF Leaderboard Docs
-  processing/       Normalizer, deduplicator (composite key + fuzzy), verification
-                    hierarchy (5 chains), cross-reference builder, triage pipeline,
+  processing/       Normalizer, deduplicator (composite key + model slug + fuzzy),
+                    verification hierarchy (5 chains), cross-reference builder,
+                    triage pipeline, quality filter, discovery queue, path prober,
                     full processing pipeline
   scheduling/       APScheduler async scheduler, cron cadence config, health tracking
                     with circuit breaker
@@ -99,16 +100,17 @@ Settings are loaded via Pydantic with the `AI_BENCH_` env prefix. Also reads `.e
 | `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent fetch requests |
 | `AI_BENCH_RETRY_ATTEMPTS` | `3` | Retry count with exponential backoff |
 
-Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 48 pages)
-Schedule config: `ai_benchmark/config/schedules.toml` (21 cron entries)
+Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 64 pages)
+Schedule config: `ai_benchmark/config/schedules.toml` (24 cron entries)
 
 ## Database Models
 
-8 SQLAlchemy 2.0 async ORM models across 3 modules:
+9 SQLAlchemy 2.0 async ORM models across 4 modules:
 
 - **sources.py**: `Source`, `Page`, `Snapshot` — catalog, monitored pages, HTML content snapshots
 - **events.py**: `EventRecord`, `ClaimRecord`, `CrossReference` — normalized events, per-source claims, inter-event links
 - **research.py**: `CandidatePaper`, `EnrichedPaper` — research triage pipeline (discovered → enriched → promoted/rejected)
+- **discovery.py**: `FollowUpTask` — model slug discovery queue follow-up tasks
 
 ## Model Evaluation Pipeline
 
@@ -168,12 +170,13 @@ ai_benchmark/eval/
 
 - **Source pipeline:** `docs/core_requirements_plan.md` — All 7 phases complete
 - **Eval pipeline:** `docs/model_eval_pipeline_plan.md` — 9 phases (E1–E9) complete
+- **Gap remediation:** `docs/gap_remediation_plan.md` — 6 phases (G1–G6), 66 tasks complete
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all 297 tests
+pytest                       # Run all 342 tests
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint
