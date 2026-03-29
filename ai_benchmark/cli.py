@@ -36,7 +36,7 @@ def init_db(ctx: click.Context) -> None:
     async def _init() -> None:
         engine = create_engine(settings.database_url)
         # Import all models so they register with Base.metadata
-        from .models import events, research, sources  # noqa: F401
+        from .models import discovery, events, research, sources  # noqa: F401
 
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)

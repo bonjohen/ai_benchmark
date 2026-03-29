@@ -46,13 +46,19 @@ COLLECTOR_CLASSES: dict[str, type[SourceCollector]] = {
     "LMArena": LMArenaCollector,
     "LiveBench": LiveBenchCollector,
     "SWE-bench": SWEBenchCollector,
+    "SWE-bench team": SWEBenchCollector,
     "GAIA": GAIACollector,
+    "GAIA benchmark": GAIACollector,
     "HLE": HLECollector,
+    "Scale AI": HLECollector,
     "Terminal-Bench": TerminalBenchCollector,
+    "Stanford x Laude": TerminalBenchCollector,
     # Research
     "arXiv": ArxivCollector,
+    "arXiv / Cornell": ArxivCollector,
     "Hugging Face Papers": HFPapersCollector,
     "Semantic Scholar": SemanticScholarCollector,
+    "Ai2": SemanticScholarCollector,
     # News
     "Reuters": ReutersCollector,
     "TechCrunch": TechCrunchCollector,
@@ -60,6 +66,7 @@ COLLECTOR_CLASSES: dict[str, type[SourceCollector]] = {
     "Hugging Face Forums": HFForumsCollector,
     "GitHub": GitHubDiscoveryCollector,
     "Hugging Face Leaderboard Docs": HFLeaderboardDocsCollector,
+    "Hugging Face": HFLeaderboardDocsCollector,
 }
 
 

@@ -201,7 +201,7 @@ classification = "primary"
 collection_method = "html"
 
 [[sources.pages]]
-canonical_url = "https://docs.cohere.com/changelog/release-notes"
+canonical_url = "https://docs.cohere.com/changelog"
 page_type = "release notes"
 polling_frequency = "daily"
 
@@ -289,37 +289,37 @@ page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/expert"
+canonical_url = "https://lmarena.ai/leaderboard/text"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/hard-prompts"
-page_type = "leaderboard"
-polling_frequency = "6h"
-
-[[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/coding"
-page_type = "leaderboard"
-polling_frequency = "6h"
-
-[[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/math"
-page_type = "leaderboard"
-polling_frequency = "6h"
-
-[[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/longer-query"
-page_type = "leaderboard"
-polling_frequency = "6h"
-
-[[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/image"
+canonical_url = "https://lmarena.ai/leaderboard/code"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
 canonical_url = "https://lmarena.ai/leaderboard/vision"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/text-to-image"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/text-to-video"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/document"
+page_type = "leaderboard"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://lmarena.ai/leaderboard/search"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
@@ -482,7 +482,7 @@ polling_frequency = "12h"
 [[sources]]
 source_name = "Hugging Face Papers"
 category = "research-discovery source"
-organization = "Hugging Face community"
+organization = "Hugging Face Papers"
 homepage_url = "https://huggingface.co/papers"
 base_domain = "huggingface.co"
 trust_rating = 4.0
@@ -530,15 +530,10 @@ classification = "secondary"
 collection_method = "html"
 
 [[sources.pages]]
-canonical_url = "https://www.reuters.com/technology/artificial-intelligence/"
-page_type = "news index"
+canonical_url = "https://news.google.com/rss/search?q=artificial+intelligence+site:reuters.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
 polling_frequency = "3h"
 priority = true
-
-[[sources.pages]]
-canonical_url = "https://www.reuters.com/technology/artificial-intelligencer-newsletter/"
-page_type = "newsletter"
-polling_frequency = "daily"
 
 [[sources]]
 source_name = "TechCrunch AI"
@@ -610,12 +605,12 @@ page_type = "github repo releases"
 polling_frequency = "12h"
 
 [[sources.pages]]
-canonical_url = "https://github.com/gaia-benchmark/GAIA"
-page_type = "github repo releases"
+canonical_url = "https://huggingface.co/datasets/gaia-benchmark/GAIA"
+page_type = "dataset page"
 polling_frequency = "12h"
 
 [[sources.pages]]
-canonical_url = "https://github.com/ScaleAI/hle"
+canonical_url = "https://github.com/centerforaisafety/hle"
 page_type = "github repo releases"
 polling_frequency = "12h"
 
@@ -632,7 +627,7 @@ polling_frequency = "12h"
 [[sources]]
 source_name = "Hugging Face Forums"
 category = "community / ecosystem source"
-organization = "Hugging Face community"
+organization = "Hugging Face Forums"
 homepage_url = "https://discuss.huggingface.co/"
 base_domain = "discuss.huggingface.co"
 trust_rating = 3.0

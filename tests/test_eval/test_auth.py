@@ -34,7 +34,7 @@ async def _make_client(api_key: str | None = None):
         scorer,
         target,
     )
-    from ai_benchmark.models import events, research, sources  # noqa: F401
+    from ai_benchmark.models import discovery, events, research, sources  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

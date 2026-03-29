@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from ai_benchmark.sources.registry import COLLECTOR_CLASSES, list_registered_organizations
 
-# All organizations with collectors in the registry.
-# 22 sources, 22 collectors (Semantic Scholar now has a collector class).
+# All organizations with collectors in the registry (22 unique collector classes).
+# Includes aliases for organization names that differ between sources.toml and registry.
 ALL_ORGANIZATIONS = [
     # Official vendors (7)
     "OpenAI",
@@ -15,25 +15,32 @@ ALL_ORGANIZATIONS = [
     "Mistral AI",
     "Cohere",
     "Meta",
-    # Benchmarks (7)
+    # Benchmarks (7) — includes aliases from sources.toml
     "Artificial Analysis",
     "LMArena",
     "LiveBench",
     "SWE-bench",
+    "SWE-bench team",
     "GAIA",
+    "GAIA benchmark",
     "HLE",
+    "Scale AI",
     "Terminal-Bench",
-    # Research (3 collectors)
+    "Stanford x Laude",
+    # Research (3 collectors) — includes aliases
     "arXiv",
+    "arXiv / Cornell",
     "Hugging Face Papers",
     "Semantic Scholar",
+    "Ai2",
     # News (2)
     "Reuters",
     "TechCrunch",
-    # Community (3)
+    # Community (3) — includes aliases
     "Hugging Face Forums",
     "GitHub",
     "Hugging Face Leaderboard Docs",
+    "Hugging Face",
 ]
 
 
@@ -44,9 +51,10 @@ def test_all_sources_registered():
         assert org in registered, f"Missing collector for: {org}"
 
 
-def test_collector_count():
-    """Registry should contain exactly 22 collector classes."""
-    assert len(COLLECTOR_CLASSES) == 22
+def test_unique_collector_count():
+    """Registry should contain exactly 22 unique collector classes."""
+    unique_classes = set(COLLECTOR_CLASSES.values())
+    assert len(unique_classes) == 22
 
 
 def test_list_registered_organizations_matches():

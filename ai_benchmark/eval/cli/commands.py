@@ -15,7 +15,7 @@ def _get_eval_engine(settings):
     """Create engine with eval models registered."""
     engine = create_engine(settings.database_url)
     # Import all models
-    from ...models import events, research, sources  # noqa: F401
+    from ...models import discovery, events, research, sources  # noqa: F401
     from ..models import artifact, dataset, evaluation, machine, run, scorer, target  # noqa: F401
 
     return engine

@@ -33,9 +33,25 @@ class FetchResult:
 class Fetcher:
     """Async HTTP fetcher with retry, backoff, concurrency control, and proxy support."""
 
+    _DEFAULT_HEADERS = {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
+    }
+
     def __init__(
         self,
-        user_agent: str = "ai-benchmark-pipeline/0.1",
+        user_agent: str = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/131.0.0.0 Safari/537.36"
+        ),
         timeout: int = 30,
         max_concurrency: int = 5,
         retry_attempts: int = 3,
@@ -47,11 +63,12 @@ class Fetcher:
         self.retry_attempts = retry_attempts
         self.retry_backoff_base = retry_backoff_base
         self._semaphore = asyncio.Semaphore(max_concurrency)
+        headers = {**self._DEFAULT_HEADERS, "User-Agent": user_agent}
         self._client_kwargs: dict = {
             "timeout": httpx.Timeout(timeout),
             "follow_redirects": True,
             "http2": True,
-            "headers": {"User-Agent": user_agent},
+            "headers": headers,
         }
         if proxy_url:
             self._client_kwargs["proxy"] = proxy_url

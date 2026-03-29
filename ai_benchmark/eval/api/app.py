@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request  # noqa: TC002
 from starlette.responses import JSONResponse, Response  # noqa: TC002
@@ -117,6 +118,7 @@ async def lifespan(app: FastAPI):
     )
 
     # Import models to register them with Base.metadata
+    from ...models import discovery  # noqa: F401
     from ..models import artifact, dataset, evaluation, machine, run, scorer, target  # noqa: F401
 
     async with engine.begin() as conn:
@@ -164,6 +166,11 @@ def create_app(settings: EvalSettings | None = None) -> FastAPI:
     from .middleware import APIKeyMiddleware
 
     app.add_middleware(APIKeyMiddleware, api_key=getattr(settings, "api_key", None))
+
+    # Root redirect to UI dashboard
+    @app.get("/", include_in_schema=False)
+    async def root():
+        return RedirectResponse(url="/eval/")
 
     # Health check (always public)
     @app.get("/healthz", tags=["health"])
