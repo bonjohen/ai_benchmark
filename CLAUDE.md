@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install -e ".[dev]"          # Install with dev dependencies
 pip install -e ".[dev,research]" # Include research extras (S2, PDF)
-pytest                           # Run all 342 tests
+pytest                           # Run all tests (340 pass, 2 known failures in test_cli.py)
 pytest tests/test_config.py      # Single file
 pytest -x -v                     # Verbose, stop on first failure
 ai-benchmark init-db             # Create database
@@ -107,10 +107,10 @@ ai_benchmark/eval/
 
 ## Eval Key Patterns
 
-- **Model Adapters**: ABC in `execution/adapters/base.py`. Implement `async generate(prompt, params, options) -> GenerationResult`. Registry resolves by provider string.
-- **Scorers**: ABC in `scoring/base.py`. Implement `score(output, expected) -> ScorerResult`. Registry in `_SCORER_REGISTRY`. Built-in scorers auto-register.
+- **Model Adapters**: ABC in `execution/adapters/base.py`. Implement `async generate(prompt, params, options) -> GenerationResult`. Registry resolves by provider string. Currently 4 adapters: `OpenAIAdapter`, `AnthropicAdapter`, `LocalAdapter` (ollama/vllm/llamacpp), `GenericHTTPAdapter`.
+- **Scorers**: ABC in `scoring/base.py`. Implement `score(output, expected) -> ScorerResult`. Registry in `_SCORER_REGISTRY`. Built-in scorers auto-register. Currently 7 scorers: exact_match, fuzzy_match, rubric, format_validator, latency_cost, safety, model_judge.
 - **Orchestrator**: `execution/orchestrator.py` — `create_run()` → `execute_run()` → `score_run()`. Supports sequential and parallel modes via `asyncio.Semaphore`.
-- **Service pattern**: Each service accepts `AsyncSession`, returns ORM instances. All CRUD is async. Versioning auto-increments `version_number`.
+- **Service pattern**: Each service accepts `AsyncSession`, returns ORM instances. All CRUD is async. Versioning auto-increments `version_number`. 8 services: dataset, scorer, eval, machine, target, run, comparison, report.
 - **API pattern**: ORM objects converted to dicts BEFORE `session.commit()` to avoid MissingGreenlet. Service update methods call `await session.refresh(obj)` after flush on `onupdate` columns.
 - **UI mounting**: `eval/ui/server.py` — `mount_ui(app)` registers templates and static files on the FastAPI app.
 
@@ -164,6 +164,10 @@ Also supports `.env` file in project root.
 - Community sources ingest only minimal metadata (title, author, timestamp, tags, outbound links)
 - Conflicts between sources are stored as separate claim records, not resolved automatically
 
+## Linting
+
+Codebase is fully compliant with ruff (E/F/I/N/W/UP/B/SIM/TCH rules, line-length 100, py312). Run `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — both exit clean. Per-file-ignores for B008 (FastAPI Depends pattern) in `eval/api/routes/*.py` and `eval/ui/server.py`. Some model/schema files have `# noqa: TC003` for datetime imports required at runtime by SQLAlchemy/Pydantic.
+
 ## Requirements Documents
 
 - Source details and intake guidance: `docs/core_requirements.md`
@@ -173,3 +177,7 @@ Also supports `.env` file in project root.
 - Model eval pipeline design: `docs/model_eval_pipeline_design.md`
 - Model eval pipeline PDR: `docs/model_eval_pipeline_pdr.md`
 - Model eval pipeline plan: `docs/model_eval_pipeline_plan.md`
+- PEP8/ruff compliance plan (all 7 phases complete): `docs/pep8_plan.md`
+- LLM runner comparison platform PRD: `docs/llm_runner_prd.md`
+- LLM runner comparison design notes: `docs/llm_runner_design.md`
+- LLM runner comparison plan (14 phases): `docs/llm_runner_plan.md`
