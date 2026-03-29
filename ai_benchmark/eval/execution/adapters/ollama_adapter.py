@@ -2,18 +2,27 @@
 
 from __future__ import annotations
 
-from .base import ModelAdapter, register_adapter
+from .base import AdapterCapabilities, register_adapter
+from .openai_compat import OpenAICompatAdapter
 
 
-class OllamaAdapter(ModelAdapter):
+class OllamaAdapter(OpenAICompatAdapter):
     """Adapter for Ollama local inference server.
 
-    Default endpoint: http://localhost:11434/api/chat
-    Supports: /api/chat, /api/generate, /v1/chat/completions (OpenAI compat)
+    Default endpoint: http://localhost:11434
+    Supports: /v1/chat/completions (OpenAI compat), /api/chat, /api/generate
     """
 
-    async def generate(self, prompt, inference_params, runtime_options=None):
-        raise NotImplementedError("OllamaAdapter will be implemented in Phase 7")
+    default_endpoint = "http://localhost:11434"
+    runner_name = "ollama"
+
+    def capabilities(self) -> AdapterCapabilities:
+        return AdapterCapabilities(
+            streaming=True,
+            json_mode=True,
+            vision=True,
+            tool_use=True,
+        )
 
 
 register_adapter("ollama", OllamaAdapter)

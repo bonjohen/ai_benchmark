@@ -2,18 +2,25 @@
 
 from __future__ import annotations
 
-from .base import ModelAdapter, register_adapter
+from .base import AdapterCapabilities, register_adapter
+from .openai_compat import OpenAICompatAdapter
 
 
-class LlamaCppAdapter(ModelAdapter):
-    """Adapter for llama.cpp server (llama-server / llama-cli).
+class LlamaCppAdapter(OpenAICompatAdapter):
+    """Adapter for llama-server (llama.cpp HTTP server).
 
-    Default endpoint: http://localhost:8080/v1/chat/completions
-    OpenAI-compatible API via llama-server.
+    Default endpoint: http://localhost:8080
+    Supports: /v1/chat/completions (OpenAI compat), /completion
     """
 
-    async def generate(self, prompt, inference_params, runtime_options=None):
-        raise NotImplementedError("LlamaCppAdapter will be implemented in Phase 7")
+    default_endpoint = "http://localhost:8080"
+    runner_name = "llamacpp"
+
+    def capabilities(self) -> AdapterCapabilities:
+        return AdapterCapabilities(
+            streaming=True,
+            json_mode=True,
+        )
 
 
 register_adapter("llamacpp", LlamaCppAdapter)

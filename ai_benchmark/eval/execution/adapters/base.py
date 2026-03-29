@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -22,8 +22,35 @@ class GenerationResult:
     error: str | None = None
 
 
+@dataclass
+class AdapterCapabilities:
+    """What this adapter supports."""
+
+    streaming: bool = False
+    batch: bool = False
+    embeddings: bool = False
+    tool_use: bool = False
+    json_mode: bool = False
+    vision: bool = False
+
+
+@dataclass
+class RuntimeMetadata:
+    """Runtime information captured at execution time."""
+
+    adapter_class: str = ""
+    runner_version: str | None = None
+    endpoint_url: str | None = None
+    model_loaded: str | None = None
+    extra: dict = field(default_factory=dict)
+
+
 class ModelAdapter(abc.ABC):
     """Abstract interface for calling a model endpoint."""
+
+    def __init__(self, **kwargs):
+        self.endpoint_url = kwargs.get("endpoint_url")
+        self.model_name = kwargs.get("model_name")
 
     @abc.abstractmethod
     async def generate(
@@ -34,6 +61,22 @@ class ModelAdapter(abc.ABC):
     ) -> GenerationResult:
         """Send prompt to model, return result with metadata."""
         ...
+
+    async def health_check(self) -> bool:
+        """Check if the runner endpoint is reachable. Default: True."""
+        return True
+
+    def capabilities(self) -> AdapterCapabilities:
+        """Return the adapter's supported capabilities."""
+        return AdapterCapabilities()
+
+    def get_runtime_metadata(self) -> RuntimeMetadata:
+        """Capture runtime information for reproducibility."""
+        return RuntimeMetadata(
+            adapter_class=self.__class__.__name__,
+            endpoint_url=self.endpoint_url,
+            model_loaded=self.model_name,
+        )
 
 
 # Provider string → adapter class mapping (populated by adapter modules)

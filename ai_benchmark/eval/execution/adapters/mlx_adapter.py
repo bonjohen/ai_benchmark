@@ -1,19 +1,26 @@
-"""MLX / MLX-LM runner adapter — Apple-native runner."""
+"""MLX / MLX-LM runner adapter — Apple-native runner (Metal)."""
 
 from __future__ import annotations
 
-from .base import ModelAdapter, register_adapter
+from .base import AdapterCapabilities, register_adapter
+from .openai_compat import OpenAICompatAdapter
 
 
-class MLXAdapter(ModelAdapter):
-    """Adapter for MLX-LM on Apple Silicon.
+class MLXAdapter(OpenAICompatAdapter):
+    """Adapter for MLX-LM local inference server.
 
-    Uses mlx_lm.generate or mlx_lm server endpoint.
-    Apple Silicon only (Metal backend).
+    Default endpoint: http://localhost:8080
+    Supports: /v1/chat/completions (OpenAI compat)
+    Apple Silicon only — requires Metal acceleration.
     """
 
-    async def generate(self, prompt, inference_params, runtime_options=None):
-        raise NotImplementedError("MLXAdapter will be implemented in Phase 7")
+    default_endpoint = "http://localhost:8080"
+    runner_name = "mlx"
+
+    def capabilities(self) -> AdapterCapabilities:
+        return AdapterCapabilities(
+            streaming=True,
+        )
 
 
 register_adapter("mlx", MLXAdapter)

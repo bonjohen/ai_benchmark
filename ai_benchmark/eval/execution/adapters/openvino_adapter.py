@@ -1,19 +1,26 @@
-"""OpenVINO GenAI runner adapter — Intel AI hardware runner."""
+"""OpenVINO GenAI runner adapter — Intel AI hardware runner (NPU)."""
 
 from __future__ import annotations
 
-from .base import ModelAdapter, register_adapter
+from .base import AdapterCapabilities, register_adapter
+from .openai_compat import OpenAICompatAdapter
 
 
-class OpenVINOAdapter(ModelAdapter):
-    """Adapter for OpenVINO GenAI on Intel AI hardware.
+class OpenVINOAdapter(OpenAICompatAdapter):
+    """Adapter for OpenVINO GenAI inference server.
 
-    Targets Intel NPU (AI Boost) and CPU/iGPU on Intel Core Ultra.
-    Uses openvino_genai Python API.
+    Default endpoint: http://localhost:8000
+    Supports: /v1/chat/completions (OpenAI compat)
+    Intel hardware only — NPU acceleration on supported Intel Core Ultra CPUs.
     """
 
-    async def generate(self, prompt, inference_params, runtime_options=None):
-        raise NotImplementedError("OpenVINOAdapter will be implemented in Phase 7")
+    default_endpoint = "http://localhost:8000"
+    runner_name = "openvino"
+
+    def capabilities(self) -> AdapterCapabilities:
+        return AdapterCapabilities(
+            streaming=True,
+        )
 
 
 register_adapter("openvino", OpenVINOAdapter)

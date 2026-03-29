@@ -2,18 +2,28 @@
 
 from __future__ import annotations
 
-from .base import ModelAdapter, register_adapter
+from .base import AdapterCapabilities, register_adapter
+from .openai_compat import OpenAICompatAdapter
 
 
-class VLLMAdapter(ModelAdapter):
-    """Adapter for vLLM serving (vllm serve).
+class VLLMAdapter(OpenAICompatAdapter):
+    """Adapter for vLLM inference server.
 
-    Default endpoint: http://localhost:8000/v1/chat/completions
-    OpenAI-compatible API.
+    Default endpoint: http://localhost:8000
+    Supports: /v1/chat/completions (OpenAI compat), /v1/completions
+    Requires NVIDIA GPU with CUDA.
     """
 
-    async def generate(self, prompt, inference_params, runtime_options=None):
-        raise NotImplementedError("VLLMAdapter will be implemented in Phase 7")
+    default_endpoint = "http://localhost:8000"
+    runner_name = "vllm"
+
+    def capabilities(self) -> AdapterCapabilities:
+        return AdapterCapabilities(
+            streaming=True,
+            batch=True,
+            json_mode=True,
+            tool_use=True,
+        )
 
 
 register_adapter("vllm", VLLMAdapter)

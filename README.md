@@ -200,7 +200,7 @@ machine tracking.
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all 415 tests
+pytest                       # Run all 465 tests
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint

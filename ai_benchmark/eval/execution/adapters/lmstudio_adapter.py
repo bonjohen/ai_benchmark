@@ -2,18 +2,26 @@
 
 from __future__ import annotations
 
-from .base import ModelAdapter, register_adapter
+from .base import AdapterCapabilities, register_adapter
+from .openai_compat import OpenAICompatAdapter
 
 
-class LMStudioAdapter(ModelAdapter):
-    """Adapter for LM Studio local server.
+class LMStudioAdapter(OpenAICompatAdapter):
+    """Adapter for LM Studio local inference server.
 
-    Default endpoint: http://localhost:1234/v1/chat/completions
-    OpenAI-compatible API.
+    Default endpoint: http://localhost:1234
+    Supports: /v1/chat/completions (OpenAI compat)
     """
 
-    async def generate(self, prompt, inference_params, runtime_options=None):
-        raise NotImplementedError("LMStudioAdapter will be implemented in Phase 7")
+    default_endpoint = "http://localhost:1234"
+    runner_name = "lmstudio"
+
+    def capabilities(self) -> AdapterCapabilities:
+        return AdapterCapabilities(
+            streaming=True,
+            json_mode=True,
+            vision=True,
+        )
 
 
 register_adapter("lmstudio", LMStudioAdapter)

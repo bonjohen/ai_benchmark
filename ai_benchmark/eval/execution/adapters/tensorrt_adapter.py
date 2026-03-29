@@ -2,18 +2,26 @@
 
 from __future__ import annotations
 
-from .base import ModelAdapter, register_adapter
+from .base import AdapterCapabilities, register_adapter
+from .openai_compat import OpenAICompatAdapter
 
 
-class TensorRTAdapter(ModelAdapter):
-    """Adapter for NVIDIA TensorRT-LLM.
+class TensorRTAdapter(OpenAICompatAdapter):
+    """Adapter for TensorRT-LLM inference server.
 
-    Uses Triton Inference Server or TensorRT-LLM Python API.
-    NVIDIA GPU only (CUDA backend).
+    Default endpoint: http://localhost:8000
+    Supports: /v1/chat/completions (OpenAI compat)
+    NVIDIA GPU only. Requires engine build step before serving.
     """
 
-    async def generate(self, prompt, inference_params, runtime_options=None):
-        raise NotImplementedError("TensorRTAdapter will be implemented in Phase 7")
+    default_endpoint = "http://localhost:8000"
+    runner_name = "tensorrt"
+
+    def capabilities(self) -> AdapterCapabilities:
+        return AdapterCapabilities(
+            streaming=True,
+            batch=True,
+        )
 
 
 register_adapter("tensorrt", TensorRTAdapter)

@@ -109,22 +109,22 @@ Status lifecycle for every task: Open → Started → Completed. Use Blocked whe
 
 | No. | Status | Started (PST) | Completed (PST) | Description                                                                                                           |
 | --: | ------ | ------------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |
-|  74 | Open   |               |                 | Implement a runner adapter interface for model invocation, health check, capability inspection, and metadata capture. |
-|  75 | Open   |               |                 | Implement the Ollama adapter.                                                                                         |
-|  76 | Open   |               |                 | Implement the LM Studio adapter.                                                                                      |
-|  77 | Open   |               |                 | Implement the llama.cpp adapter.                                                                                      |
-|  78 | Open   |               |                 | Implement the MLX or MLX-LM adapter.                                                                                  |
-|  79 | Open   |               |                 | Implement the vLLM adapter.                                                                                           |
-|  80 | Open   |               |                 | Implement the SGLang adapter.                                                                                         |
-|  81 | Open   |               |                 | Implement the TensorRT-LLM adapter.                                                                                   |
-|  82 | Open   |               |                 | Implement the OpenVINO GenAI adapter.                                                                                 |
-|  83 | Open   |               |                 | Implement normalized response capture so all runners feed a common evaluation result format.                          |
-|  84 | Open   |               |                 | Implement runner-version and effective-runtime capture at execution time.                                             |
-|  85 | Open   |               |                 | Add adapter tests and compatibility tests for supported runner classes.                                               |
-|  86 | Open   |               |                 | Update readme.md with runner adapter coverage and Phase 7 progress.                                                   |
-|  87 | Open   |               |                 | Stage all Phase 7 changes.                                                                                            |
-|  88 | Open   |               |                 | Commit all Phase 7 changes with a phase-complete commit message.                                                      |
-|  89 | Open   |               |                 | Immediately begin Phase 8.                                                                                            |
+|  74 | Completed | 2026-03-28 07:52 PM | 2026-03-28 07:55 PM | Enhanced ModelAdapter ABC with `health_check()`, `capabilities()` → AdapterCapabilities, `get_runtime_metadata()` → RuntimeMetadata. Created OpenAICompatAdapter shared base.              |
+|  75 | Completed | 2026-03-28 07:55 PM | 2026-03-28 07:56 PM | OllamaAdapter: endpoint localhost:11434, capabilities: streaming, json_mode, vision, tool_use. Extends OpenAICompatAdapter.                                                                |
+|  76 | Completed | 2026-03-28 07:55 PM | 2026-03-28 07:56 PM | LMStudioAdapter: endpoint localhost:1234, capabilities: streaming, json_mode, vision.                                                                                                      |
+|  77 | Completed | 2026-03-28 07:55 PM | 2026-03-28 07:56 PM | LlamaCppAdapter: endpoint localhost:8080, capabilities: streaming, json_mode.                                                                                                              |
+|  78 | Completed | 2026-03-28 07:55 PM | 2026-03-28 07:56 PM | MLXAdapter: endpoint localhost:8080, capabilities: streaming only. Apple Silicon required.                                                                                                  |
+|  79 | Completed | 2026-03-28 07:55 PM | 2026-03-28 07:56 PM | VLLMAdapter: endpoint localhost:8000, capabilities: streaming, batch, json_mode, tool_use. NVIDIA GPU required.                                                                            |
+|  80 | Completed | 2026-03-28 07:55 PM | 2026-03-28 07:56 PM | SGLangAdapter: endpoint localhost:30000, capabilities: streaming, batch, json_mode.                                                                                                        |
+|  81 | Completed | 2026-03-28 07:55 PM | 2026-03-28 07:56 PM | TensorRTAdapter: endpoint localhost:8000, capabilities: streaming, batch. Engine build required.                                                                                            |
+|  82 | Completed | 2026-03-28 07:55 PM | 2026-03-28 07:56 PM | OpenVINOAdapter: endpoint localhost:8000, capabilities: streaming. Intel NPU only.                                                                                                         |
+|  83 | Completed | 2026-03-28 07:56 PM | 2026-03-28 07:57 PM | All adapters return GenerationResult with output_text, raw_response, latency_ms, token counts, cost, trace_id, error. OpenAI-format response parsing shared in OpenAICompatAdapter.        |
+|  84 | Completed | 2026-03-28 07:57 PM | 2026-03-28 07:58 PM | `get_runtime_metadata()` on every adapter returns adapter_class, runner_version, endpoint_url, model_loaded, and runner_name in extra dict.                                                |
+|  85 | Completed | 2026-03-28 07:58 PM | 2026-03-28 08:00 PM | 50 tests in `test_phase7.py`: registry (8 runners + unknown), interface (generate, health, capabilities, metadata × 8), endpoints, capabilities, custom endpoint, metadata, GenerationResult.|
+|  86 | Completed | 2026-03-28 08:00 PM | 2026-03-28 08:01 PM | Updated README.md and __init__.py with auto-registration imports for all adapters.                                                                                                         |
+|  87 | Completed | 2026-03-28 08:01 PM | 2026-03-28 08:01 PM | Stage all Phase 7 changes.                                                                                                                                                                |
+|  88 | Completed | 2026-03-28 08:01 PM | 2026-03-28 08:01 PM | Commit all Phase 7 changes with a phase-complete commit message.                                                                                                                          |
+|  89 | Completed | 2026-03-28 08:01 PM | 2026-03-28 08:01 PM | Immediately begin Phase 8.                                                                                            |
 
 ## Phase 8 — Result Capture, Traces, Artifacts, and Rescoring
 
