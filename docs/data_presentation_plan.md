@@ -134,8 +134,8 @@ Open  ──>  Started  ──>  Completed
 | 5.6 | Completed | 2026-03-29 05:30 PM | 2026-03-29 05:35 PM | Add `verification` and `correlations` CLI subcommands to `cli.py`. Add 6 formatter tests to `test_formatters.py`. |
 | 5.7 | Completed | 2026-03-29 05:35 PM | 2026-03-29 05:38 PM | Add `/verification` and `/correlations` API endpoints to `api.py`. |
 | 5.8 | Completed | 2026-03-29 05:38 PM | 2026-03-29 05:42 PM | Run `pytest` — 877 passed. Run `ruff check` and `ruff format --check` — clean. |
-| 5.9 | Started | 2026-03-29 05:42 PM | | Stage all Phase 5 changes. |
-| 5.10 | Open | | | Commit: "Add claim verification and benchmark correlation (Tier 3)". |
+| 5.9 | Completed | 2026-03-29 05:42 PM | 2026-03-29 05:43 PM | Stage all Phase 5 changes. |
+| 5.10 | Completed | 2026-03-29 05:43 PM | 2026-03-29 05:44 PM | Commit: "Add claim verification and benchmark correlation (Tier 3)". |
 
 ### Phase 5 Summary
 
@@ -150,16 +150,16 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 6.1 | Open | | | Modify `ai_benchmark/analysis/services/digest.py`: import and call `get_spotlight` and `get_benchmark_evolution`, populate `spotlight_models` and `evolution_highlights` on DigestReport. |
-| 6.2 | Open | | | Extend `digest_to_markdown()` in `formatters/markdown.py` to render spotlight models and evolution highlights sections. |
-| 6.3 | Open | | | Update `tests/test_analysis/test_digest.py`: verify digest includes spotlight_models and evolution_highlights fields. |
-| 6.4 | Open | | | Update `CLAUDE.md`: add 7 new CLI commands to analysis section, update Analysis Architecture with new service modules and dataclass count, update test count. |
-| 6.5 | Open | | | Run `pytest` — all tests pass. Run `ruff check` and `ruff format --check` — clean. |
-| 6.6 | Open | | | Stage all Phase 6 changes. |
+| 6.1 | Completed | 2026-03-29 05:48 PM | 2026-03-29 05:50 PM | Modify `ai_benchmark/analysis/services/digest.py`: import and call `get_spotlight` and `get_benchmark_evolution`, populate `spotlight_models` and `evolution_highlights` on DigestReport. |
+| 6.2 | Completed | 2026-03-29 05:48 PM | 2026-03-29 05:50 PM | `digest_to_markdown()` already renders spotlight and evolution sections (added in Phase 2). No changes needed. |
+| 6.3 | Completed | 2026-03-29 05:50 PM | 2026-03-29 05:53 PM | Update `tests/test_analysis/test_digest.py`: added `test_generate_digest_spotlight` and `test_generate_digest_evolution`. |
+| 6.4 | Completed | 2026-03-29 05:53 PM | 2026-03-29 05:58 PM | Update `CLAUDE.md`: added 7 new CLI commands, updated Analysis Architecture with 12 services, 31 dataclasses, 14 formatters, 7 CSV exporters, 16 CLI subcommands, 18 API endpoints, test count 879. |
+| 6.5 | Completed | 2026-03-29 05:58 PM | 2026-03-29 06:02 PM | Run `pytest` — 879 passed. Run `ruff check` and `ruff format --check` — clean. |
+| 6.6 | Started | 2026-03-29 06:02 PM | | Stage all Phase 6 changes. |
 | 6.7 | Open | | | Commit: "Integrate spotlight and evolution into digest, update documentation". |
 
 ### Phase 6 Summary
 
-- **Changes:** TBD
+- **Changes:** Modified `digest.py` to call `get_spotlight` and `get_benchmark_evolution`, populating `spotlight_models` and `evolution_highlights` on DigestReport. Updated CLAUDE.md with complete analysis architecture (12 services, 31 dataclasses, 14 markdown renderers, 7 CSV exporters, 16 CLI subcommands, 18 API endpoints). Added 2 digest tests. Total: 879 passed.
 - **Changes hosted at:** TBD
 - **Commit:** `Integrate spotlight and evolution into digest, update documentation`

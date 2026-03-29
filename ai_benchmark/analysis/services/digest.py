@@ -24,8 +24,10 @@ async def generate_digest(
     from .anomaly_detector import detect_anomalies
     from .benchmark_trends import list_benchmarks
     from .competitive_intel import get_activity_timeline
+    from .evolution import get_benchmark_evolution
     from .model_lifecycle import list_tracked_models
     from .research_pulse import get_research_trends
+    from .spotlight import get_spotlight
 
     now = datetime.now(UTC)
     cutoff = now - timedelta(days=window_days)
@@ -73,6 +75,13 @@ async def generate_digest(
         for a in anomalies
     ]
 
+    # Spotlight: new models with benchmark context
+    spotlight_report = await get_spotlight(session, window_days=window_days)
+    spotlight_models = spotlight_report.entries
+
+    # Evolution: benchmark progression highlights
+    evolution_highlights = await get_benchmark_evolution(session, window_days=max(window_days, 90))
+
     report = DigestReport(
         period_start=cutoff.strftime("%Y-%m-%d"),
         period_end=now.strftime("%Y-%m-%d"),
@@ -87,6 +96,8 @@ async def generate_digest(
             "total_benchmarks": len(benchmarks),
             "anomalies_detected": len(anomalies),
         },
+        spotlight_models=spotlight_models,
+        evolution_highlights=evolution_highlights,
     )
 
     if persist:

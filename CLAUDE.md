@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install -e ".[dev]"          # Install with dev dependencies
 pip install -e ".[dev,research]" # Include research extras (S2, PDF)
-pytest                           # Run all tests (799 pass, 0 failures)
+pytest                           # Run all tests (879 pass, 0 failures)
 pytest tests/test_config.py      # Single file
 pytest -x -v                     # Verbose, stop on first failure
 ai-benchmark init-db             # Create database
@@ -42,6 +42,13 @@ ai-benchmark analyze research [--days 90] [--format text|json|markdown]
 ai-benchmark analyze anomalies [--days 7] [--severity notable]
 ai-benchmark analyze digest [--days 7] [--format markdown] [--output file]
 ai-benchmark analyze run-all [--days 7]
+ai-benchmark analyze spotlight [--days 30] [--min-benchmarks 1] [--org OpenAI]
+ai-benchmark analyze evolution [--benchmark name] [--days 180]
+ai-benchmark analyze capability <slug> [--compare slug1,slug2]
+ai-benchmark analyze landscape [--days 30] [--org OpenAI]
+ai-benchmark analyze research-pipeline [--days 90] [--min-citations 0]
+ai-benchmark analyze verification [--org OpenAI] [--model slug]
+ai-benchmark analyze correlations [--min-overlap 5]
 ```
 
 ## Core Domain Concepts
@@ -133,30 +140,56 @@ ai_benchmark/eval/
 ai_benchmark/analysis/
   models.py           2 SQLAlchemy tables: AnalysisSnapshot (cached results), AnalysisInsight
                       (flagged findings with type/severity/related entities)
-  types.py            15 result dataclasses: ModelSummary, TimelineEntry, BenchmarkDataPoint,
+  types.py            31 result dataclasses: ModelSummary, TimelineEntry, BenchmarkDataPoint,
                       ModelProfile, ModelComparisonMatrix, BenchmarkSummary, Leaderboard,
                       OrgActivity, CompetitiveCluster, ActivityTimeline, PaperCitationEntry,
-                      PaperProductLink, ResearchTrends, DigestReport
+                      PaperProductLink, ResearchTrends, DigestReport, SpotlightEntry,
+                      SpotlightReport, FrontierEntry, EvolutionSummary, BenchmarkPercentile,
+                      CapabilityProfile, OrgLandscapeEntry, LandscapeReport,
+                      CitationVelocityEntry, TopicTrend, ResearchPipelineReport,
+                      ModelVerification, BenchmarkVerification, VerificationReport,
+                      CorrelationEntry, CorrelationMatrix
   services/
-    model_lifecycle.py    list_tracked_models, build_model_profile, get_model_timeline,
-                          compare_models — model event aggregation and lifecycle assembly
-    benchmark_trends.py   extract_benchmark_score (4-priority regex), list_benchmarks,
-                          get_benchmark_leaderboard, get_benchmark_timeline
-    competitive_intel.py  get_activity_timeline, detect_competitive_clusters (iso-week
-                          bucketing), org_activity_summary
-    research_pulse.py     get_research_trends, get_citation_leaders, detect_paper_to_product
-    anomaly_detector.py   detect_anomalies (6 rules: new_org, rapid_iteration,
-                          benchmark_record, conflict_detected, price_drop, new_model),
-                          get_recent_insights — idempotent persistence
-    digest.py             generate_digest — orchestrates all 5 services into DigestReport
+    model_lifecycle.py      list_tracked_models, build_model_profile, get_model_timeline,
+                            compare_models — model event aggregation and lifecycle assembly
+    benchmark_trends.py     extract_benchmark_score (4-priority regex), list_benchmarks,
+                            get_benchmark_leaderboard, get_benchmark_timeline
+    competitive_intel.py    get_activity_timeline, detect_competitive_clusters (iso-week
+                            bucketing), org_activity_summary
+    research_pulse.py       get_research_trends, get_citation_leaders, detect_paper_to_product
+    anomaly_detector.py     detect_anomalies (6 rules: new_org, rapid_iteration,
+                            benchmark_record, conflict_detected, price_drop, new_model),
+                            get_recent_insights — idempotent persistence
+    digest.py               generate_digest — orchestrates all services into DigestReport
+                            with spotlight + evolution highlights
+    spotlight.py            get_spotlight — new models ranked by benchmark debut strength,
+                            cross-reference count, and insight flags
+    evolution.py            get_benchmark_evolution — rate-of-improvement, frontier progression,
+                            saturation detection, gap-to-second analysis
+    capability.py           get_capability_profile, compare_capabilities — percentile
+                            normalization across benchmarks, composite scoring
+    landscape.py            get_landscape — org-level benchmark aggregation, pricing context,
+                            trend vs prior window
+    research_pipeline.py    get_research_pipeline — citation velocity, split-window topic
+                            trends, predictive signals via tag overlap
+    verification.py         get_verification_report — per-model/per-benchmark claim analysis,
+                            confidence tier distribution, CrossReference confirms
+    correlation.py          get_correlation_matrix — Spearman rank correlation between
+                            benchmark variants, cluster detection
   formatters/
-    markdown.py       7 renderers: model_list, model_profile, leaderboard,
-                      activity_timeline, research_trends, insights, digest
+    markdown.py       14 renderers: model_list, model_profile, leaderboard,
+                      activity_timeline, research_trends, insights, digest,
+                      spotlight, evolution, capability, landscape,
+                      research_pipeline, verification, correlation
     json_export.py    to_json() with dataclasses.asdict support
-    csv_export.py     models_to_csv, leaderboard_to_csv, insights_to_csv
-  cli.py              9 Click subcommands: models, model, benchmarks, benchmark,
-                      competitive, research, anomalies, digest, run-all
-  api.py              FastAPI router at /api/analysis/ with 11 endpoints
+    csv_export.py     models_to_csv, leaderboard_to_csv, insights_to_csv,
+                      spotlight_to_csv, evolution_to_csv, verification_to_csv,
+                      correlation_to_csv
+  cli.py              16 Click subcommands: models, model, benchmarks, benchmark,
+                      competitive, research, anomalies, digest, run-all,
+                      spotlight, evolution, capability, landscape,
+                      research-pipeline, verification, correlations
+  api.py              FastAPI router at /api/analysis/ with 18 endpoints
 ```
 
 ## Analysis Key Patterns
@@ -164,7 +197,7 @@ ai_benchmark/analysis/
 - **Service pattern**: Each service accepts `AsyncSession`, returns dataclasses or ORM models. All queries are async. Read-only against collection tables (EventRecord, ClaimRecord, EnrichedPaper), read-write on analysis tables (AnalysisSnapshot, AnalysisInsight).
 - **Score extraction**: `extract_benchmark_score(raw_content, benchmark_name)` in benchmark_trends.py. Regex-based with 4 priority levels: percentage > Elo-like > decimal fraction > bare integer.
 - **Anomaly idempotency**: Each rule checks `_already_exists(insight_type, related_event_ids)` before creating. Running detection twice produces no duplicates.
-- **Digest orchestration**: `generate_digest` calls all 5 services, assembles DigestReport, optionally persists as AnalysisSnapshot with `scope_key=weekly-{year}-W{week}`.
+- **Digest orchestration**: `generate_digest` calls all services (model lifecycle, benchmarks, competitive intel, research pulse, anomaly detection, spotlight, evolution), assembles DigestReport with spotlight models and evolution highlights, optionally persists as AnalysisSnapshot with `scope_key=weekly-{year}-W{week}`.
 - **API pattern**: Router uses `Depends(get_session)` from eval app. Dataclasses converted via `dataclasses.asdict()`. Mounted at `/api/analysis/` in eval app factory.
 
 ## Eval Key Patterns

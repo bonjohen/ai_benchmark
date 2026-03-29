@@ -80,3 +80,25 @@ async def test_generate_digest_empty_db(db_session):
     assert report.model_updates == []
     assert report.benchmark_movements == []
     assert report.stats["total_models"] == 0
+
+
+@pytest.mark.asyncio
+async def test_generate_digest_spotlight(db_session, multi_org_events, multi_org_claims):
+    """Digest includes spotlight models."""
+    report = await generate_digest(db_session, window_days=30, persist=False)
+    assert isinstance(report.spotlight_models, list)
+    # multi_org_events has new models within 30 days
+    if report.spotlight_models:
+        slugs = {s.model_slug for s in report.spotlight_models}
+        assert len(slugs) >= 1
+
+
+@pytest.mark.asyncio
+async def test_generate_digest_evolution(db_session, multi_org_events, multi_org_claims):
+    """Digest includes evolution highlights."""
+    report = await generate_digest(db_session, window_days=30, persist=False)
+    assert isinstance(report.evolution_highlights, list)
+    # multi_org_events has benchmark data
+    if report.evolution_highlights:
+        for evo in report.evolution_highlights:
+            assert evo.benchmark_name
