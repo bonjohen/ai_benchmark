@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% set active_page = "runners" %}
+{% block title %}{{ runner.name }}{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+    <div>
+        <h1>{{ runner.display_name or runner.name }}</h1>
+        <dl class="detail-meta">
+            <dt>Class:</dt><dd><span class="badge badge-runner">{{ runner.runner_class }}</span></dd>
+            <dt>Version:</dt><dd>{{ runner.version or "—" }}</dd>
+            <dt>Endpoint:</dt><dd class="text-mono">{{ runner.default_endpoint_url or "—" }}</dd>
+        </dl>
+    </div>
+    <div>
+        <a href="/eval/runners" class="btn btn-outline btn-sm">Back to List</a>
+    </div>
+</div>
+
+<!-- Metadata Panel -->
+{% set meta_items = [] %}
+{% if runner.supported_machine_classes %}
+{% set _ = meta_items.append({"label": "Compatible Machines", "value": runner.supported_machine_classes|join(", ")}) %}
+{% endif %}
+{% if runner.supported_model_families %}
+{% set _ = meta_items.append({"label": "Model Families", "value": runner.supported_model_families|join(", ")}) %}
+{% endif %}
+{% include "includes/metadata_panel.html" %}
+
+<!-- Configuration -->
+<div class="card">
+    <div class="card-header">Configuration</div>
+    <dl class="detail-meta">
+        <dt>Created:</dt><dd>{{ runner.created_at or "—" }}</dd>
+        <dt>Updated:</dt><dd>{{ runner.updated_at or "—" }}</dd>
+        <dt>Status:</dt><dd>{% if runner.is_archived %}<span class="text-muted">Archived</span>{% else %}<span class="text-success">Active</span>{% endif %}</dd>
+    </dl>
+    {% if runner.notes %}
+    <div class="mt-2">
+        <strong>Notes:</strong>
+        <p>{{ runner.notes }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Parameter Surface -->
+{% if runner.parameter_surface %}
+<div class="card">
+    <div class="card-header">Parameter Surface</div>
+    <div class="config-block">{{ runner.parameter_surface|tojson(indent=2) if runner.parameter_surface is mapping else runner.parameter_surface }}</div>
+</div>
+{% endif %}
+
+<!-- Target Configurations Using This Runner -->
+{% if targets %}
+<div class="card">
+    <div class="card-header">Target Configurations</div>
+    <div class="table-wrapper">
+        <table data-sortable>
+            <thead>
+                <tr>
+                    <th data-sort="number">ID</th>
+                    <th data-sort="string">Name</th>
+                    <th data-sort="string">Model</th>
+                    <th data-sort="string">Provider</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in targets %}
+                <tr>
+                    <td><a href="/eval/targets/{{ t.id }}">{{ t.id }}</a></td>
+                    <td><a href="/eval/targets/{{ t.id }}">{{ t.name }}</a></td>
+                    <td>{{ t.model_name }}</td>
+                    <td>{{ t.provider }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Runs -->
+{% if runs %}
+<div class="card">
+    <div class="card-header">Recent Runs</div>
+    <div class="table-wrapper">
+        <table data-sortable>
+            <thead>
+                <tr>
+                    <th data-sort="number">Run ID</th>
+                    <th data-sort="string">Status</th>
+                    <th data-sort="number">Items</th>
+                    <th data-sort="number">Completed</th>
+                    <th data-sort="date">Started</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in runs %}
+                <tr>
+                    <td><a href="/eval/runs/{{ r.id }}">{{ r.id }}</a></td>
+                    <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+                    <td>{{ r.total_items }}</td>
+                    <td>{{ r.completed_items }}</td>
+                    <td>{{ r.started_at or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

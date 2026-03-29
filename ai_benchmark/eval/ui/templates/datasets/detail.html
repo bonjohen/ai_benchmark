@@ -8,6 +8,7 @@
         <h1>{{ dataset.name }}</h1>
         <dl class="detail-meta">
             <dt>Source:</dt><dd>{{ dataset.source or "—" }}</dd>
+            <dt>Status:</dt><dd>{% if dataset.is_archived %}<span class="text-muted">Archived</span>{% else %}<span class="text-success">Active</span>{% endif %}</dd>
             <dt>Created:</dt><dd>{{ dataset.created_at or "—" }}</dd>
         </dl>
     </div>
@@ -33,6 +34,7 @@
                     <th data-sort="number">Items</th>
                     <th data-sort="string">Checksum</th>
                     <th data-sort="date">Created</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,6 +45,7 @@
                     <td>{{ v.item_count }}</td>
                     <td class="text-mono truncate">{{ v.checksum or "—" }}</td>
                     <td>{{ v.created_at or "—" }}</td>
+                    <td><a href="/eval/datasets/{{ dataset.id }}/versions/{{ v.id }}/preview" class="btn btn-sm btn-outline">Preview</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

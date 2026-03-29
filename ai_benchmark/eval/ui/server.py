@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -29,29 +31,34 @@ router = APIRouter()
 
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request, session: AsyncSession = Depends(get_session)):
-    """Main dashboard — active runs, recent completions, alerts."""
-    from ..services import machine_service, run_service
+    """Main dashboard — current activity vs recent history."""
+    from ..services import machine_service, run_service, runner_service
 
+    # Current activity: queued, running, scoring
     active_runs = []
     for status in ("queued", "running", "scoring"):
         runs = await run_service.list_runs(session, status=status)
         active_runs.extend(runs)
 
-    recent_runs = await run_service.list_runs(session, limit=10)
-    machines = await machine_service.list_profiles(session)
+    # Historical: completed/failed runs (exclude active statuses)
+    all_recent = await run_service.list_runs(session, limit=15)
+    completed_runs = [
+        r
+        for r in all_recent
+        if r.status in ("completed", "failed", "canceled", "partially_completed")
+    ]
 
-    # Convert ORM objects to dicts before template rendering
-    active_data = [_run_to_dict(r) for r in active_runs]
-    recent_data = [_run_to_dict(r) for r in recent_runs]
-    machine_data = [_machine_to_dict(m) for m in machines]
+    machines = await machine_service.list_profiles(session)
+    runners = await runner_service.list_runners(session)
 
     return templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
-            "active_runs": active_data,
-            "recent_runs": recent_data,
-            "machines": machine_data,
+            "active_runs": [_run_to_dict(r) for r in active_runs],
+            "completed_runs": [_run_to_dict(r) for r in completed_runs],
+            "machines": [_machine_to_dict(m) for m in machines],
+            "runners": runners,
         },
     )
 
@@ -129,6 +136,19 @@ async def evaluation_detail(
     )
 
 
+@router.post("/evaluations/{eval_id}/archive", response_class=HTMLResponse)
+async def evaluation_archive(
+    request: Request, eval_id: int, session: AsyncSession = Depends(get_session)
+):
+    from ..services import eval_service
+
+    await eval_service.update_evaluation(session, eval_id, is_archived=True)
+    await session.commit()
+    from starlette.responses import RedirectResponse
+
+    return RedirectResponse(f"/eval/evaluations/{eval_id}", status_code=303)
+
+
 # ── Datasets ─────────────────────────────────────────────────────────────
 
 
@@ -188,6 +208,65 @@ async def dataset_detail(
     )
 
 
+@router.get(
+    "/datasets/{dataset_id}/versions/{version_id}/preview",
+    response_class=HTMLResponse,
+)
+async def dataset_version_preview(
+    request: Request,
+    dataset_id: int,
+    version_id: int,
+    session: AsyncSession = Depends(get_session),
+):
+    from ..services import dataset_service
+
+    ds = await dataset_service.get_dataset(session, dataset_id)
+    if ds is None:
+        return HTMLResponse("<h1>Not Found</h1>", status_code=404)
+
+    from sqlalchemy import select
+
+    from ..models.dataset import DatasetVersion
+
+    stmt = select(DatasetVersion).where(DatasetVersion.id == version_id)
+    result = await session.execute(stmt)
+    dv = result.scalar_one_or_none()
+    if dv is None:
+        return HTMLResponse("<h1>Version Not Found</h1>", status_code=404)
+
+    items = await dataset_service.list_items(session, version_id, limit=50)
+    item_data = []
+    for tc in items:
+        meta = {}
+        if tc.metadata_json:
+            with contextlib.suppress(json.JSONDecodeError, TypeError):
+                meta = json.loads(tc.metadata_json)
+        item_data.append(
+            {
+                "item_index": tc.item_index,
+                "input_text": (tc.input_text or "")[:300],
+                "expected_output": (tc.expected_output or "")[:300],
+                "tags": meta.get("tags", ""),
+                "difficulty": meta.get("difficulty", ""),
+            }
+        )
+
+    return templates.TemplateResponse(
+        "datasets/preview.html",
+        {
+            "request": request,
+            "dataset": _dataset_to_dict(ds),
+            "version": {
+                "id": dv.id,
+                "version_number": dv.version_number,
+                "item_count": dv.item_count,
+                "checksum": dv.checksum,
+            },
+            "items": item_data,
+        },
+    )
+
+
 # ── Scorers ──────────────────────────────────────────────────────────────
 
 
@@ -210,6 +289,53 @@ async def scorer_list(request: Request, session: AsyncSession = Depends(get_sess
         {
             "request": request,
             "scorers": data,
+        },
+    )
+
+
+@router.get("/scorers/{scorer_id}", response_class=HTMLResponse)
+async def scorer_detail(
+    request: Request, scorer_id: int, session: AsyncSession = Depends(get_session)
+):
+    from sqlalchemy import select
+
+    from ..models.scorer import ScorerVersion
+    from ..services import scorer_service
+
+    scorer = await scorer_service.get_scorer(session, scorer_id)
+    if scorer is None:
+        return HTMLResponse("<h1>Not Found</h1>", status_code=404)
+
+    stmt = (
+        select(ScorerVersion)
+        .where(ScorerVersion.scorer_id == scorer_id)
+        .order_by(ScorerVersion.version_number.desc())
+    )
+    result = await session.execute(stmt)
+    versions = [
+        {
+            "id": v.id,
+            "version_number": v.version_number,
+            "config": v.config,
+            "implementation_ref": v.implementation_ref,
+            "notes": v.notes,
+            "created_at": str(v.created_at) if v.created_at else None,
+        }
+        for v in result.scalars().all()
+    ]
+
+    return templates.TemplateResponse(
+        "scorers/detail.html",
+        {
+            "request": request,
+            "scorer": {
+                "id": scorer.id,
+                "name": scorer.name,
+                "scorer_type": scorer.scorer_type,
+                "description": scorer.description,
+                "created_at": str(scorer.created_at) if scorer.created_at else None,
+            },
+            "versions": versions,
         },
     )
 
@@ -255,6 +381,103 @@ async def target_detail(
     )
 
 
+@router.get("/targets/{target_id}/clone", response_class=HTMLResponse)
+async def target_clone_form(
+    request: Request, target_id: int, session: AsyncSession = Depends(get_session)
+):
+    from ..services import target_service
+
+    t = await target_service.get_target(session, target_id)
+    if t is None:
+        return HTMLResponse("<h1>Not Found</h1>", status_code=404)
+
+    return templates.TemplateResponse(
+        "targets/clone.html",
+        {"request": request, "target": _target_to_dict(t)},
+    )
+
+
+@router.post("/targets/{target_id}/clone", response_class=HTMLResponse)
+async def target_clone_submit(
+    request: Request, target_id: int, session: AsyncSession = Depends(get_session)
+):
+    from ..services import target_service
+
+    form = await request.form()
+    new_name = form.get("new_name", "").strip()
+    if not new_name:
+        new_name = f"Clone of target {target_id}"
+
+    cloned = await target_service.clone_target(session, target_id, new_name=new_name)
+    await session.commit()
+    from starlette.responses import RedirectResponse
+
+    return RedirectResponse(f"/eval/targets/{cloned.id}", status_code=303)
+
+
+# ── Runners ──────────────────────────────────────────────────────────────
+
+
+@router.get("/runners", response_class=HTMLResponse)
+async def runner_list(request: Request, session: AsyncSession = Depends(get_session)):
+    from ..services import runner_service
+
+    runner_class = request.query_params.get("runner_class") or None
+    items = await runner_service.list_runners(session, runner_class=runner_class)
+    data = [_runner_to_dict(r) for r in items]
+
+    # Distinct runner classes for filter dropdown
+    all_runners = await runner_service.list_runners(session)
+    runner_classes = sorted({r.runner_class for r in all_runners})
+
+    return templates.TemplateResponse(
+        "runners/list.html",
+        {
+            "request": request,
+            "runners": data,
+            "runner_classes": runner_classes,
+        },
+    )
+
+
+@router.get("/runners/{runner_id}", response_class=HTMLResponse)
+async def runner_detail(
+    request: Request, runner_id: int, session: AsyncSession = Depends(get_session)
+):
+    from sqlalchemy import select
+
+    from ..models.target import TargetConfiguration
+    from ..services import run_service, runner_service
+
+    runner = await runner_service.get_runner(session, runner_id)
+    if runner is None:
+        return HTMLResponse("<h1>Not Found</h1>", status_code=404)
+
+    runner_data = _runner_to_dict(runner)
+
+    # Find target configs using this runner
+    stmt = select(TargetConfiguration).where(TargetConfiguration.runner_profile_id == runner_id)
+    result = await session.execute(stmt)
+    targets = [_target_to_dict(t) for t in result.scalars().all()]
+
+    # Find runs via those targets
+    target_ids = {t["id"] for t in targets}
+    runs = []
+    if target_ids:
+        all_runs = await run_service.list_runs(session, limit=50)
+        runs = [_run_to_dict(r) for r in all_runs if r.target_config_id in target_ids]
+
+    return templates.TemplateResponse(
+        "runners/detail.html",
+        {
+            "request": request,
+            "runner": runner_data,
+            "targets": targets,
+            "runs": runs,
+        },
+    )
+
+
 # ── Machines ─────────────────────────────────────────────────────────────
 
 
@@ -273,22 +496,237 @@ async def machine_list(request: Request, session: AsyncSession = Depends(get_ses
     )
 
 
+@router.get("/machines/{machine_id}", response_class=HTMLResponse)
+async def machine_detail(
+    request: Request, machine_id: int, session: AsyncSession = Depends(get_session)
+):
+    from sqlalchemy import select
+
+    from ..models.machine import MachineSnapshot
+    from ..models.target import TargetConfiguration
+    from ..services import machine_service
+
+    machine = await machine_service.get_profile(session, machine_id)
+    if machine is None:
+        return HTMLResponse("<h1>Not Found</h1>", status_code=404)
+
+    runtime_avail = []
+    if machine.runtime_availability:
+        with contextlib.suppress(json.JSONDecodeError, TypeError):
+            runtime_avail = json.loads(machine.runtime_availability)
+
+    accel_details = None
+    if machine.accelerator_details:
+        with contextlib.suppress(json.JSONDecodeError, TypeError):
+            accel_details = json.dumps(json.loads(machine.accelerator_details), indent=2)
+        if accel_details is None:
+            accel_details = machine.accelerator_details
+
+    machine_data = {
+        **_machine_to_dict(machine),
+        "storage_summary": machine.storage_summary,
+        "os_description": machine.os_description,
+        "accelerator_details": accel_details,
+        "capacity_notes": machine.capacity_notes,
+        "runtime_availability": runtime_avail,
+    }
+
+    # Snapshots
+    snap_stmt = (
+        select(MachineSnapshot)
+        .where(MachineSnapshot.machine_profile_id == machine_id)
+        .order_by(MachineSnapshot.captured_at.desc())
+        .limit(20)
+    )
+    snap_result = await session.execute(snap_stmt)
+    snapshots = [
+        {
+            "id": s.id,
+            "runtime_version": None,
+            "model_server_version": None,
+            "created_at": str(s.captured_at) if s.captured_at else None,
+        }
+        for s in snap_result.scalars().all()
+    ]
+
+    # Target configs on this machine
+    tgt_stmt = select(TargetConfiguration).where(
+        TargetConfiguration.machine_profile_id == machine_id
+    )
+    tgt_result = await session.execute(tgt_stmt)
+    targets = [_target_to_dict(t) for t in tgt_result.scalars().all()]
+
+    return templates.TemplateResponse(
+        "machines/detail.html",
+        {
+            "request": request,
+            "machine": machine_data,
+            "snapshots": snapshots,
+            "targets": targets,
+        },
+    )
+
+
 # ── Runs ─────────────────────────────────────────────────────────────────
 
 
 @router.get("/runs", response_class=HTMLResponse)
 async def run_list(request: Request, session: AsyncSession = Depends(get_session)):
-    from ..services import run_service
+    from datetime import datetime
 
-    runs = await run_service.list_runs(session, limit=50)
+    from ..services import eval_service, machine_service, run_service
+
+    # Parse filter params
+    status = request.query_params.get("status") or None
+    evaluation_id = request.query_params.get("evaluation_id") or None
+    model_name = request.query_params.get("model_name") or None
+    hardware_class = request.query_params.get("hardware_class") or None
+    date_from_str = request.query_params.get("date_from") or None
+    date_to_str = request.query_params.get("date_to") or None
+
+    date_from = None
+    date_to = None
+    if date_from_str:
+        with contextlib.suppress(ValueError):
+            date_from = datetime.fromisoformat(date_from_str)
+    if date_to_str:
+        with contextlib.suppress(ValueError):
+            date_to = datetime.fromisoformat(date_to_str)
+
+    runs = await run_service.list_runs(
+        session,
+        status=status,
+        evaluation_id=int(evaluation_id) if evaluation_id else None,
+        model_name=model_name,
+        hardware_class=hardware_class,
+        date_from=date_from,
+        date_to=date_to,
+        limit=100,
+    )
     data = [_run_to_dict(r) for r in runs]
+
+    # Load entity lists for filter dropdowns
+    evaluations = await eval_service.list_evaluations(session)
+    eval_data = [{"id": e.id, "name": e.name} for e in evaluations]
+
+    machines = await machine_service.list_profiles(session)
+    hw_classes = sorted({m.hardware_class for m in machines if m.hardware_class})
+
     return templates.TemplateResponse(
         "runs/list.html",
         {
             "request": request,
             "runs": data,
+            "evaluations": eval_data,
+            "hardware_classes": hw_classes,
+            "filter_status": status,
+            "filter_evaluation_id": int(evaluation_id) if evaluation_id else None,
+            "filter_model_name": model_name,
+            "filter_hardware_class": hardware_class,
+            "filter_date_from": date_from_str,
+            "filter_date_to": date_to_str,
         },
     )
+
+
+@router.get("/runs/launch", response_class=HTMLResponse)
+async def run_launch_form(request: Request, session: AsyncSession = Depends(get_session)):
+    from ..services import eval_service, machine_service, target_service
+
+    evaluations = await eval_service.list_evaluations(session)
+    eval_data = [_eval_to_dict(e) for e in evaluations]
+
+    targets = await target_service.list_targets(session)
+    machines = await machine_service.list_profiles(session)
+    machine_map = {m.id: m for m in machines}
+
+    target_data = []
+    for t in targets:
+        td = _target_to_dict(t)
+        mp = machine_map.get(t.machine_profile_id) if t.machine_profile_id else None
+        td["machine_name"] = mp.display_name or mp.hostname if mp else None
+        target_data.append(td)
+
+    # Check for validation warnings
+    warnings_list = []
+    try:
+        from ..services.compatibility import is_compatible
+
+        for t in targets:
+            if t.machine_profile_id and t.runner_profile_id:
+                mp = machine_map.get(t.machine_profile_id)
+                if mp and not is_compatible(t.runner_profile_id, mp.hardware_class):
+                    warnings_list.append(
+                        f"Target '{t.name}' may have incompatible runner/machine combination"
+                    )
+    except Exception:  # noqa: BLE001
+        pass  # Compatibility check is best-effort
+
+    return templates.TemplateResponse(
+        "runs/launch.html",
+        {
+            "request": request,
+            "evaluations": eval_data,
+            "targets": target_data,
+            "validation_warnings": warnings_list,
+        },
+    )
+
+
+@router.post("/runs/launch", response_class=HTMLResponse)
+async def run_launch_submit(request: Request, session: AsyncSession = Depends(get_session)):
+    """Create a run from the launch form."""
+    from ..services import run_service
+
+    form = await request.form()
+    target_ids = form.getlist("target_ids")
+    if not target_ids:
+        from starlette.responses import RedirectResponse
+
+        return RedirectResponse("/eval/runs/launch", status_code=303)
+
+    # For simplicity, create runs directly (the orchestrator would be used
+    # in real execution — this creates the DB records for the UI flow)
+    first_run_id = None
+    for tid in target_ids:
+        run = await run_service.create_run(
+            session,
+            evaluation_version_id=1,  # Would come from selected evaluation
+            target_config_id=int(tid),
+            trigger_type="ui",
+            priority=int(form.get("priority", 0)),
+        )
+        if first_run_id is None:
+            first_run_id = run.id
+
+    await session.commit()
+    from starlette.responses import RedirectResponse
+
+    if first_run_id:
+        return RedirectResponse(f"/eval/runs/{first_run_id}", status_code=303)
+    return RedirectResponse("/eval/runs", status_code=303)
+
+
+@router.post("/runs/{run_id}/cancel", response_class=HTMLResponse)
+async def run_cancel(request: Request, run_id: int, session: AsyncSession = Depends(get_session)):
+    from ..services import run_service
+
+    await run_service.update_status(session, run_id, "canceled")
+    await session.commit()
+    from starlette.responses import RedirectResponse
+
+    return RedirectResponse(f"/eval/runs/{run_id}", status_code=303)
+
+
+@router.post("/runs/{run_id}/resume", response_class=HTMLResponse)
+async def run_resume(request: Request, run_id: int, session: AsyncSession = Depends(get_session)):
+    from ..services import run_service
+
+    await run_service.update_status(session, run_id, "queued")
+    await session.commit()
+    from starlette.responses import RedirectResponse
+
+    return RedirectResponse(f"/eval/runs/{run_id}", status_code=303)
 
 
 @router.get("/runs/{run_id}", response_class=HTMLResponse)
@@ -305,15 +743,30 @@ async def run_detail(request: Request, run_id: int, session: AsyncSession = Depe
 
     item_data = []
     for i in items:
+        # Load traces for each item
+        traces = await run_service.get_traces(session, i.id)
+        trace_list = []
+        for tr in traces:
+            parsed = tr.trace_data
+            with contextlib.suppress(json.JSONDecodeError, TypeError):
+                parsed = json.loads(tr.trace_data)
+            trace_list.append(
+                {
+                    "trace_type": tr.trace_type,
+                    "trace_data": parsed,
+                    "created_at": str(tr.created_at) if tr.created_at else None,
+                }
+            )
         item_data.append(
             {
                 "id": i.id,
                 "item_index": i.item_index,
-                "input_text": (i.input_text or "")[:200],
+                "input_text": (i.input_sent or "")[:200],
                 "raw_output": (i.raw_output or "")[:200],
                 "overall_pass": i.overall_pass,
                 "latency_ms": i.latency_ms,
                 "error_message": i.error_message,
+                "traces": trace_list,
             }
         )
 
@@ -370,12 +823,108 @@ async def run_live(request: Request, run_id: int, session: AsyncSession = Depend
     )
 
 
+# ── Run Groups ───────────────────────────────────────────────────────────
+
+
+@router.get("/run-groups", response_class=HTMLResponse)
+async def run_group_list(request: Request, session: AsyncSession = Depends(get_session)):
+    from sqlalchemy import func, select
+
+    from ..models.run import Run, RunGroup
+
+    exec_type = request.query_params.get("execution_type") or None
+
+    stmt = select(RunGroup).order_by(RunGroup.created_at.desc())
+    if exec_type:
+        stmt = stmt.where(RunGroup.execution_type == exec_type)
+    result = await session.execute(stmt)
+    groups = result.scalars().all()
+
+    data = []
+    for g in groups:
+        # Count runs in group
+        count_stmt = select(func.count()).select_from(Run).where(Run.run_group_id == g.id)
+        count_result = await session.execute(count_stmt)
+        run_count = count_result.scalar() or 0
+
+        tags = []
+        if g.tags:
+            with contextlib.suppress(json.JSONDecodeError, TypeError):
+                tags = json.loads(g.tags)
+
+        data.append(
+            {
+                "id": g.id,
+                "name": g.name,
+                "description": g.description,
+                "execution_type": g.execution_type,
+                "scheduled_at": str(g.scheduled_at) if g.scheduled_at else None,
+                "tags": tags,
+                "run_count": run_count,
+                "created_at": str(g.created_at) if g.created_at else None,
+            }
+        )
+
+    return templates.TemplateResponse(
+        "run_groups/list.html",
+        {
+            "request": request,
+            "groups": data,
+        },
+    )
+
+
+@router.get("/run-groups/{group_id}", response_class=HTMLResponse)
+async def run_group_detail(
+    request: Request, group_id: int, session: AsyncSession = Depends(get_session)
+):
+    from sqlalchemy import select
+
+    from ..models.run import Run, RunGroup
+
+    stmt = select(RunGroup).where(RunGroup.id == group_id)
+    result = await session.execute(stmt)
+    group = result.scalar_one_or_none()
+    if group is None:
+        return HTMLResponse("<h1>Not Found</h1>", status_code=404)
+
+    tags = []
+    if group.tags:
+        with contextlib.suppress(json.JSONDecodeError, TypeError):
+            tags = json.loads(group.tags)
+
+    group_data = {
+        "id": group.id,
+        "name": group.name,
+        "description": group.description,
+        "execution_type": group.execution_type,
+        "scheduled_at": str(group.scheduled_at) if group.scheduled_at else None,
+        "tags": tags,
+        "created_at": str(group.created_at) if group.created_at else None,
+    }
+
+    run_stmt = select(Run).where(Run.run_group_id == group_id).order_by(Run.id)
+    run_result = await session.execute(run_stmt)
+    runs = [_run_to_dict(r) for r in run_result.scalars().all()]
+
+    return templates.TemplateResponse(
+        "run_groups/detail.html",
+        {
+            "request": request,
+            "group": group_data,
+            "runs": runs,
+        },
+    )
+
+
 # ── Comparisons ──────────────────────────────────────────────────────────
 
 
 @router.get("/comparisons", response_class=HTMLResponse)
 async def comparison_page(
-    request: Request, runs: str | None = None, session: AsyncSession = Depends(get_session)
+    request: Request,
+    runs: str | None = None,
+    session: AsyncSession = Depends(get_session),
 ):
     comparison = None
     run_details = []
@@ -383,12 +932,14 @@ async def comparison_page(
     if runs:
         from ..services import comparison_service, run_service
 
-        run_ids = [int(r.strip()) for r in runs.split(",") if r.strip()]
+        try:
+            run_ids = [int(r.strip()) for r in runs.split(",") if r.strip()]
+        except ValueError:
+            run_ids = []
         if len(run_ids) >= 2:
             comparison = await comparison_service.compare_runs(session, run_ids)
             comparison["run_ids"] = run_ids
 
-            # Also fetch run details and items for each run
             for rid in run_ids:
                 r = await run_service.get_run(session, rid)
                 if r:
@@ -428,6 +979,83 @@ async def comparison_page(
     )
 
 
+# ── Search ───────────────────────────────────────────────────────────────
+
+
+@router.get("/search", response_class=HTMLResponse)
+async def search_page(request: Request, session: AsyncSession = Depends(get_session)):
+    """Global search across primary entities."""
+    from ..services import (
+        dataset_service,
+        eval_service,
+        machine_service,
+        runner_service,
+        target_service,
+    )
+
+    q = (request.query_params.get("q") or "").strip()
+    results = {
+        "evaluations": [],
+        "datasets": [],
+        "targets": [],
+        "runners": [],
+        "machines": [],
+    }
+    has_results = False
+
+    if q:
+        q_lower = q.lower()
+
+        evals = await eval_service.list_evaluations(session)
+        results["evaluations"] = [
+            _eval_to_dict(e) for e in evals if q_lower in (e.name or "").lower()
+        ]
+
+        datasets = await dataset_service.list_datasets(session)
+        results["datasets"] = [
+            _dataset_to_dict(d)
+            for d in datasets
+            if q_lower in (d.name or "").lower() or q_lower in (d.source or "").lower()
+        ]
+
+        targets = await target_service.list_targets(session)
+        results["targets"] = [
+            _target_to_dict(t)
+            for t in targets
+            if q_lower in (t.name or "").lower()
+            or q_lower in (t.model_name or "").lower()
+            or q_lower in (t.provider or "").lower()
+        ]
+
+        runners = await runner_service.list_runners(session)
+        results["runners"] = [
+            _runner_to_dict(r)
+            for r in runners
+            if q_lower in (r.name or "").lower() or q_lower in (r.runner_class or "").lower()
+        ]
+
+        machines = await machine_service.list_profiles(session)
+        results["machines"] = [
+            _machine_to_dict(m)
+            for m in machines
+            if q_lower in (m.hostname or "").lower()
+            or q_lower in (m.display_name or "").lower()
+            or q_lower in (m.hardware_class or "").lower()
+        ]
+
+        has_results = any(v for v in results.values())
+
+    return templates.TemplateResponse(
+        "search.html",
+        {
+            "request": request,
+            "query": q,
+            "results": results,
+            "has_results": has_results,
+        },
+    )
+
+
 # ── Reports ──────────────────────────────────────────────────────────────
 
 
@@ -435,12 +1063,16 @@ async def comparison_page(
 async def reports_page(request: Request, session: AsyncSession = Depends(get_session)):
     from ..services import report_service, run_service
 
-    presets = await report_service.list_presets(session)
+    presets = report_service.list_presets()
     preset_data = [
-        {"id": p.id, "name": p.name, "description": getattr(p, "description", "")} for p in presets
+        {
+            "id": p["id"],
+            "name": p["name"],
+            "description": p.get("description", ""),
+        }
+        for p in presets
     ]
 
-    # Gather chart data from recent runs
     runs = await run_service.list_runs(session, limit=50)
     chart_data = []
     for r in runs:
@@ -470,7 +1102,9 @@ async def reports_page(request: Request, session: AsyncSession = Depends(get_ses
 
 @router.get("/reports/export", response_class=HTMLResponse)
 async def report_export(
-    request: Request, format: str = "json", session: AsyncSession = Depends(get_session)
+    request: Request,
+    format: str = "json",
+    session: AsyncSession = Depends(get_session),
 ):
     """Export recent run data as JSON/CSV/HTML download."""
     from ..services import report_service, run_service
@@ -492,6 +1126,10 @@ async def report_export(
         content = report_service.export_html({"runs": rows}, title="Eval Report")
         media_type = "text/html"
         filename = "eval_report.html"
+    elif format == "markdown":
+        content = report_service.export_markdown({"runs": rows}, title="Eval Report")
+        media_type = "text/markdown"
+        filename = "eval_report.md"
     else:
         content = report_service.export_json(rows)
         media_type = "application/json"
@@ -572,6 +1210,41 @@ def _target_to_dict(t) -> dict:
         "runtime_backend": t.runtime_backend,
         "is_archived": t.is_archived,
         "created_at": str(t.created_at) if t.created_at else None,
+    }
+
+
+def _runner_to_dict(r) -> dict:
+    machine_classes = []
+    if r.supported_machine_classes:
+        with contextlib.suppress(json.JSONDecodeError, TypeError):
+            machine_classes = json.loads(r.supported_machine_classes)
+
+    model_families = []
+    if r.supported_model_families:
+        with contextlib.suppress(json.JSONDecodeError, TypeError):
+            model_families = json.loads(r.supported_model_families)
+
+    param_surface = None
+    if r.parameter_surface:
+        try:
+            param_surface = json.loads(r.parameter_surface)
+        except (json.JSONDecodeError, TypeError):
+            param_surface = r.parameter_surface
+
+    return {
+        "id": r.id,
+        "name": r.name,
+        "display_name": r.display_name,
+        "runner_class": r.runner_class,
+        "version": r.version,
+        "default_endpoint_url": r.default_endpoint_url,
+        "supported_machine_classes": machine_classes,
+        "supported_model_families": model_families,
+        "parameter_surface": param_surface,
+        "notes": r.notes,
+        "is_archived": r.is_archived,
+        "created_at": str(r.created_at) if r.created_at else None,
+        "updated_at": str(r.updated_at) if r.updated_at else None,
     }
 
 

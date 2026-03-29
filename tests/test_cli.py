@@ -2,9 +2,25 @@
 
 from __future__ import annotations
 
+import pytest
 from click.testing import CliRunner
 
 from ai_benchmark.cli import cli
+
+
+@pytest.fixture(autouse=True)
+def _use_temp_db(tmp_path, monkeypatch):
+    """Use a fresh temp database for every CLI test."""
+    db_path = tmp_path / "test_cli.db"
+    monkeypatch.setenv("AI_BENCH_DATABASE_URL", f"sqlite+aiosqlite:///{db_path}")
+
+
+def _init_and_run(*args):
+    """Run init-db then execute a CLI command."""
+    runner = CliRunner()
+    init_result = runner.invoke(cli, ["init-db"])
+    assert init_result.exit_code == 0
+    return runner.invoke(cli, list(args))
 
 
 def test_cli_help():
@@ -30,22 +46,19 @@ def test_init_db():
 
 
 def test_status_command():
-    runner = CliRunner()
-    result = runner.invoke(cli, ["status"])
+    result = _init_and_run("status")
     assert result.exit_code == 0
     assert "Source" in result.output
 
 
 def test_query_command_no_results():
     """Query should run without error even with no data."""
-    runner = CliRunner()
-    result = runner.invoke(cli, ["query", "--limit", "5"])
+    result = _init_and_run("query", "--limit", "5")
     assert result.exit_code == 0
 
 
 def test_export_json_no_results():
-    runner = CliRunner()
-    result = runner.invoke(cli, ["export", "--format", "json"])
+    result = _init_and_run("export", "--format", "json")
     assert result.exit_code == 0
     assert "[]" in result.output
 

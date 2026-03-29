@@ -215,3 +215,72 @@ async def list_artifacts(session: AsyncSession, run_id: int):
     stmt = select(Artifact).where(Artifact.run_id == run_id).order_by(Artifact.created_at)
     result = await session.execute(stmt)
     return list(result.scalars().all())
+
+
+async def rescore_run(
+    session: AsyncSession,
+    run_id: int,
+    scorer_config: list[dict],
+) -> Run | None:
+    """Rescore a run with a new scorer configuration.
+
+    Updates the EvaluationVersion's scorer_config, re-invokes the scorer runner
+    on stored outputs (no regeneration), and recomputes aggregate metrics.
+    """
+    import json
+
+    run = await session.get(Run, run_id)
+    if run is None:
+        return None
+
+    from ..models.evaluation import EvaluationVersion
+
+    ev = await session.get(EvaluationVersion, run.evaluation_version_id)
+    if ev is None:
+        raise ValueError(f"EvaluationVersion {run.evaluation_version_id} not found")
+
+    # Update scorer config on the version
+    ev.scorer_config = json.dumps(scorer_config)
+    await session.flush()
+
+    # Re-score using ScorerRunner (reuses stored raw_output)
+    from ..scoring.scorer_runner import ScorerRunner
+
+    runner = ScorerRunner()
+    await runner.score_run(session, run_id)
+    await runner.compute_aggregates(session, run_id)
+
+    # Determine new terminal status
+    scored_stmt = select(RunItemResult).where(RunItemResult.run_id == run_id)
+    result = await session.execute(scored_stmt)
+    items = list(result.scalars().all())
+
+    passed_count = sum(1 for i in items if i.overall_pass is True)
+    failed_count = sum(1 for i in items if i.overall_pass is False)
+
+    if failed_count == 0 and passed_count > 0:
+        run.status = "completed"
+    elif passed_count == 0 and failed_count > 0:
+        run.status = "failed"
+    elif passed_count > 0 and failed_count > 0:
+        run.status = "partially_completed"
+
+    await session.flush()
+    await session.refresh(run)
+    return run
+
+
+async def get_traces(
+    session: AsyncSession,
+    run_item_result_id: int,
+) -> list:
+    """Fetch all trace references for a specific item result."""
+    from ..models.trace import TraceReference
+
+    stmt = (
+        select(TraceReference)
+        .where(TraceReference.run_item_result_id == run_item_result_id)
+        .order_by(TraceReference.trace_type)
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())

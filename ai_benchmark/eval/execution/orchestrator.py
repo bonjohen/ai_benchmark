@@ -153,18 +153,21 @@ class RunOrchestrator:
         test_cases: list[TestCase],
     ) -> None:
         semaphore = asyncio.Semaphore(self.settings.max_concurrent_items)
+        counter_lock = asyncio.Lock()
 
         async def _run_item(idx: int, tc: TestCase) -> None:
             async with semaphore:
                 try:
                     item_result = await executor.execute_item(session, run.id, tc, idx)
-                    if item_result.error_message:
-                        run.failed_items += 1
-                    else:
-                        run.completed_items += 1
+                    async with counter_lock:
+                        if item_result.error_message:
+                            run.failed_items += 1
+                        else:
+                            run.completed_items += 1
                 except Exception as e:
                     logger.error("item_execution_error", run_id=run.id, index=idx, error=str(e))
-                    run.failed_items += 1
+                    async with counter_lock:
+                        run.failed_items += 1
 
         tasks = [_run_item(idx, tc) for idx, tc in enumerate(test_cases)]
         await asyncio.gather(*tasks)
@@ -230,7 +233,7 @@ class RunOrchestrator:
         await session.flush()
 
     async def finalize_run(self, session: AsyncSession, run_id: int) -> Run:
-        """Set terminal status based on item outcomes."""
+        """Set terminal status based on item outcomes, generate artifacts."""
         run = await session.get(Run, run_id)
         if run is None:
             raise ValueError(f"Run {run_id} not found")
@@ -250,5 +253,14 @@ class RunOrchestrator:
             completed=run.completed_items,
             failed=run.failed_items,
         )
+
+        # Generate export artifacts for the completed run
+        try:
+            from ..services import artifact_service
+
+            await artifact_service.generate_run_artifacts(session, run_id, settings=self.settings)
+        except Exception as e:
+            logger.warning("artifact_generation_failed", run_id=run_id, error=str(e))
+
         await session.refresh(run)
         return run

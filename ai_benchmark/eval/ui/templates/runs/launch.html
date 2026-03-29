@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% set active_page = "runs" %}
+{% block title %}Launch Run{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Launch Run</h1>
+</div>
+
+<!-- Launch Presets -->
+<div class="card">
+    <div class="card-header">Quick Presets</div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-outline btn-sm preset-btn" data-preset="smoke">Smoke Test</button>
+        <button type="button" class="btn btn-outline btn-sm preset-btn" data-preset="full">Full Benchmark</button>
+        <button type="button" class="btn btn-outline btn-sm preset-btn" data-preset="regression">Regression Check</button>
+        <button type="button" class="btn btn-outline btn-sm preset-btn" data-preset="runner_compare">Runner Comparison</button>
+        <button type="button" class="btn btn-outline btn-sm preset-btn" data-preset="machine_compare">Machine Comparison</button>
+    </div>
+</div>
+
+{% if validation_warnings %}
+<div class="alert alert-warning">
+    <strong>Validation Warnings:</strong>
+    <ul style="margin: 8px 0 0 20px;">
+        {% for w in validation_warnings %}
+        <li>{{ w }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post" action="/eval/runs/launch" id="launch-form">
+    <div class="card">
+        <div class="card-header">Configuration</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="evaluation_id">Evaluation</label>
+                <select name="evaluation_id" id="evaluation_id" class="form-control" required>
+                    <option value="">Select evaluation...</option>
+                    {% for e in evaluations %}
+                    <option value="{{ e.id }}">{{ e.name }} ({{ e.execution_mode }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="execution_mode">Mode</label>
+                <select name="execution_mode" id="execution_mode" class="form-control">
+                    <option value="single">Single Run</option>
+                    <option value="matrix">Matrix Run</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Target Configurations</div>
+        <p class="text-muted mb-2">Select one or more targets. Matrix mode runs all selected targets.</p>
+        {% if targets %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:40px;"></th>
+                        <th>Name</th>
+                        <th>Model</th>
+                        <th>Provider</th>
+                        <th>Runtime</th>
+                        <th>Machine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in targets %}
+                    <tr>
+                        <td><input type="checkbox" name="target_ids" value="{{ t.id }}"></td>
+                        <td>{{ t.name }}</td>
+                        <td>{{ t.model_name }}</td>
+                        <td>{{ t.provider }}</td>
+                        <td>{{ t.runtime_backend or "—" }}</td>
+                        <td>{{ t.machine_name or "—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No target configurations available. <a href="/eval/targets">Create one</a>.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-header">Options</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select name="priority" id="priority" class="form-control">
+                    <option value="0">Normal (0)</option>
+                    <option value="1">High (1)</option>
+                    <option value="2">Urgent (2)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="run_name">Run Name (optional)</label>
+                <input type="text" name="run_name" id="run_name" class="form-control"
+                       placeholder="e.g., Nightly regression">
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+        <button type="submit" class="btn btn-primary">Launch</button>
+        <a href="/eval/runs" class="btn btn-outline">Cancel</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var preset = btn.dataset.preset;
+            var modeSelect = document.getElementById('execution_mode');
+            var checkboxes = document.querySelectorAll('input[name="target_ids"]');
+
+            if (preset === 'smoke') {
+                modeSelect.value = 'single';
+                checkboxes.forEach(function(cb, i) { cb.checked = i === 0; });
+            } else if (preset === 'full') {
+                modeSelect.value = 'single';
+                checkboxes.forEach(function(cb) { cb.checked = true; });
+            } else if (preset === 'regression') {
+                modeSelect.value = 'single';
+            } else if (preset === 'runner_compare' || preset === 'machine_compare') {
+                modeSelect.value = 'matrix';
+                checkboxes.forEach(function(cb) { cb.checked = true; });
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

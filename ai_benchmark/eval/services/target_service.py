@@ -13,6 +13,32 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
+def _validate_json_field(value, field_name: str, expected_type: type):
+    """Validate a JSON field value, accepting strings, the expected type, or None.
+
+    Returns the validated Python object (dict or list).
+    Raises ValueError if the value is not valid JSON or not the expected type.
+    """
+    if value is None:
+        return None
+    if isinstance(value, expected_type):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except (json.JSONDecodeError, ValueError) as exc:
+            raise ValueError(f"'{field_name}' contains invalid JSON: {exc}") from exc
+        if not isinstance(parsed, expected_type):
+            raise ValueError(
+                f"'{field_name}' must be a {expected_type.__name__}, got {type(parsed).__name__}"
+            )
+        return parsed
+    raise ValueError(
+        f"'{field_name}' must be a {expected_type.__name__} or a JSON string, "
+        f"got {type(value).__name__}"
+    )
+
+
 async def create_target(
     session: AsyncSession,
     *,
@@ -29,6 +55,10 @@ async def create_target(
     tags: list[str] | None = None,
     notes: str | None = None,
 ) -> TargetConfiguration:
+    inference_params = _validate_json_field(inference_params, "inference_params", dict)
+    runtime_options = _validate_json_field(runtime_options, "runtime_options", dict)
+    tags = _validate_json_field(tags, "tags", list)
+
     t = TargetConfiguration(
         name=name,
         model_name=model_name,
@@ -96,11 +126,16 @@ async def update_target(
     t = await session.get(TargetConfiguration, target_id)
     if t is None:
         return None
-    json_fields = {"inference_params", "runtime_options", "tags"}
+    json_field_types = {
+        "inference_params": dict,
+        "runtime_options": dict,
+        "tags": list,
+    }
     for key, value in kwargs.items():
         if value is not None and hasattr(t, key):
-            if key in json_fields and isinstance(value, (dict, list)):
-                setattr(t, key, json.dumps(value))
+            if key in json_field_types:
+                validated = _validate_json_field(value, key, json_field_types[key])
+                setattr(t, key, json.dumps(validated) if validated is not None else None)
             else:
                 setattr(t, key, value)
     await session.flush()
@@ -121,6 +156,19 @@ async def clone_target(
         raise ValueError(f"TargetConfiguration {target_id} not found")
 
     overrides = overrides or {}
+
+    # Validate JSON fields in overrides
+    if "inference_params" in overrides:
+        overrides["inference_params"] = _validate_json_field(
+            overrides["inference_params"], "inference_params", dict
+        )
+    if "runtime_options" in overrides:
+        overrides["runtime_options"] = _validate_json_field(
+            overrides["runtime_options"], "runtime_options", dict
+        )
+    if "tags" in overrides:
+        overrides["tags"] = _validate_json_field(overrides["tags"], "tags", list)
+
     t = TargetConfiguration(
         name=new_name,
         model_name=overrides.get("model_name", source.model_name),

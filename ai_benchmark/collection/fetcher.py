@@ -55,6 +55,25 @@ class Fetcher:
         }
         if proxy_url:
             self._client_kwargs["proxy"] = proxy_url
+        self._client: httpx.AsyncClient | None = None
+
+    async def _ensure_client(self) -> httpx.AsyncClient:
+        """Create the shared httpx client lazily on first use."""
+        if self._client is None:
+            self._client = httpx.AsyncClient(**self._client_kwargs)
+        return self._client
+
+    async def aclose(self) -> None:
+        """Close the underlying HTTP client."""
+        if self._client is not None:
+            await self._client.aclose()
+            self._client = None
+
+    async def __aenter__(self) -> Fetcher:
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        await self.aclose()
 
     async def fetch(self, url: str) -> FetchResult:
         """Fetch a URL with retry and concurrency control."""
@@ -67,41 +86,41 @@ class Fetcher:
 
     async def _fetch_with_retry(self, url: str) -> FetchResult:
         last_error: str | None = None
+        client = await self._ensure_client()
         for attempt in range(self.retry_attempts):
             try:
-                async with httpx.AsyncClient(**self._client_kwargs) as client:
-                    start = time.monotonic()
-                    response = await client.get(url)
-                    elapsed_ms = (time.monotonic() - start) * 1000
+                start = time.monotonic()
+                response = await client.get(url)
+                elapsed_ms = (time.monotonic() - start) * 1000
 
-                    if response.status_code == 429:
-                        retry_after = int(response.headers.get("Retry-After", "5"))
-                        logger.warning(
-                            "rate_limited",
-                            url=url,
-                            retry_after=retry_after,
-                            attempt=attempt + 1,
-                        )
-                        await asyncio.sleep(retry_after)
-                        continue
+                if response.status_code == 429:
+                    retry_after = int(response.headers.get("Retry-After", "5"))
+                    logger.warning(
+                        "rate_limited",
+                        url=url,
+                        retry_after=retry_after,
+                        attempt=attempt + 1,
+                    )
+                    await asyncio.sleep(retry_after)
+                    continue
 
-                    if response.status_code == 403:
-                        logger.warning("access_forbidden", url=url)
-                        return FetchResult(
-                            url=url,
-                            status_code=403,
-                            headers=dict(response.headers),
-                            elapsed_ms=elapsed_ms,
-                            error="403 Forbidden",
-                        )
-
+                if response.status_code == 403:
+                    logger.warning("access_forbidden", url=url)
                     return FetchResult(
                         url=url,
-                        status_code=response.status_code,
+                        status_code=403,
                         headers=dict(response.headers),
-                        body_text=response.text,
                         elapsed_ms=elapsed_ms,
+                        error="403 Forbidden",
                     )
+
+                return FetchResult(
+                    url=url,
+                    status_code=response.status_code,
+                    headers=dict(response.headers),
+                    body_text=response.text,
+                    elapsed_ms=elapsed_ms,
+                )
 
             except httpx.TimeoutException:
                 last_error = f"Timeout after {self.timeout}s"

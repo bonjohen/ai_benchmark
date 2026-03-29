@@ -1,17 +1,18 @@
 """Create evaluation pipeline tables.
 
 Revision ID: 002
-Revises:
+Revises: 001
 Create Date: 2026-03-28
 """
 
 from __future__ import annotations
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
+
 revision = "002"
-down_revision = None
+down_revision = "001"
 branch_labels = None
 depends_on = None
 

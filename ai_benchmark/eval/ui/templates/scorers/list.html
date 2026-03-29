@@ -20,8 +20,8 @@
         <tbody>
             {% for s in scorers %}
             <tr>
-                <td>{{ s.id }}</td>
-                <td>{{ s.name }}</td>
+                <td><a href="/eval/scorers/{{ s.id }}">{{ s.id }}</a></td>
+                <td><a href="/eval/scorers/{{ s.id }}">{{ s.name }}</a></td>
                 <td>{{ s.scorer_type }}</td>
                 <td>{{ s.created_at or "—" }}</td>
             </tr>

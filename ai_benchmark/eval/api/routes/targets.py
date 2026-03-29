@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from ...services import target_service
 from ..app import get_session
 from ..schemas.target import TargetClone, TargetCreate, TargetResponse, TargetUpdate
+from ..serializers import target_to_dict as _target_to_dict
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -109,24 +110,3 @@ async def clone_target(
     await session.commit()
 
     return result
-
-
-def _target_to_dict(t) -> dict:
-    return {
-        "id": t.id,
-        "name": t.name,
-        "model_name": t.model_name,
-        "model_family": t.model_family,
-        "provider": t.provider,
-        "endpoint_url": t.endpoint_url,
-        "machine_profile_id": t.machine_profile_id,
-        "runtime_backend": t.runtime_backend,
-        "prompt_wrapper": t.prompt_wrapper,
-        "inference_params": json.loads(t.inference_params) if t.inference_params else None,
-        "runtime_options": json.loads(t.runtime_options) if t.runtime_options else None,
-        "tags": json.loads(t.tags) if t.tags else None,
-        "notes": t.notes,
-        "is_archived": t.is_archived,
-        "created_at": t.created_at,
-        "updated_at": t.updated_at,
-    }

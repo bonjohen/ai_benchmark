@@ -1,0 +1,19 @@
+{#
+  Consistent empty/error/loading/blocked state display.
+  Include with: {% include "includes/empty_state.html" %}
+  Expects `state_type` (empty|error|blocked) and `state_message`.
+  Optional: `state_action_url`, `state_action_label` for a CTA button.
+#}
+<div class="state-panel state-{{ state_type|default('empty') }}">
+    {% if state_type == "error" %}
+    <div class="state-icon">&#9888;</div>
+    {% elif state_type == "blocked" %}
+    <div class="state-icon">&#9940;</div>
+    {% else %}
+    <div class="state-icon">&#9744;</div>
+    {% endif %}
+    <p class="state-message">{{ state_message|default("No data found.") }}</p>
+    {% if state_action_url %}
+    <a href="{{ state_action_url }}" class="btn btn-primary btn-sm">{{ state_action_label|default("Go") }}</a>
+    {% endif %}
+</div>

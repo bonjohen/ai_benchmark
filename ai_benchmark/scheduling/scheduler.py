@@ -99,24 +99,66 @@ class PipelineScheduler:
                 return
 
             collector = get_collector(source_config, github_token=self.settings.github_token)
-            snapshot_mgr = SnapshotManager(self._session_factory)
 
             all_items = []
-            for page in collector.get_pages():
-                try:
-                    items, _diff = await collector.collect_page(
-                        page, self._fetcher, snapshot_mgr, page_id=0
-                    )
-                    all_items.extend(items)
-                except Exception as e:
-                    log.warning("page_error", page=page.canonical_url, error=str(e))
+            # Open a proper session for snapshot management and page lookup
+            async with self._session_factory() as session:
+                snapshot_mgr = SnapshotManager(session)
+
+                # Look up source in DB for source_id
+                from sqlalchemy import select
+
+                from ..models.sources import Page as PageModel
+                from ..models.sources import Source as SourceModel
+
+                source_stmt = select(SourceModel).where(SourceModel.organization == organization)
+                source_result = await session.execute(source_stmt)
+                source_record = source_result.scalar_one_or_none()
+                source_id = source_record.id if source_record else None
+
+                for page in collector.get_pages():
+                    try:
+                        # Look up or create the Page record for this URL
+                        page_stmt = select(PageModel).where(
+                            PageModel.canonical_url == page.canonical_url
+                        )
+                        page_result = await session.execute(page_stmt)
+                        page_record = page_result.scalar_one_or_none()
+
+                        if page_record is None and source_id is not None:
+                            page_record = PageModel(
+                                source_id=source_id,
+                                canonical_url=page.canonical_url,
+                                page_type=page.page_type,
+                            )
+                            session.add(page_record)
+                            await session.flush()
+
+                        page_db_id = page_record.id if page_record else 0
+
+                        items, _diff = await collector.collect_page(
+                            page, self._fetcher, snapshot_mgr, page_id=page_db_id
+                        )
+                        all_items.extend(items)
+
+                        # Update page polling metadata
+                        if page_record is not None:
+                            page_record.times_polled = (page_record.times_polled or 0) + 1
+                            page_record.last_polled_at = datetime.now(UTC)
+                            if items:
+                                page_record.last_changed_at = datetime.now(UTC)
+
+                    except Exception as e:
+                        log.warning("page_error", page=page.canonical_url, error=str(e))
+
+                await session.commit()
 
             if all_items:
                 async with self._session_factory() as session, session.begin():
                     await process_items(
                         session,
                         all_items,
-                        source_id=0,
+                        source_id=source_id or 0,
                         page_id=None,
                         organization=organization,
                         source_type=source_config.classification,

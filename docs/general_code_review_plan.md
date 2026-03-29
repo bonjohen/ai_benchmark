@@ -1,188 +1,83 @@
-1.01 | Open |  |  | Create the release branch for the evaluation pipeline and runner comparison platform.
-1.02 | Open |  |  | Create the top-level project structure for backend, frontend, shared schemas, docs, and scripts.
-1.03 | Open |  |  | Add a planning folder for the PRD, release plan, architecture notes, and implementation logs.
-1.04 | Open |  |  | Create initial configuration files for environment handling, local development, and testing.
-1.05 | Open |  |  | Define canonical naming conventions for evaluations, runs, run groups, datasets, scorers, target configurations, runners, and machines.
-1.06 | Open |  |  | Create placeholder modules for evaluation definitions, execution engine, run storage, runner adapters, and UI navigation.
-1.07 | Open |  |  | Add a project task-tracking file that mirrors this phased release plan.
-1.08 | Open |  |  | Update readme.md with project purpose, scope, and current implementation status for Phase 1.
-1.09 | Open |  |  | Stage all Phase 1 changes.
-1.10 | Open |  |  | Commit all Phase 1 changes with a phase-complete commit message.
-1.11 | Open |  |  | Immediately begin Phase 2.
+# General Code Review Remediation Plan
 
-2.01 | Open |  |  | Design the persistence model for EvaluationDefinition, EvaluationVersion, Dataset, DatasetVersion, TestCase, Scorer, ScorerVersion, TargetConfiguration, RunnerProfile, MachineProfile, Run, RunGroup, RunItemResult, RunAggregateMetric, Artifact, TraceReference, and Annotation.
-2.02 | Open |  |  | Implement schema definitions or ORM-free persistence structures for all core entities.
-2.03 | Open |  |  | Implement immutable versioning behavior for evaluation definitions, scorer versions, and dataset versions.
-2.04 | Open |  |  | Implement storage for requested configuration values and effective execution values.
-2.05 | Open |  |  | Implement run-group support for matrix and scheduled grouped execution.
-2.06 | Open |  |  | Implement storage for tags, notes, and annotations without overwriting immutable execution facts.
-2.07 | Open |  |  | Add migration or schema-bootstrap logic for clean local database initialization.
-2.08 | Open |  |  | Add repository-level tests for create, read, update, archive, and immutable version behavior.
-2.09 | Open |  |  | Update readme.md with the current data model, storage approach, and Phase 2 progress.
-2.10 | Open |  |  | Stage all Phase 2 changes.
-2.11 | Open |  |  | Commit all Phase 2 changes with a phase-complete commit message.
-2.12 | Open |  |  | Immediately begin Phase 3.
+Status lifecycle for every task: Open → Started → Completed. Use Blocked when work cannot continue. Started and Completed must be recorded as PST datetimes.
 
-3.01 | Open |  |  | Implement RunnerProfile support for Ollama, LM Studio, llama.cpp, MLX or MLX-LM, vLLM, SGLang, TensorRT-LLM, and OpenVINO GenAI.
-3.02 | Open |  |  | Define runner metadata fields including runner class, version, supported machine classes, supported model families, parameter surface, and notes.
-3.03 | Open |  |  | Implement MachineProfile support for DGX Spark, Apple Silicon MacBook Pro M4 64G, Apple Silicon Mac mini 24G, RTX 4070 desktop, ASUS Vivobook S 15, GTX 1060 6G laptop, and Raspberry Pi edge class.
-3.04 | Open |  |  | Define machine metadata fields including hardware class, CPU, GPU or accelerator, RAM, storage summary, runtime stack, availability, and health state.
-3.05 | Open |  |  | Implement compatibility rules between runner profiles and machine classes.
-3.06 | Open |  |  | Implement machine snapshot capture to persist the exact runtime context used at run time.
-3.07 | Open |  |  | Implement requested-machine versus actual-machine recording.
-3.08 | Open |  |  | Seed initial runner and machine records for the known lab environments.
-3.09 | Open |  |  | Update readme.md with runner coverage, machine coverage, and Phase 3 progress.
-3.10 | Open |  |  | Stage all Phase 3 changes.
-3.11 | Open |  |  | Commit all Phase 3 changes with a phase-complete commit message.
-3.12 | Open |  |  | Immediately begin Phase 4.
+Based on findings in `docs/general_code_review_findings.md` (F-01 through F-20).
 
-4.01 | Open |  |  | Implement CRUD operations for evaluation definitions and versions.
-4.02 | Open |  |  | Implement dataset creation, import, versioning, and snapshotting.
-4.03 | Open |  |  | Implement test-case tagging, filtering, and subset generation for smoke tests and focused test sets.
-4.04 | Open |  |  | Implement scorer definitions for exact match, fuzzy match, rubric scoring, format validation, structured-output validation, latency scoring, cost scoring, and safety scoring.
-4.05 | Open |  |  | Implement evaluator-model scorer definitions with model identity, rubric, and parameter capture.
-4.06 | Open |  |  | Implement scorer versioning and scorer-set assignment to evaluation definitions.
-4.07 | Open |  |  | Implement dataset preview and validation logic for evaluation binding.
-4.08 | Open |  |  | Implement validation rules so a run cannot start with missing dataset, scorer, or incompatible schema.
-4.09 | Open |  |  | Add test coverage for evaluation versioning, dataset snapshotting, and scorer versioning behavior.
-4.10 | Open |  |  | Update readme.md with evaluation, dataset, and scorer capabilities delivered in Phase 4.
-4.11 | Open |  |  | Stage all Phase 4 changes.
-4.12 | Open |  |  | Commit all Phase 4 changes with a phase-complete commit message.
-4.13 | Open |  |  | Immediately begin Phase 5.
+## Phase 1 — Foundation and Trust (Blocks Production Use)
 
-5.01 | Open |  |  | Implement target configuration CRUD operations.
-5.02 | Open |  |  | Support target configuration fields for machine, runner, model, endpoint, runtime backend, prompt wrapper, inference parameters, context settings, quantization, GPU layer count, batching, and notes.
-5.03 | Open |  |  | Implement target configuration cloning for one-variable-at-a-time comparisons.
-5.04 | Open |  |  | Implement compatibility validation between target configuration, runner, model family, and machine class.
-5.05 | Open |  |  | Implement tagging for target configurations such as baseline, Apple-native, NVIDIA-optimized, Intel-NPU, standard-laptop, old-gpu, and edge.
-5.06 | Open |  |  | Implement matrix expansion logic to turn one evaluation plus many target configurations into a run group with child runs.
-5.07 | Open |  |  | Implement persistence for requested configuration and effective configuration after runner startup.
-5.08 | Open |  |  | Add automated tests for target cloning, compatibility validation, and matrix expansion.
-5.09 | Open |  |  | Update readme.md with target configuration and execution-matrix behavior delivered in Phase 5.
-5.10 | Open |  |  | Stage all Phase 5 changes.
-5.11 | Open |  |  | Commit all Phase 5 changes with a phase-complete commit message.
-5.12 | Open |  |  | Immediately begin Phase 6.
+| No. | Status | Started (PST) | Completed (PST) | Finding | Description |
+| --: | ------ | ------------- | --------------- | ------- | ----------- |
+| 1 | Completed | 2026-03-28 11:00 PM | 2026-03-28 11:30 PM | F-01 | Fix scheduler `collect_source()`: pass an actual AsyncSession to SnapshotManager, not the session factory. Open a session from the factory for each collection cycle. |
+| 2 | Completed | 2026-03-28 11:00 PM | 2026-03-28 11:30 PM | F-02 | Fix scheduler hardcoded `page_id=0`: look up or create Page records from the database before collection, pass actual page IDs. |
+| 3 | Completed | 2026-03-28 11:30 PM | 2026-03-29 12:15 AM | F-01/02 | Add integration test for `collect_source` with mocked HTTP. Verify end-to-end that page metadata is updated after collection. (4 tests in `test_code_review_phase1.py`.) |
+| 4 | Completed | 2026-03-29 12:00 AM | 2026-03-29 12:00 AM | F-03 | Fix UI server `i.input_text` → `i.input_sent` in run detail route. (Fixed in Phase 13 of runner plan.) |
+| 5 | Completed | 2026-03-29 12:00 AM | 2026-03-29 12:00 AM | F-04 | Fix `await report_service.list_presets(session)` → `report_service.list_presets()` (sync, no args). Fix preset_data dict access. (Fixed in Phase 13 of runner plan.) |
+| 6 | Completed | 2026-03-28 11:30 PM | 2026-03-28 11:45 PM | F-05 | Fix parallel execution race condition: added `asyncio.Lock` around counter updates in `_execute_parallel`. |
+| 7 | Completed | 2026-03-28 11:45 PM | 2026-03-29 12:15 AM | F-05 | Add test: run parallel execution with 10+ items and verify final completed/failed counts match expectations. (3 tests in `test_code_review_phase1.py`.) |
+| 8 | Completed | 2026-03-28 11:45 PM | 2026-03-28 11:50 PM | F-07 | Verified `export_html()` already uses `html.escape()` on all user-controlled data (group_name, model_name, title, status, errors). No changes needed. |
+| 9 | Completed | 2026-03-29 12:00 AM | 2026-03-29 12:15 AM | F-07 | Add test: XSS payloads in title, group_name, model_name, status, and error fields all verified escaped. (5 tests in `test_code_review_phase1.py`.) |
+| 10 | Completed | 2026-03-28 11:50 PM | 2026-03-29 12:00 AM | F-08 | Redact API keys from API responses: added `_redact_keys()` helper to strip `api_key`, `secret_key`, `token`, `password` from `runtime_options` in `_target_to_dict`. |
+| 11 | Completed | 2026-03-29 12:00 AM | 2026-03-29 12:15 AM | F-08 | Add test: GET/list target configs with api_key in runtime_options, verify redacted in response. (5 tests in `test_code_review_phase1.py`.) |
+| 12 | Completed | 2026-03-29 12:15 AM | 2026-03-29 12:15 AM | | Stage all Phase 1 changes. |
+| 13 | Completed | 2026-03-29 12:15 AM | 2026-03-29 12:15 AM | | Commit all Phase 1 changes. |
+| 14 | Completed | 2026-03-29 12:15 AM | 2026-03-29 12:15 AM | | Immediately begin Phase 2. |
 
-6.01 | Open |  |  | Implement run lifecycle state handling for queued, validating, preparing, running generation, running scorers, aggregating, completed, partially completed, failed, blocked, and canceled.
-6.02 | Open |  |  | Implement the scheduler for manual, scheduled, batch, and matrix execution.
-6.03 | Open |  |  | Implement machine-aware dispatch and runner-aware dispatch.
-6.04 | Open |  |  | Implement concurrency limits, queue priorities, and machine reservation logic.
-6.05 | Open |  |  | Implement local-only, machine allow-list, runner allow-list, cost cap, time cap, and concurrency cap restrictions.
-6.06 | Open |  |  | Implement retry and resume logic for failed items, failed scorers, and interrupted runs.
-6.07 | Open |  |  | Implement run progress tracking at both run and run-group level.
-6.08 | Open |  |  | Implement scheduler event logging for queue decisions and execution transitions.
-6.09 | Open |  |  | Add test coverage for queueing, scheduling, retry, resume, and constraint enforcement.
-6.10 | Open |  |  | Update readme.md with scheduler behavior and Phase 6 progress.
-6.11 | Open |  |  | Stage all Phase 6 changes.
-6.12 | Open |  |  | Commit all Phase 6 changes with a phase-complete commit message.
-6.13 | Open |  |  | Immediately begin Phase 7.
+## Phase 2 — Correctness and Maintainability (Before First Release)
 
-7.01 | Open |  |  | Implement a runner adapter interface for model invocation, health check, capability inspection, and metadata capture.
-7.02 | Open |  |  | Implement the Ollama adapter.
-7.03 | Open |  |  | Implement the LM Studio adapter.
-7.04 | Open |  |  | Implement the llama.cpp adapter.
-7.05 | Open |  |  | Implement the MLX or MLX-LM adapter.
-7.06 | Open |  |  | Implement the vLLM adapter.
-7.07 | Open |  |  | Implement the SGLang adapter.
-7.08 | Open |  |  | Implement the TensorRT-LLM adapter.
-7.09 | Open |  |  | Implement the OpenVINO GenAI adapter.
-7.10 | Open |  |  | Implement normalized response capture so all runners feed a common evaluation result format.
-7.11 | Open |  |  | Implement runner-version and effective-runtime capture at execution time.
-7.12 | Open |  |  | Add adapter tests and compatibility tests for supported runner classes.
-7.13 | Open |  |  | Update readme.md with runner adapter coverage and Phase 7 progress.
-7.14 | Open |  |  | Stage all Phase 7 changes.
-7.15 | Open |  |  | Commit all Phase 7 changes with a phase-complete commit message.
-7.16 | Open |  |  | Immediately begin Phase 8.
+| No. | Status | Started (PST) | Completed (PST) | Finding | Description |
+| --: | ------ | ------------- | --------------- | ------- | ----------- |
+| 15 | Completed | 2026-03-29 12:15 AM | 2026-03-29 12:30 AM | F-13 | Fixed 2 failing CLI tests: root cause was stale DB file without `benchmark_variant` column. Added `_use_temp_db` fixture with `monkeypatch.setenv` to use fresh temp DB per test. All 8 CLI tests now pass. |
+| 16 | Completed | 2026-03-29 12:30 AM | 2026-03-29 12:45 AM | F-09 | Added CORS middleware: `CORSMiddleware` with `allow_origins=["*"]` configured on FastAPI app in `create_app()`. |
+| 17 | Completed | 2026-03-28 11:45 PM | 2026-03-28 11:50 PM | F-15 | Fixed comparison page query param parsing: wrapped `int(r.strip())` in try/except ValueError. (Done in prior runner plan Phase 13.) |
+| 18 | Completed | 2026-03-29 12:30 AM | 2026-03-29 12:45 AM | F-12 | Fixed httpx client-per-request: Fetcher now lazily creates and reuses a single `httpx.AsyncClient`. Added `aclose()` and context manager support. |
+| 19 | Completed | 2026-03-29 12:30 AM | 2026-03-29 12:45 AM | F-11 | Created Alembic migration 001 for 8 core tables (sources, pages, snapshots, event_records, claim_records, cross_references, candidate_papers, enriched_papers). Updated 002's down_revision to "001". |
+| 20 | Completed | 2026-03-29 12:30 AM | 2026-03-29 12:45 AM | F-16 | Fixed `ScorerRunner._scorer_accum`: replaced instance-level mutable state with local `scorer_accum` variable in `compute_aggregates`. |
+| 21 | Completed | 2026-03-29 12:30 AM | 2026-03-29 12:45 AM | F-14 | Improved adapter stubs: all 8 stub adapters now raise `NotImplementedError` with descriptive message naming available alternatives. |
+| 22 | Completed | 2026-03-29 12:30 AM | 2026-03-29 12:45 AM | — | Fixed batch creation: `create_batch` endpoint now looks up DatasetVersion item count instead of defaulting to 0. |
+| 23 | Completed | 2026-03-29 12:30 AM | 2026-03-29 12:45 AM | — | Unified settings: added `database_url` to `EvalSettings`, removed `getattr(settings, "database_url", ...)` workaround in app.py. |
+| 24 | Completed | 2026-03-29 12:45 AM | 2026-03-29 12:45 AM | | Stage all Phase 2 changes. |
+| 25 | Completed | 2026-03-29 12:45 AM | 2026-03-29 12:45 AM | | Commit all Phase 2 changes. |
+| 26 | Completed | 2026-03-29 12:45 AM | 2026-03-29 12:45 AM | | Immediately begin Phase 3. |
 
-8.01 | Open |  |  | Implement storage of raw outputs, normalized outputs, scorer outputs, and aggregate metrics.
-8.02 | Open |  |  | Implement capture of trace references, token usage, latency breakdowns, retry counts, and cost estimates where available.
-8.03 | Open |  |  | Implement execution log storage separate from evaluation artifact storage.
-8.04 | Open |  |  | Implement artifact generation for JSON exports, CSV summaries, markdown reports, HTML reports, and comparison bundles.
-8.05 | Open |  |  | Implement artifact retention policy support.
-8.06 | Open |  |  | Implement rescoring of stored outputs without regeneration when possible.
-8.07 | Open |  |  | Implement re-aggregation of run metrics after rescoring.
-8.08 | Open |  |  | Add tests for trace capture, artifact generation, and rescoring correctness.
-8.09 | Open |  |  | Update readme.md with result-capture and artifact capabilities delivered in Phase 8.
-8.10 | Open |  |  | Stage all Phase 8 changes.
-8.11 | Open |  |  | Commit all Phase 8 changes with a phase-complete commit message.
-8.12 | Open |  |  | Immediately begin Phase 9.
+## Phase 3 — Test and Release Confidence (Before Production Deployment)
 
-9.01 | Open |  |  | Implement API endpoints for evaluations, datasets, scorers, target configurations, runners, machines, runs, run groups, and reports.
-9.02 | Open |  |  | Implement API endpoints for run launch, run resume, scorer retry, item retry, and cancellation.
-9.03 | Open |  |  | Implement CLI commands for run launch, run status, run compare, report export, and machine or runner inspection.
-9.04 | Open |  |  | Implement machine-readable run launch input suitable for invocation from a Claude Code skill.
-9.05 | Open |  |  | Implement authentication or local authorization appropriate for lab use.
-9.06 | Open |  |  | Add API and CLI tests covering normal and failure paths.
-9.07 | Open |  |  | Produce example automation payloads for scheduled evaluation execution.
-9.08 | Open |  |  | Update readme.md with API and CLI usage delivered in Phase 9.
-9.09 | Open |  |  | Stage all Phase 9 changes.
-9.10 | Open |  |  | Commit all Phase 9 changes with a phase-complete commit message.
-9.11 | Open |  |  | Immediately begin Phase 10.
+| No. | Status | Started (PST) | Completed (PST) | Finding | Description |
+| --: | ------ | ------------- | --------------- | ------- | ----------- |
+| 27 | Completed | 2026-03-29 12:45 AM | 2026-03-29 1:00 AM | — | Added integration test for collection daemon path. 5 tests in `test_collection_integration.py`: full path with items, no-changes, source-not-found, page-error-continues, snapshot-creation. |
+| 28 | Completed | 2026-03-28 11:59 PM | 2026-03-29 12:00 AM | — | Add UI route smoke tests for all endpoints. (16 regression tests added in Phase 14 of runner plan covering all UI routes.) |
+| 29 | Completed | 2026-03-29 12:45 AM | 2026-03-29 1:00 AM | — | Added security tests: 7 auth tests in `test_auth.py` (no-auth, missing-creds, bearer, x-api-key, wrong-token, healthz, UI protection). XSS tests in Phase 1. API key redaction tests in Phase 1. |
+| 30 | Completed | 2026-03-29 12:45 AM | 2026-03-29 1:00 AM | — | Added adapter integration tests: 23 tests in `test_adapter_integration.py` using respx. OpenAI (8), Anthropic (8), GenericHTTP (7) — success, errors, timeouts, auth headers, inference params. |
+| 31 | Completed | 2026-03-29 12:45 AM | 2026-03-29 1:00 AM | — | Added migration verification test: 4 tests in `test_migrations.py` — upgrade head, idempotent, version check, column verification. |
+| 32 | Completed | 2026-03-29 12:45 AM | 2026-03-29 1:00 AM | F-10 | Created `.github/workflows/ci.yml`: pytest, ruff check, ruff format --check on push/PR to main. |
+| 33 | Completed | 2026-03-29 12:45 AM | 2026-03-29 1:00 AM | — | Added end-to-end eval execution test: 5 tests in `test_e2e_eval.py` — lifecycle with/without scorer, status transitions, partial failure, item count verification. |
+| 34 | Completed | 2026-03-29 12:45 AM | 2026-03-29 1:00 AM | F-06 | Auth middleware already existed in `api/middleware.py`. Added 7 tests in `test_auth.py`. Bearer token and X-API-Key supported. Disabled when `api_key` is None. |
+| 35 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:00 AM | | Stage all Phase 3 changes. |
+| 36 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:00 AM | | Commit all Phase 3 changes. |
+| 37 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:00 AM | | Immediately begin Phase 4. |
 
-10.01 | Open |  |  | Implement the frontend application shell and routing.
-10.02 | Open |  |  | Implement top-level navigation for Evaluations, Datasets, Scorers, Target Configurations, Runs, Run Groups, Machines, Runners, and Reports.
-10.03 | Open |  |  | Implement current activity and historical activity separation in the UI.
-10.04 | Open |  |  | Implement shared filter state, saved views, and global search across primary entities.
-10.05 | Open |  |  | Implement a reusable metadata panel to show evaluation version, dataset version, scorer versions, runner, machine, and target configuration context.
-10.06 | Open |  |  | Implement foundational loading, error, empty, and blocked-state handling across the UI.
-10.07 | Open |  |  | Add frontend tests for navigation, search, and saved-view behavior.
-10.08 | Open |  |  | Update readme.md with frontend foundation and Phase 10 progress.
-10.09 | Open |  |  | Stage all Phase 10 changes.
-10.10 | Open |  |  | Commit all Phase 10 changes with a phase-complete commit message.
-10.11 | Open |  |  | Immediately begin Phase 11.
+## Phase 4 — Operations and Polish (Post-Launch Improvements)
 
-11.01 | Open |  |  | Implement the evaluation definition list and detail pages.
-11.02 | Open |  |  | Implement evaluation create, edit, clone, archive, and version workflows.
-11.03 | Open |  |  | Implement dataset list, detail, preview, and subset views.
-11.04 | Open |  |  | Implement scorer list, detail, version history, and scorer-set assignment views.
-11.05 | Open |  |  | Implement target configuration list, detail, edit, clone, and compare views.
-11.06 | Open |  |  | Implement runner inventory and runner detail pages.
-11.07 | Open |  |  | Implement machine inventory and machine detail pages.
-11.08 | Open |  |  | Add UI tests for evaluation, dataset, scorer, target, runner, and machine management.
-11.09 | Open |  |  | Update readme.md with definition-management UI delivered in Phase 11.
-11.10 | Open |  |  | Stage all Phase 11 changes.
-11.11 | Open |  |  | Commit all Phase 11 changes with a phase-complete commit message.
-11.12 | Open |  |  | Immediately begin Phase 12.
+| No. | Status | Started (PST) | Completed (PST) | Finding | Description |
+| --: | ------ | ------------- | --------------- | ------- | ----------- |
+| 38 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | F-20 | Added `SecurityHeadersMiddleware`: X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Content-Security-Policy, Referrer-Policy. |
+| 39 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | — | Added `/healthz` endpoint with DB connectivity check (`SELECT 1`). Returns `{"status": "ok", "database": "connected"}`. |
+| 40 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | — | Added `AccessLoggingMiddleware`: structlog with method, path, status_code, latency_ms. Skips /healthz. |
+| 41 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | — | Added `RateLimitMiddleware`: 100 req/min per IP (configurable via `rate_limit_per_minute`), 429 on exceed. |
+| 42 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | F-17 | Created `api/serializers.py` with shared `run_to_dict` and `target_to_dict`. Updated API routes to use shared module. |
+| 43 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | — | Fixed N+1 in report_service: batch-load all RunAggregateMetric and TargetConfiguration in single queries instead of per-run loops. |
+| 44 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | F-18 | Added `db_pool_size` and `db_max_overflow` to EvalSettings. Passed to `create_engine()` for non-SQLite databases. |
+| 45 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | F-19 | Added `_validate_json_field()` in target_service and eval_service. Validates inference_params, runtime_options, tags, scorer_config, preprocessing, pass_criteria. |
+| 46 | Completed | 2026-03-29 1:15 AM | 2026-03-29 1:20 AM | — | Added pytest filterwarnings for pytest_asyncio and starlette deprecation warnings. Warnings dropped from 4172 to 13. |
+| 47 | Completed | 2026-03-29 1:00 AM | 2026-03-29 1:15 AM | — | Added skip-to-content link, nav aria-label, sr-only labels in base.html. Table captions in list/detail/dashboard templates. Status badges with role="status". |
+| 48 | Completed | 2026-03-29 1:20 AM | 2026-03-29 1:20 AM | | Stage all Phase 4 changes. |
+| 49 | Completed | 2026-03-29 1:20 AM | 2026-03-29 1:20 AM | | Commit all Phase 4 changes. |
 
-12.01 | Open |  |  | Implement the run-launch screen for single-run and matrix-run execution.
-12.02 | Open |  |  | Implement launch presets for smoke test, full benchmark, regression check, runner comparison, machine comparison, and rerun failed items.
-12.03 | Open |  |  | Implement validation warnings for incompatible machine, runner, model, or cost settings.
-12.04 | Open |  |  | Implement the live run list.
-12.05 | Open |  |  | Implement the live run detail page with partial results, current stage, failures, and timing.
-12.06 | Open |  |  | Implement live run-group monitoring for matrix jobs.
-12.07 | Open |  |  | Implement cancel, retry, and resume actions where supported.
-12.08 | Open |  |  | Add UI tests for launch workflows and live monitoring.
-12.09 | Open |  |  | Update readme.md with run-launch and live-monitoring UI delivered in Phase 12.
-12.10 | Open |  |  | Stage all Phase 12 changes.
-12.11 | Open |  |  | Commit all Phase 12 changes with a phase-complete commit message.
-12.12 | Open |  |  | Immediately begin Phase 13.
+## Operating Rules for Execution
 
-13.01 | Open |  |  | Implement the historical run list with filtering by evaluation, model, runner, machine, machine class, scorer, dataset version, date, and status.
-13.02 | Open |  |  | Implement the historical run detail page with outputs, metrics, traces, artifacts, and annotations.
-13.03 | Open |  |  | Implement side-by-side comparison for at least two runs.
-13.04 | Open |  |  | Implement comparison filters for only failures, only disagreements, only changed outcomes, and only regressions.
-13.05 | Open |  |  | Implement report generation by evaluation suite, runner, machine class, model family, and date range.
-13.06 | Open |  |  | Implement saved report presets and export flows for JSON, CSV, markdown, and HTML.
-13.07 | Open |  |  | Add UI and backend tests for historical review, comparison, and reporting.
-13.08 | Open |  |  | Update readme.md with historical review and reporting delivered in Phase 13.
-13.09 | Open |  |  | Stage all Phase 13 changes.
-13.10 | Open |  |  | Commit all Phase 13 changes with a phase-complete commit message.
-13.11 | Open |  |  | Immediately begin Phase 14.
-
-14.01 | Open |  |  | Implement local-only enforcement so protected datasets and runs cannot be sent to remote providers.
-14.02 | Open |  |  | Implement audit trails for what data was sent to which runner or endpoint.
-14.03 | Open |  |  | Implement retention controls for traces, raw outputs, and logs.
-14.04 | Open |  |  | Run end-to-end validation across DGX Spark, Apple Silicon, RTX 4070, and Vivobook-class targets where possible.
-14.05 | Open |  |  | Run regression tests across core workflows: define, launch, monitor, review, compare, and export.
-14.06 | Open |  |  | Fix release-blocking defects and mark tasks Blocked where external dependencies prevent completion.
-14.07 | Open |  |  | Prepare release notes for the phased initial release.
-14.08 | Open |  |  | Update readme.md with final release status, feature coverage, known limitations, and next steps.
-14.09 | Open |  |  | Stage all Phase 14 changes.
-14.10 | Open |  |  | Commit all Phase 14 changes with a phase-complete commit message.
-14.11 | Open |  |  | Immediately proceed to the next phase of post-release backlog planning.
-
-99.01 | Open |  |  | At the end of every phase, update readme.md to reflect what was delivered, what remains, and any known limitations.
-99.02 | Open |  |  | At the end of every phase, stage all changes created during that phase.
-99.03 | Open |  |  | At the end of every phase, create a commit with a clear phase-complete commit message.
-99.04 | Open |  |  | After committing a phase, immediately begin the next phase unless a task is explicitly marked Blocked.
-99.05 | Open |  |  | If a task becomes Blocked, record the blocking reason in the task description or linked implementation log before continuing with unblocked work.
+| No. | Status | Started (PST) | Completed (PST) | Description |
+| --: | ------ | ------------- | --------------- | ----------- |
+| 50 | Completed | 2026-03-29 1:20 AM | 2026-03-29 1:25 AM | At the end of every phase, update readme.md to reflect what was delivered and what remains. |
+| 51 | Completed | 2026-03-29 1:20 AM | 2026-03-29 1:25 AM | At the end of every phase, stage all changes created during that phase. |
+| 52 | Completed | 2026-03-29 1:20 AM | 2026-03-29 1:25 AM | At the end of every phase, create a commit with a clear phase-complete commit message. |
+| 53 | Completed | 2026-03-29 1:20 AM | 2026-03-29 1:25 AM | After committing a phase, immediately begin the next phase unless a task is explicitly marked Blocked. |

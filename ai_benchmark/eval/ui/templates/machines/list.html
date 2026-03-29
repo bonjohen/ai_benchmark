@@ -23,8 +23,8 @@
         <tbody>
             {% for m in machines %}
             <tr>
-                <td>{{ m.id }}</td>
-                <td>{{ m.hostname }}</td>
+                <td><a href="/eval/machines/{{ m.id }}">{{ m.id }}</a></td>
+                <td><a href="/eval/machines/{{ m.id }}">{{ m.hostname }}</a></td>
                 <td>{{ m.display_name or "—" }}</td>
                 <td>{{ m.hardware_class }}</td>
                 <td>{{ m.cpu_description or "—" }}</td>

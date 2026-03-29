@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% set active_page = "run_groups" %}
+{% block title %}Run Group {{ group.id }}{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+    <div>
+        <h1>{{ group.name or "Run Group #" ~ group.id }}</h1>
+        <dl class="detail-meta">
+            <dt>Type:</dt><dd><span class="badge badge-runner">{{ group.execution_type }}</span></dd>
+            <dt>Created:</dt><dd>{{ group.created_at or "—" }}</dd>
+            {% if group.scheduled_at %}
+            <dt>Scheduled:</dt><dd>{{ group.scheduled_at }}</dd>
+            {% endif %}
+        </dl>
+    </div>
+    <div>
+        <a href="/eval/run-groups" class="btn btn-outline btn-sm">Back to List</a>
+        {% if runs|length >= 2 %}
+        <a href="/eval/comparisons?runs={{ runs|map(attribute='id')|join(',') }}" class="btn btn-primary btn-sm">Compare All</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if group.description %}
+<div class="card">
+    <p>{{ group.description }}</p>
+</div>
+{% endif %}
+
+<!-- Summary Cards -->
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ runs|length }}</div>
+        <div class="stat-label">Total Runs</div>
+    </div>
+    <div class="stat-card">
+        {% set completed = runs|selectattr("status", "equalto", "completed")|list %}
+        <div class="stat-value text-success">{{ completed|length }}</div>
+        <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card">
+        {% set active = runs|rejectattr("status", "in", ["completed", "failed", "canceled"])|list %}
+        <div class="stat-value">{{ active|length }}</div>
+        <div class="stat-label">Active</div>
+    </div>
+    <div class="stat-card">
+        {% set failed = runs|selectattr("status", "equalto", "failed")|list %}
+        <div class="stat-value {% if failed %}text-danger{% endif %}">{{ failed|length }}</div>
+        <div class="stat-label">Failed</div>
+    </div>
+</div>
+
+<!-- Child Runs -->
+<div class="card">
+    <div class="card-header">Runs in Group</div>
+    {% if runs %}
+    <div class="table-wrapper">
+        <table data-sortable>
+            <thead>
+                <tr>
+                    <th data-sort="number">Run ID</th>
+                    <th data-sort="string">Status</th>
+                    <th data-sort="number">Progress</th>
+                    <th data-sort="number">Items</th>
+                    <th data-sort="number">Failed</th>
+                    <th data-sort="date">Started</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in runs %}
+                <tr>
+                    <td><a href="/eval/runs/{{ r.id }}">{{ r.id }}</a></td>
+                    <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+                    <td>
+                        {% set pct = (r.completed_items / r.total_items * 100) if r.total_items > 0 else 0 %}
+                        <div class="progress">
+                            <div class="progress-bar {% if r.status == 'completed' %}success{% elif r.status == 'failed' %}danger{% endif %}" data-width="{{ pct|int }}" style="width: 0%"></div>
+                            <div class="progress-text">{{ r.completed_items }}/{{ r.total_items }}</div>
+                        </div>
+                    </td>
+                    <td>{{ r.total_items }}</td>
+                    <td>{% if r.failed_items > 0 %}<span class="text-danger">{{ r.failed_items }}</span>{% else %}0{% endif %}</td>
+                    <td>{{ r.started_at or "—" }}</td>
+                    <td>
+                        {% if r.status in ("queued", "running", "scoring") %}
+                        <a href="/eval/runs/{{ r.id }}/live" class="btn btn-sm btn-outline">Live</a>
+                        {% else %}
+                        <a href="/eval/runs/{{ r.id }}" class="btn btn-sm btn-outline">Detail</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No runs in this group.</p>
+    {% endif %}
+</div>
+{% endblock %}

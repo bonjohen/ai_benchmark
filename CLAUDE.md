@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install -e ".[dev]"          # Install with dev dependencies
 pip install -e ".[dev,research]" # Include research extras (S2, PDF)
-pytest                           # Run all tests (465 pass, 2 known failures in test_cli.py)
+pytest                           # Run all tests (666 pass, 0 failures)
 pytest tests/test_config.py      # Single file
 pytest -x -v                     # Verbose, stop on first failure
 ai-benchmark init-db             # Create database
@@ -86,23 +86,26 @@ ai_benchmark/eval/
                     scorer_versions, evaluation_definitions, evaluation_versions, machine_profiles,
                     machine_snapshots, target_configurations, run_groups, runs, run_item_results,
                     run_aggregate_metrics, artifacts
-  services/         8 async service modules: dataset, scorer, eval, machine, target, run,
-                    comparison, report — all accept AsyncSession, return model instances
+  services/         9 async service modules: dataset, scorer, eval, machine, target, run,
+                    comparison, report, artifact — all accept AsyncSession, return model instances
   execution/        RunOrchestrator (3-stage: create → execute → score/finalize),
                     ItemExecutor (prompt templating, retry), 4 model adapters
     adapters/       OpenAIAdapter, AnthropicAdapter, LocalAdapter, GenericHTTPAdapter
   scoring/          ScorerRunner (weighted pass logic, aggregate metrics), BaseScorer ABC
     builtin/        7 scorers: exact_match, fuzzy_match, rubric, format_validator,
                     latency_cost, safety, model_judge
-  api/              FastAPI app factory, 44 endpoints under /api/eval/
-    routes/         evaluations, datasets, scorers, targets, machines, runs, comparisons, reports
+  api/              FastAPI app factory, ~50 endpoints under /api/eval/,
+                    API key auth middleware (X-API-Key / Bearer), /healthz
+    routes/         evaluations, datasets, scorers, targets, machines, runs, runners,
+                    comparisons, reports
     schemas/        Pydantic request/response models for all entities
-  ui/               Jinja2 server-rendered UI with sidebar navigation
-    templates/      16 HTML templates: dashboard, entity list/detail, run detail/live,
-                    comparison view, reports dashboard with Chart.js
-    static/         CSS (tables, cards, badges, progress bars) + JS (sorting, tabs, auto-refresh)
-  cli/              8 Click subcommands: run, run-matrix, status, list, compare, export,
-                    rescore, serve
+  ui/               Jinja2 server-rendered UI with sectioned sidebar navigation
+    templates/      22 HTML templates: dashboard, entity list/detail, runner/run-group
+                    pages, run detail/live, comparison, search, reports with Chart.js
+    static/         CSS (tables, cards, badges, metadata panel, empty states) + JS
+                    (sorting, tabs, auto-refresh, search)
+  cli/              10 Click subcommands: run, run-matrix, status, list, compare, export,
+                    rescore, serve, runners, machines
 ```
 
 ## Eval Key Patterns
@@ -110,7 +113,7 @@ ai_benchmark/eval/
 - **Model Adapters**: ABC in `execution/adapters/base.py`. Implement `async generate(prompt, params, options) -> GenerationResult`. Registry resolves by provider string. Currently 4 adapters: `OpenAIAdapter`, `AnthropicAdapter`, `LocalAdapter` (ollama/vllm/llamacpp), `GenericHTTPAdapter`.
 - **Scorers**: ABC in `scoring/base.py`. Implement `score(output, expected) -> ScorerResult`. Registry in `_SCORER_REGISTRY`. Built-in scorers auto-register. Currently 7 scorers: exact_match, fuzzy_match, rubric, format_validator, latency_cost, safety, model_judge.
 - **Orchestrator**: `execution/orchestrator.py` — `create_run()` → `execute_run()` → `score_run()`. Supports sequential and parallel modes via `asyncio.Semaphore`.
-- **Service pattern**: Each service accepts `AsyncSession`, returns ORM instances. All CRUD is async. Versioning auto-increments `version_number`. 8 services: dataset, scorer, eval, machine, target, run, comparison, report.
+- **Service pattern**: Each service accepts `AsyncSession`, returns ORM instances. All CRUD is async. Versioning auto-increments `version_number`. 9 services: dataset, scorer, eval, machine, target, run, comparison, report, artifact.
 - **API pattern**: ORM objects converted to dicts BEFORE `session.commit()` to avoid MissingGreenlet. Service update methods call `await session.refresh(obj)` after flush on `onupdate` columns.
 - **UI mounting**: `eval/ui/server.py` — `mount_ui(app)` registers templates and static files on the FastAPI app.
 
@@ -187,8 +190,10 @@ Codebase is fully compliant with ruff (E/F/I/N/W/UP/B/SIM/TCH rules, line-length
 - Gap remediation plan v2 (all 13 tasks complete): `docs/gap_remediation_subset_plan_v2.md`
 - Model eval pipeline design: `docs/model_eval_pipeline_design.md`
 - Model eval pipeline PDR: `docs/model_eval_pipeline_pdr.md`
-- Model eval pipeline plan: `docs/model_eval_pipeline_plan.md`
+- Model eval pipeline plan (all 9 phases complete): `docs/model_eval_pipeline_plan.md`
 - PEP8/ruff compliance plan (all 7 phases complete): `docs/pep8_plan.md`
 - LLM runner comparison platform PRD: `docs/llm_runner_prd.md`
 - LLM runner comparison design notes: `docs/llm_runner_design.md`
-- LLM runner comparison plan (14 phases, phases 1–7 complete): `docs/llm_runner_plan.md`
+- LLM runner comparison plan (all 14 phases complete): `docs/llm_runner_plan.md`
+- General code review findings: `docs/general_code_review_findings.md`
+- General code review remediation plan (all 4 phases complete): `docs/general_code_review_plan.md`

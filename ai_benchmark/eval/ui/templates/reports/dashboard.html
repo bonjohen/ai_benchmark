@@ -13,6 +13,7 @@
         <a href="/eval/reports/export?format=json" class="btn btn-sm btn-outline">Export JSON</a>
         <a href="/eval/reports/export?format=csv" class="btn btn-sm btn-outline">Export CSV</a>
         <a href="/eval/reports/export?format=html" class="btn btn-sm btn-outline">Export HTML</a>
+        <a href="/eval/reports/export?format=markdown" class="btn btn-sm btn-outline">Export Markdown</a>
     </div>
 </div>
 
@@ -105,6 +106,7 @@
             <select id="group_by" name="group_by" class="form-control">
                 <option value="evaluation">Evaluation</option>
                 <option value="model_family">Model Family</option>
+                <option value="runner">Runner</option>
                 <option value="machine">Machine</option>
                 <option value="hardware_class">Hardware Class</option>
             </select>
@@ -115,6 +117,7 @@
                 <option value="pass_rate">Pass Rate</option>
                 <option value="avg_latency_ms">Avg Latency</option>
                 <option value="total_cost_usd">Total Cost</option>
+                <option value="tokens_per_second">Tokens/sec</option>
             </select>
         </div>
         <div class="form-group">

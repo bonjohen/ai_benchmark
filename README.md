@@ -137,20 +137,22 @@ ai_benchmark/eval/
   models/         18 SQLAlchemy tables (datasets, scorers, evaluations, targets,
                   machines, runners, runs, item results, metrics, artifacts,
                   traces, annotations)
-  services/       13 async service modules (dataset, scorer, eval, machine, target,
+  services/       14 async service modules (dataset, scorer, eval, machine, target,
                   runner, run, comparison, report, compatibility, seed, validation,
-                  matrix)
-  execution/      RunOrchestrator, ItemExecutor, Dispatch engine, 12 model adapters
+                  matrix, artifact)
+  execution/      RunOrchestrator (with auto-artifact generation), ItemExecutor
+                  (with trace capture), Dispatch engine, 12 model adapters
     adapters/     OpenAI, Anthropic, Local (legacy), GenericHTTP,
                   Ollama, LM Studio, llama.cpp, MLX, vLLM, SGLang,
                   TensorRT-LLM, OpenVINO GenAI
   scoring/        ScorerRunner + 8 built-in scorers (exact_match, fuzzy_match,
                   rubric, format_validator, latency_cost, safety, model_judge)
-  api/            FastAPI with 44 REST endpoints under /api/eval/
-  ui/             Jinja2 templates: dashboard, entity pages, run detail/live,
-                  comparison view, reports with Chart.js (16 templates)
-  cli/            8 Click subcommands (run, run-matrix, status, list, compare,
-                  export, rescore, serve)
+  api/            FastAPI with ~50 REST endpoints under /api/eval/,
+                  API key auth middleware (X-API-Key / Bearer), /healthz
+  ui/             Jinja2 templates: dashboard, entity pages, runner/run-group
+                  pages, run detail/live, comparison, search, reports (22 templates)
+  cli/            10 Click subcommands (run, run-matrix, status, list, compare,
+                  export, rescore, serve, runners, machines)
   config.py       EvalSettings with AI_BENCH_EVAL_ env prefix
 ```
 
@@ -166,6 +168,8 @@ ai_benchmark/eval/
 | `AI_BENCH_EVAL_RUN_TIMEOUT_SECONDS` | `3600` | Per-run timeout |
 | `AI_BENCH_EVAL_ITEM_TIMEOUT_SECONDS` | `120` | Per-item timeout |
 | `AI_BENCH_EVAL_RETRY_FAILED_ITEMS` | `2` | Auto-retries per item |
+| `AI_BENCH_EVAL_ARTIFACT_RETENTION_DAYS` | `90` | Max artifact age before cleanup |
+| `AI_BENCH_EVAL_ARTIFACT_MAX_PER_RUN` | `20` | Max artifacts retained per run |
 
 ### Runner Comparison Platform
 
@@ -177,9 +181,13 @@ OpenVINO GenAI) as a first-class experimental variable. Results are
 Target hardware: DGX Spark 128 GB, Apple Silicon M4 MBP 64 GB, Mac mini 24 GB,
 RTX 4070 desktop, ASUS Vivobook S 15 (Intel NPU), GTX 1060 laptop, Raspberry Pi edge.
 
-**Status**: Phase 3 complete — runner/machine registry with compatibility rules,
-seed data for all 8 runners and 7 machines, snapshot capture, requested vs actual
-machine tracking.
+**Status**: All 14 phases complete — local-only privacy enforcement, audit trails
+(AuditLogEntry model), retention controls (traces, raw outputs, artifacts), full
+regression test suite across all UI workflows. Historical run filtering, traces tab,
+comparison filters, report generation with runner/machine grouping, export to
+JSON/CSV/HTML/Markdown. Sectioned navigation, runner/run-group pages, global search.
+~50 REST endpoints, API key auth, 10 CLI subcommands, 12 model adapters, 19 tables.
+Runner/machine registry with compatibility rules and seed data for 7 target machines.
 
 ### Design Documents
 
@@ -198,13 +206,14 @@ machine tracking.
 - **Gap remediation v1:** `docs/gap_remediation_plan.md` — 6 phases (G1–G6), 66 tasks complete
 - **Gap remediation v2:** `docs/gap_remediation_subset_plan_v2.md` — 13 tasks complete (discovery queue wiring, confidence tier fix, 5 new source pages, cross-ref cites + arXiv strategy, HLE multi-slice, LMArena image/vision, benchmark GitHub repos, Semantic Scholar dual classification)
 - **PEP8 compliance:** `docs/pep8_plan.md` — All 7 phases complete
-- **Runner comparison:** `docs/llm_runner_plan.md` — 14 phases, phases 1–7 complete
+- **Runner comparison:** `docs/llm_runner_plan.md` — All 14 phases complete
+- **Code review remediation:** `docs/general_code_review_plan.md` — All 4 phases complete (49 tasks)
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all tests (465 pass, 2 known failures in test_cli.py)
+pytest                       # Run all tests (666 tests, 0 failures)
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint

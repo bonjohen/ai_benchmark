@@ -17,6 +17,14 @@
         <a href="/eval/runs" class="btn btn-outline btn-sm">Back to Runs</a>
         {% if run.status in ["running", "queued", "scoring"] %}
         <a href="/eval/runs/{{ run.id }}/live" class="btn btn-sm btn-primary">Live View</a>
+        <form method="post" action="/eval/runs/{{ run.id }}/cancel" style="display:inline">
+            <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+        </form>
+        {% endif %}
+        {% if run.status == "failed" %}
+        <form method="post" action="/eval/runs/{{ run.id }}/resume" style="display:inline">
+            <button type="submit" class="btn btn-primary btn-sm">Resume</button>
+        </form>
         {% endif %}
     </div>
 </div>
@@ -50,6 +58,7 @@
 <!-- Tabs -->
 <div class="tabs">
     <div class="tab active" data-tab="tab-results">Results</div>
+    <div class="tab" data-tab="tab-traces">Traces</div>
     <div class="tab" data-tab="tab-metrics">Metrics</div>
     <div class="tab" data-tab="tab-artifacts">Artifacts</div>
 </div>
@@ -59,6 +68,7 @@
     {% if items %}
     <div class="table-wrapper">
         <table data-sortable>
+            <caption class="sr-only">Item-level results showing input, output, pass/fail status, and latency</caption>
             <thead>
                 <tr>
                     <th data-sort="number">Index</th>
@@ -96,11 +106,46 @@
     {% endif %}
 </div>
 
+<!-- Traces Tab -->
+<div id="tab-traces" class="tab-content">
+    {% set has_traces = items | selectattr("traces") | list | length > 0 %}
+    {% if has_traces %}
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Execution traces captured per item</caption>
+            <thead>
+                <tr>
+                    <th data-sort="number">Item Index</th>
+                    <th data-sort="string">Trace Type</th>
+                    <th>Trace Data</th>
+                    <th data-sort="date">Captured</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                {% for trace in item.traces %}
+                <tr>
+                    <td>{{ item.item_index }}</td>
+                    <td><span class="badge badge-runner">{{ trace.trace_type }}</span></td>
+                    <td class="text-mono" style="max-width: 500px; overflow: auto; white-space: pre-wrap; font-size: 12px;">{% if trace.trace_data is mapping %}{{ trace.trace_data | tojson(indent=2) }}{% else %}{{ trace.trace_data }}{% endif %}</td>
+                    <td>{{ trace.created_at or "—" }}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No traces captured for this run.</p>
+    {% endif %}
+</div>
+
 <!-- Metrics Tab -->
 <div id="tab-metrics" class="tab-content">
     {% if metrics %}
     <div class="table-wrapper">
         <table>
+            <caption class="sr-only">Aggregate scoring metrics for this run</caption>
             <thead>
                 <tr>
                     <th>Metric</th>
@@ -127,6 +172,7 @@
     {% if artifacts %}
     <div class="table-wrapper">
         <table>
+            <caption class="sr-only">Artifacts produced by this run</caption>
             <thead>
                 <tr>
                     <th>Filename</th>

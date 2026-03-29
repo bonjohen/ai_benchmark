@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% set active_page = "runners" %}
+{% block title %}Runners{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Runner Profiles</h1>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <form method="get" action="/eval/runners">
+        <div class="form-group">
+            <label for="runner_class">Runner Class</label>
+            <select name="runner_class" id="runner_class" class="form-control">
+                <option value="">All</option>
+                {% for cls in runner_classes %}
+                <option value="{{ cls }}" {% if request.query_params.get('runner_class') == cls %}selected{% endif %}>{{ cls }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-outline btn-sm">Filter</button>
+    </form>
+</div>
+
+{% if runners %}
+<div class="table-wrapper">
+    <table data-sortable>
+        <thead>
+            <tr>
+                <th data-sort="number">ID</th>
+                <th data-sort="string">Name</th>
+                <th data-sort="string">Runner Class</th>
+                <th data-sort="string">Version</th>
+                <th data-sort="string">Endpoint</th>
+                <th data-sort="string">Machines</th>
+                <th data-sort="string">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in runners %}
+            <tr>
+                <td><a href="/eval/runners/{{ r.id }}">{{ r.id }}</a></td>
+                <td><a href="/eval/runners/{{ r.id }}">{{ r.name }}</a></td>
+                <td><span class="badge badge-runner">{{ r.runner_class }}</span></td>
+                <td>{{ r.version or "—" }}</td>
+                <td class="text-mono truncate">{{ r.default_endpoint_url or "—" }}</td>
+                <td>{{ r.supported_machine_classes|join(", ") if r.supported_machine_classes else "—" }}</td>
+                <td>{% if r.is_archived %}<span class="text-muted">Archived</span>{% else %}<span class="text-success">Active</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+{% with state_type="empty", state_message="No runner profiles registered yet." %}
+{% include "includes/empty_state.html" %}
+{% endwith %}
+{% endif %}
+{% endblock %}

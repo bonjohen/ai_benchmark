@@ -9,12 +9,26 @@
 </head>
 <body>
 
-<nav class="sidebar">
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<nav class="sidebar" aria-label="Main navigation">
     <div class="sidebar-brand">AI Bench Eval</div>
+
+    <!-- Global Search -->
+    <div class="sidebar-search">
+        <form action="/eval/search" method="get" autocomplete="off">
+            <label for="global-search" class="sr-only">Search</label>
+            <input type="text" id="global-search" name="q" class="search-input" placeholder="Search..."
+                   value="{{ request.query_params.get('q', '') }}">
+        </form>
+    </div>
+
     <ul class="sidebar-nav">
         <li><a href="/eval/" {% if active_page == "dashboard" %}class="active"{% endif %}>
             <span class="nav-icon">&#9632;</span> <span>Dashboard</span>
         </a></li>
+
+        <li class="nav-section">Definitions</li>
         <li><a href="/eval/evaluations" {% if active_page == "evaluations" %}class="active"{% endif %}>
             <span class="nav-icon">&#9670;</span> <span>Evaluations</span>
         </a></li>
@@ -27,19 +41,31 @@
         <li><a href="/eval/targets" {% if active_page == "targets" %}class="active"{% endif %}>
             <span class="nav-icon">&#9881;</span> <span>Targets</span>
         </a></li>
+
+        <li class="nav-section">Infrastructure</li>
+        <li><a href="/eval/runners" {% if active_page == "runners" %}class="active"{% endif %}>
+            <span class="nav-icon">&#9658;</span> <span>Runners</span>
+        </a></li>
         <li><a href="/eval/machines" {% if active_page == "machines" %}class="active"{% endif %}>
             <span class="nav-icon">&#9109;</span> <span>Machines</span>
         </a></li>
+
+        <li class="nav-section">Execution</li>
         <li><a href="/eval/runs" {% if active_page == "runs" %}class="active"{% endif %}>
             <span class="nav-icon">&#9654;</span> <span>Runs</span>
         </a></li>
+        <li><a href="/eval/run-groups" {% if active_page == "run_groups" %}class="active"{% endif %}>
+            <span class="nav-icon">&#9783;</span> <span>Run Groups</span>
+        </a></li>
+
+        <li class="nav-section">Analysis</li>
         <li><a href="/eval/reports" {% if active_page == "reports" %}class="active"{% endif %}>
             <span class="nav-icon">&#9733;</span> <span>Reports</span>
         </a></li>
     </ul>
 </nav>
 
-<main class="main-content">
+<main class="main-content" id="main-content">
     {% block flash %}{% endblock %}
     {% block content %}{% endblock %}
 </main>

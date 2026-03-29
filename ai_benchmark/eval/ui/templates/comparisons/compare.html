@@ -65,6 +65,8 @@
                 <option value="all">All Items</option>
                 <option value="disagree">Disagreements Only</option>
                 <option value="failures">Failures Only</option>
+                <option value="changed">Changed Outcomes</option>
+                <option value="regressions">Regressions (Pass→Fail)</option>
             </select>
         </div>
     </div>
@@ -82,12 +84,12 @@
                 </tr>
             </thead>
             <tbody>
-                {% set max_items = run_details[0].items|length %}
+                {% set max_items = run_details[0]["items"]|length %}
                 {% for i in range(max_items) %}
                 {% set items_at_index = [] %}
                 {% for rd in run_details %}
-                    {% if i < rd.items|length %}
-                        {% set _ = items_at_index.append(rd.items[i]) %}
+                    {% if i < rd["items"]|length %}
+                        {% set _ = items_at_index.append(rd["items"][i]) %}
                     {% endif %}
                 {% endfor %}
 
@@ -102,14 +104,19 @@
                 {% endif %}
 
                 {% set has_failure = false %}
+                {% set has_regression = false %}
                 {% for item in items_at_index %}
                     {% if item.overall_pass == false %}
                         {% set has_failure = true %}
                     {% endif %}
                 {% endfor %}
+                {% if items_at_index|length >= 2 and items_at_index[0].overall_pass == true and items_at_index[-1].overall_pass == false %}
+                    {% set has_regression = true %}
+                {% endif %}
 
                 <tr data-disagree="{{ 'true' if has_disagree else 'false' }}"
-                    data-failure="{{ 'true' if has_failure else 'false' }}">
+                    data-failure="{{ 'true' if has_failure else 'false' }}"
+                    data-regression="{{ 'true' if has_regression else 'false' }}">
                     <td>{{ i }}</td>
                     {% for item in items_at_index %}
                     <td class="truncate text-mono">{{ item.raw_output }}</td>
@@ -217,6 +224,10 @@ function filterItems(mode) {
             row.style.display = row.dataset.disagree === "true" ? "" : "none";
         } else if (mode === "failures") {
             row.style.display = row.dataset.failure === "true" ? "" : "none";
+        } else if (mode === "changed") {
+            row.style.display = row.dataset.disagree === "true" ? "" : "none";
+        } else if (mode === "regressions") {
+            row.style.display = row.dataset.regression === "true" ? "" : "none";
         }
     });
 }

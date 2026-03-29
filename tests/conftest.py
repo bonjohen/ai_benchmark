@@ -16,6 +16,7 @@ async def db_engine():
     # Import models to register them
     from ai_benchmark.eval.models import (  # noqa: F401
         artifact,
+        audit,
         dataset,
         evaluation,
         machine,
@@ -46,6 +47,7 @@ async def db_engine_fk():
 
     from ai_benchmark.eval.models import (  # noqa: F401
         artifact,
+        audit,
         dataset,
         evaluation,
         machine,

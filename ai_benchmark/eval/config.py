@@ -8,6 +8,7 @@ from pydantic_settings import BaseSettings
 class EvalSettings(BaseSettings):
     model_config = {"env_prefix": "AI_BENCH_EVAL_"}
 
+    database_url: str = "sqlite+aiosqlite:///ai_benchmark.db"
     api_host: str = "127.0.0.1"
     api_port: int = 8100
     artifact_storage_path: str = "artifacts"
@@ -18,3 +19,9 @@ class EvalSettings(BaseSettings):
     retry_failed_items: int = 2
     enable_cost_tracking: bool = True
     local_only_mode: bool = False
+    artifact_retention_days: int = 90
+    artifact_max_per_run: int = 20
+    api_key: str | None = None  # Set to enable API auth; unset = no auth (lab mode)
+    rate_limit_per_minute: int = 100
+    db_pool_size: int = 5
+    db_max_overflow: int = 10

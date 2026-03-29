@@ -271,7 +271,12 @@ def eval_compare(ctx: click.Context, runs: str, fmt: str):
 
 @eval_group.command("export")
 @click.option("--run", "run_id", type=int, required=True, help="Run ID to export.")
-@click.option("--format", "fmt", type=click.Choice(["json", "csv", "html"]), default="json")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["json", "csv", "markdown", "html"]),
+    default="json",
+)
 @click.option("--output", "output_path", type=click.Path(path_type=Path), default=None)
 @click.pass_context
 def eval_export(ctx: click.Context, run_id: int, fmt: str, output_path: Path | None):
@@ -316,6 +321,8 @@ def eval_export(ctx: click.Context, run_id: int, fmt: str, output_path: Path | N
                 content = report_service.export_json(data)
             elif fmt == "csv":
                 content = report_service.export_csv(data["items"])
+            elif fmt == "markdown":
+                content = report_service.export_markdown(data, title=f"Run {run_id}")
             else:
                 content = report_service.export_html(data, title=f"Run {run_id}")
 
@@ -378,6 +385,101 @@ def eval_rescore(ctx: click.Context, run_id: int, scorer_config: Path):
         await engine.dispose()
 
     asyncio.run(_rescore())
+
+
+@eval_group.command("runners")
+@click.option("--runner-class", default=None, help="Filter by runner class.")
+@click.option("--include-archived", is_flag=True, help="Include archived runners.")
+@click.option("--id", "runner_id", type=int, default=None, help="Show single runner detail.")
+@click.pass_context
+def eval_runners(
+    ctx: click.Context,
+    runner_class: str | None,
+    include_archived: bool,
+    runner_id: int | None,
+):
+    """List or inspect runner profiles."""
+    settings = ctx.obj["settings"]
+
+    async def _runners():
+        engine = _get_eval_engine(settings)
+        session_factory = create_session_factory(engine)
+
+        async with session_factory() as session:
+            from ..services import runner_service
+
+            if runner_id:
+                r = await runner_service.get_runner(session, runner_id)
+                if r is None:
+                    click.echo(f"Runner {runner_id} not found.")
+                    return
+                click.echo(f"Runner {r.id}: {r.name}")
+                click.echo(f"  Class: {r.runner_class}")
+                click.echo(f"  Version: {r.version or '-'}")
+                click.echo(f"  Endpoint: {r.default_endpoint_url or '-'}")
+                if r.supported_machine_classes:
+                    click.echo(f"  Machines: {r.supported_machine_classes}")
+                if r.notes:
+                    click.echo(f"  Notes: {r.notes}")
+            else:
+                runners = await runner_service.list_runners(
+                    session,
+                    runner_class=runner_class,
+                    include_archived=include_archived,
+                )
+                click.echo(f"{'ID':>4} {'Name':<25} {'Class':<15} {'Version':<12}")
+                click.echo("-" * 60)
+                for r in runners:
+                    click.echo(
+                        f"{r.id:>4} {r.name:<25} {r.runner_class:<15} {(r.version or '-'):<12}"
+                    )
+
+        await engine.dispose()
+
+    asyncio.run(_runners())
+
+
+@eval_group.command("machines")
+@click.option("--hardware-class", default=None, help="Filter by hardware class.")
+@click.option("--id", "machine_id", type=int, default=None, help="Show detail.")
+@click.pass_context
+def eval_machines(
+    ctx: click.Context,
+    hardware_class: str | None,
+    machine_id: int | None,
+):
+    """List or inspect machine profiles."""
+    settings = ctx.obj["settings"]
+
+    async def _machines():
+        engine = _get_eval_engine(settings)
+        session_factory = create_session_factory(engine)
+
+        async with session_factory() as session:
+            from ..services import machine_service
+
+            if machine_id:
+                m = await machine_service.get_profile(session, machine_id)
+                if m is None:
+                    click.echo(f"Machine {machine_id} not found.")
+                    return
+                click.echo(f"Machine {m.id}: {m.hostname}")
+                click.echo(f"  Class: {m.hardware_class}")
+                click.echo(f"  RAM: {getattr(m, 'ram_gb', '-')} GB")
+                if getattr(m, "capacity_notes", None):
+                    click.echo(f"  Notes: {m.capacity_notes}")
+            else:
+                machines = await machine_service.list_profiles(
+                    session, hardware_class=hardware_class
+                )
+                click.echo(f"{'ID':>4} {'Hostname':<30} {'Class':<20}")
+                click.echo("-" * 58)
+                for m in machines:
+                    click.echo(f"{m.id:>4} {m.hostname:<30} {m.hardware_class:<20}")
+
+        await engine.dispose()
+
+    asyncio.run(_machines())
 
 
 @eval_group.command("serve")

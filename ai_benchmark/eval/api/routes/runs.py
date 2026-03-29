@@ -18,6 +18,7 @@ from ..schemas.run import (
     RunMetricResponse,
     RunResponse,
 )
+from ..serializers import run_to_dict as _run_to_dict
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -73,12 +74,19 @@ async def create_batch(
     body: RunBatchCreate,
     session: AsyncSession = Depends(get_session),
 ):
-    # Look up dataset_version_id from evaluation version
+    # Look up dataset_version_id and item count from evaluation version
+    from ...models.dataset import DatasetVersion
     from ...models.evaluation import EvaluationVersion
 
     ev = await session.get(EvaluationVersion, body.evaluation_version_id)
     if ev is None:
         raise HTTPException(404, f"EvaluationVersion {body.evaluation_version_id} not found")
+
+    # Compute total_items from the dataset version's item_count
+    total_items = 0
+    dv = await session.get(DatasetVersion, ev.dataset_version_id)
+    if dv is not None:
+        total_items = dv.item_count
 
     rg, runs = await run_service.create_batch(
         session,
@@ -88,6 +96,7 @@ async def create_batch(
         execution_type=body.execution_type,
         name=body.name,
         machine_profile_id=body.machine_profile_id,
+        total_items=total_items,
     )
     result = {"group_id": rg.id, "runs": [_run_to_dict(r) for r in runs]}
     await session.commit()
@@ -202,6 +211,47 @@ async def retry_run(
     return result
 
 
+@router.post("/{run_id}/resume", response_model=RunResponse)
+async def resume_run(
+    run_id: int,
+    session: AsyncSession = Depends(get_session),  # noqa: B008
+):
+    """Resume a failed or partially completed run."""
+    run = await run_service.get_run(session, run_id)
+    if run is None:
+        raise HTTPException(404, "Run not found")
+    if run.status not in ("failed", "partially_completed"):
+        raise HTTPException(
+            400,
+            f"Cannot resume run in {run.status} state",
+        )
+    await run_service.update_status(session, run_id, "queued")
+    run = await run_service.get_run(session, run_id)
+    result = _run_to_dict(run)
+    await session.commit()
+    return result
+
+
+@router.get("/{run_id}/items/{item_id}/traces")
+async def get_item_traces(
+    run_id: int,
+    item_id: int,
+    session: AsyncSession = Depends(get_session),  # noqa: B008
+):
+    """Get trace references for a specific item result."""
+    traces = await run_service.get_traces(session, item_id)
+    return [
+        {
+            "id": t.id,
+            "run_item_result_id": t.run_item_result_id,
+            "trace_type": t.trace_type,
+            "trace_data": json.loads(t.trace_data) if t.trace_data else None,
+            "created_at": str(t.created_at),
+        }
+        for t in traces
+    ]
+
+
 @router.post("/{run_id}/rescore", response_model=RunResponse)
 async def rescore_run(
     run_id: int,
@@ -227,30 +277,6 @@ async def rescore_run(
     await session.commit()
 
     return result
-
-
-def _run_to_dict(r) -> dict:
-    return {
-        "id": r.id,
-        "run_group_id": r.run_group_id,
-        "evaluation_version_id": r.evaluation_version_id,
-        "target_config_id": r.target_config_id,
-        "machine_snapshot_id": r.machine_snapshot_id,
-        "dataset_version_id": r.dataset_version_id,
-        "status": r.status,
-        "trigger_type": r.trigger_type,
-        "priority": r.priority,
-        "started_at": r.started_at,
-        "scoring_started_at": r.scoring_started_at,
-        "completed_at": r.completed_at,
-        "error_message": r.error_message,
-        "total_items": r.total_items,
-        "completed_items": r.completed_items,
-        "failed_items": r.failed_items,
-        "skipped_items": r.skipped_items,
-        "created_at": r.created_at,
-        "updated_at": r.updated_at,
-    }
 
 
 def _item_to_dict(i) -> dict:

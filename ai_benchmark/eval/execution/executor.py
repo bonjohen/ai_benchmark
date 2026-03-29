@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import UTC
+import json
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+import structlog
+
 from ..models.run import RunItemResult
+from ..models.trace import TraceReference
 
 # Ensure all adapters are registered
 from .adapters import (  # noqa: F401
@@ -20,6 +24,8 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from ..models.dataset import TestCase
+
+logger = structlog.get_logger()
 
 
 class ItemExecutor:
@@ -91,20 +97,27 @@ class ItemExecutor:
 
         # Execute with retry
         result: GenerationResult | None = None
+        started_at = datetime.now(UTC)
+        retry_log: list[dict] = []
         for attempt in range(self.max_retries + 1):
             result = await adapter.generate(prompt, self.inference_params, self.runtime_options)
             if result.error is None:
                 break
+            retry_log.append({"attempt": attempt, "error": result.error})
             result.retry_count = attempt
+        completed_at = datetime.now(UTC)
 
-        from datetime import datetime
+        raw_output = result.output_text if result else ""
+        # Normalized output: strip whitespace from raw output
+        normalized_output = raw_output.strip() if raw_output else None
 
         item_result = RunItemResult(
             run_id=run_id,
             test_case_id=test_case.id,
             item_index=item_index,
             input_sent=prompt,
-            raw_output=result.output_text if result else "",
+            raw_output=raw_output,
+            normalized_output=normalized_output,
             scorer_results="[]",  # Populated during scoring phase
             overall_pass=None,
             error_message=result.error if result else "No result",
@@ -115,9 +128,94 @@ class ItemExecutor:
             cost_estimate_usd=result.cost_estimate_usd if result else None,
             retry_count=result.retry_count if result else 0,
             trace_id=result.trace_id if result else None,
-            started_at=datetime.now(UTC),
-            completed_at=datetime.now(UTC),
+            started_at=started_at,
+            completed_at=completed_at,
         )
         session.add(item_result)
         await session.flush()
+
+        # Create trace references for detailed execution data
+        await self._store_traces(session, item_result, result, retry_log)
+
         return item_result
+
+    async def _store_traces(
+        self,
+        session: AsyncSession,
+        item_result: RunItemResult,
+        result: GenerationResult | None,
+        retry_log: list[dict],
+    ) -> None:
+        """Persist TraceReference rows for token usage, latency, retry log, and cost."""
+        if result is None:
+            return
+
+        traces: list[TraceReference] = []
+
+        # Token usage trace
+        if result.prompt_tokens or result.completion_tokens or result.total_tokens:
+            traces.append(
+                TraceReference(
+                    run_item_result_id=item_result.id,
+                    trace_type="token_usage",
+                    trace_data=json.dumps(
+                        {
+                            "prompt_tokens": result.prompt_tokens or 0,
+                            "completion_tokens": result.completion_tokens or 0,
+                            "total_tokens": result.total_tokens or 0,
+                        }
+                    ),
+                )
+            )
+
+        # Latency breakdown trace
+        if result.latency_ms:
+            traces.append(
+                TraceReference(
+                    run_item_result_id=item_result.id,
+                    trace_type="latency_breakdown",
+                    trace_data=json.dumps(
+                        {
+                            "total_ms": result.latency_ms,
+                            "provider": self.provider,
+                            "model": self.model_name,
+                        }
+                    ),
+                )
+            )
+
+        # Retry log trace (only if retries occurred)
+        if retry_log:
+            traces.append(
+                TraceReference(
+                    run_item_result_id=item_result.id,
+                    trace_type="retry_log",
+                    trace_data=json.dumps(
+                        {
+                            "max_retries": self.max_retries,
+                            "attempts": len(retry_log) + 1,
+                            "log": retry_log,
+                        }
+                    ),
+                )
+            )
+
+        # Cost estimate trace
+        if result.cost_estimate_usd:
+            traces.append(
+                TraceReference(
+                    run_item_result_id=item_result.id,
+                    trace_type="cost_estimate",
+                    trace_data=json.dumps(
+                        {
+                            "cost_usd": result.cost_estimate_usd,
+                            "model": self.model_name,
+                            "provider": self.provider,
+                        }
+                    ),
+                )
+            )
+
+        if traces:
+            session.add_all(traces)
+            await session.flush()

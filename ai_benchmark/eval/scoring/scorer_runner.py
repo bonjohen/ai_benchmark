@@ -170,6 +170,7 @@ class ScorerRunner:
             await self._upsert_metric(session, run_id, "total_cost_usd", sum(costs))
 
         # Per-scorer pass rates
+        scorer_accum: dict[str, list[bool]] = {}
         for item in items:
             try:
                 scorer_results = json.loads(item.scorer_results) if item.scorer_results else []
@@ -178,16 +179,12 @@ class ScorerRunner:
             for sr in scorer_results:
                 stype = sr.get("scorer_type", "unknown")
                 metric_key = f"scorer_{stype}_pass_rate"
-                # Accumulate — we'll compute average after
-                if not hasattr(self, "_scorer_accum"):
-                    self._scorer_accum: dict[str, list[bool]] = {}
-                self._scorer_accum.setdefault(metric_key, []).append(sr.get("passed", False))
+                scorer_accum.setdefault(metric_key, []).append(sr.get("passed", False))
 
-        if hasattr(self, "_scorer_accum"):
-            for metric_key, passes in self._scorer_accum.items():
+        if scorer_accum:
+            for metric_key, passes in scorer_accum.items():
                 rate = sum(1 for p in passes if p) / len(passes)
                 await self._upsert_metric(session, run_id, metric_key, rate)
-            del self._scorer_accum
 
         await session.flush()
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .base import AdapterCapabilities, register_adapter
+from .base import AdapterCapabilities, GenerationResult, register_adapter
 from .openai_compat import OpenAICompatAdapter
 
 
@@ -15,6 +15,17 @@ class LMStudioAdapter(OpenAICompatAdapter):
 
     default_endpoint = "http://localhost:1234"
     runner_name = "lmstudio"
+
+    async def generate(
+        self,
+        prompt: str,
+        inference_params: dict,
+        runtime_options: dict | None = None,
+    ) -> GenerationResult:
+        raise NotImplementedError(
+            "LMStudioAdapter is not yet implemented. "
+            "Use 'openai', 'anthropic', 'local', or 'generic_http' provider instead."
+        )
 
     def capabilities(self) -> AdapterCapabilities:
         return AdapterCapabilities(
