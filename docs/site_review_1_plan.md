@@ -35,18 +35,18 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 1.1     | Open   |               |                  | Reduce sidebar vertical spacing in `ai_benchmark/eval/ui/static/css/style.css`: `.sidebar-nav li a` padding 10px→7px, `.nav-section` top 16px→10px, `.sidebar-brand` 16px→12px |
-| 1.2     | Open   |               |                  | Add back button to `templates/analysis/model_detail.html` page-header → `/eval/analysis/models` |
-| 1.3     | Open   |               |                  | Add back button to `templates/analysis/models.html` page-header → `/eval/analysis` |
-| 1.4     | Open   |               |                  | Add back button to `templates/analysis/verification.html` page-header → `/eval/analysis` |
-| 1.5     | Open   |               |                  | Verify all 4 Intelligence pages render correctly (manual curl check) |
-| 1.6     | Open   |               |                  | Stage all Phase 1 changes |
-| 1.7     | Open   |               |                  | Commit all Phase 1 changes |
+| 1.1     | Completed | 2026-03-29 03:30 PM | 2026-03-29 03:31 PM | Reduce sidebar vertical spacing in `ai_benchmark/eval/ui/static/css/style.css`: `.sidebar-nav li a` padding 10px→7px, `.nav-section` top 16px→10px, `.sidebar-brand` 16px→12px |
+| 1.2     | Completed | 2026-03-29 03:31 PM | 2026-03-29 03:32 PM | Add back button to `templates/analysis/model_detail.html` page-header → `/eval/analysis/models` |
+| 1.3     | Completed | 2026-03-29 03:31 PM | 2026-03-29 03:32 PM | Add back button to `templates/analysis/models.html` page-header → `/eval/analysis` |
+| 1.4     | Completed | 2026-03-29 03:31 PM | 2026-03-29 03:32 PM | Add back button to `templates/analysis/verification.html` page-header → `/eval/analysis` |
+| 1.5     | Completed | 2026-03-29 03:32 PM | 2026-03-29 03:33 PM | Verify all 4 Intelligence pages render correctly (manual curl check) |
+| 1.6     | Completed | 2026-03-29 03:33 PM | 2026-03-29 03:33 PM | Stage all Phase 1 changes |
+| 1.7     | Completed | 2026-03-29 03:33 PM | 2026-03-29 03:33 PM | Commit all Phase 1 changes |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Reduced sidebar padding (brand 16→12px, links 10→7px, sections 16→10px, nav list 8→4px). Added "Back to" buttons on model_detail, models, and verification templates.
+- **Changes hosted at:** `ai_benchmark/eval/ui/static/css/style.css`, `ai_benchmark/eval/ui/templates/analysis/{model_detail,models,verification}.html`
 - **Commit:** `Site review 1: tighten sidebar spacing, add back navigation to Intelligence pages`
 
 ## Phase 2: Clickable Stat Cards
