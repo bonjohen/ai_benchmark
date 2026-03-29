@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import structlog
 from bs4 import BeautifulSoup
 
 from ..base import RawItem, SourceCollector
 
 if TYPE_CHECKING:
     from ...config.settings import PageConfig
+
+logger = structlog.get_logger()
 
 
 class TechCrunchCollector(SourceCollector):
@@ -25,7 +28,14 @@ class TechCrunchCollector(SourceCollector):
         """Parse TechCrunch WordPress RSS feed."""
         soup = BeautifulSoup(xml_text, "lxml-xml")
         items: list[RawItem] = []
-        for item in soup.find_all("item"):
+        rss_items = soup.find_all("item")
+        if not rss_items:
+            # Fallback: lxml-xml may fail if content is not well-formed XML.
+            # Retry with the lxml HTML parser which is more lenient.
+            logger.warning("rss_xml_parse_empty", parser="lxml-xml", source="techcrunch")
+            soup = BeautifulSoup(xml_text, "lxml")
+            rss_items = soup.find_all("item")
+        for item in rss_items:
             title_el = item.find("title")
             link_el = item.find("link")
             pub_date_el = item.find("pubDate")

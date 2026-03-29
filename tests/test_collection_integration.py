@@ -375,7 +375,9 @@ class TestCollectionDaemonIntegration:
         # and let the real collect_page -> snapshot_mgr path run.
         # However, collect_page calls fetcher.fetch and snapshot_mgr.compare_with_latest,
         # so we mock collect_page but also separately store a snapshot to prove the flow.
-        async def mock_collect_page_with_snapshot(page_cfg, fetcher, snapshot_mgr, page_id, **kwargs):
+        async def mock_collect_page_with_snapshot(
+            page_cfg, fetcher, snapshot_mgr, page_id, **kwargs
+        ):
             # Simulate what a real collector does: store a snapshot, then return items
             await snapshot_mgr.store_snapshot(page_id, "<html>Model Alpha</html>")
             return fake_items, fake_diff

@@ -189,6 +189,132 @@ Also supports `.env` file in project root.
 
 Codebase is fully compliant with ruff (E/F/I/N/W/UP/B/SIM/TCH rules, line-length 100, py312). Run `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — both exit clean. Per-file-ignores for B008 (FastAPI Depends pattern) in `eval/api/routes/*.py` and `eval/ui/server.py`. Some model/schema files have `# noqa: TC003` for datetime imports required at runtime by SQLAlchemy/Pydantic.
 
+## Development Workflow
+
+All non-trivial work follows a five-stage process. Each stage produces a durable artifact in `docs/`.
+
+### Stage 1: Design
+
+Explore the problem space. Read code, logs, configs, errors, external references. Understand root causes, constraints, existing patterns, and options. Research only — no code changes. Use EnterPlanMode for this exploration.
+
+**Artifact:** `docs/[topic]_design.md`
+
+Structure (paragraph form, numbered sections):
+```
+# [Topic] Design Document
+
+## 1. Purpose
+## 2. Scope
+## 3. Core Design Principles
+## 4. Primary User Stories
+## 5. Functional Requirements
+  ### 5.1 [Area]
+  ### 5.2 [Area]
+```
+
+### Stage 2: Product Design Requirements (PDR)
+
+Define the physical implementation. What needs to be built, what exists to reuse, new dependencies, package layout, data model, and verification criteria.
+
+**Artifact:** `docs/[topic]_pdr.md`
+
+Structure (paragraph + tables, numbered sections):
+```
+# Physical Design Requirements: [Topic]
+
+**Source document:** `docs/[topic]_design.md`
+**Project root:** `C:\Projects\ai_benchmark`
+**Date:** YYYY-MM-DD HH:MM (PST)
+
+## 1. System Context
+  ### 1.1 Existing Infrastructure to Reuse
+  | Asset | Location | Reuse |
+  ### 1.2 New Dependencies to Add
+  | Package | Purpose | Version Constraint |
+## 2. Package Layout
+## 3. Data Model
+## 4. [Component Areas]
+```
+
+### Stage 3: Phased Release Plan
+
+Break the PDR into ordered phases, each independently shippable. No paragraph form — task tables only.
+
+**Artifact:** `docs/[topic]_plan.md`
+
+Structure:
+```
+# [Topic] — Implementation Plan
+
+**Source document:** `docs/[topic]_pdr.md`
+
+## Work Queue Instructions
+
+### State Transitions
+
+Open  ──>  Started  ──>  Completed
+              │
+              └──>  Blocked  ──>  Started  ──>  Completed
+
+- **Open**: Not yet begun.
+- **Started**: Actively in progress. Record the start datetime (PST).
+- **Completed**: Done and verified. Record the completion datetime (PST).
+- **Blocked**: Cannot proceed; note the blocker in the description.
+
+### Commit Protocol
+
+1. Work through all tasks in a phase.
+2. When every task reaches Completed, write the Phase Summary.
+3. Stage and commit all changes for the phase. Do not push.
+4. Proceed immediately to the next phase.
+
+## Technology Stack (Additive)
+
+| Concern | Choice |
+|---|---|
+
+## Phase #: [Title]
+
+**Goal:** [What is true after this phase completes.]
+**Depends on:** [Prior phase or "Nothing (first phase)."]
+
+| PhaseNo    | Status | Started (PST) | Completed (PST) | Description |
+|------------|--------|---------------|------------------|-------------|
+| [phase].1  | Open   |               |                  | [One-line description with key file paths] |
+| [phase].2  | Open   |               |                  | [One-line description] |
+| [phase].N-1| Open   |               |                  | Stage all Phase # changes. |
+| [phase].N  | Open   |               |                  | Commit all Phase # changes. |
+
+### Phase # Summary
+
+- **Changes:** [What was created/modified.]
+- **Changes hosted at:** TBD
+- **Commit:** `[Phase commit message]`
+```
+
+Task numbering is sequential across all phases (does not restart per phase). Each phase ends with explicit stage and commit tasks. Started and Completed are PST datetimes (e.g., `2026-03-28 06:26 PM`).
+
+### Stage 4: Execute Each Phase
+
+For each phase:
+1. Use EnterPlanMode to design the phase approach
+2. ExitPlanMode, save plan to `docs/`
+3. Implement the changes, updating task statuses and timestamps as work proceeds
+4. Run tests (`pytest`) and linting (`ruff check`, `ruff format --check`)
+5. Fix failures until green
+6. Write the Phase Summary
+7. Stage and commit
+
+When autonomous execution is instructed, don't wait for approval after ExitPlanMode — execute immediately.
+
+### Stage 5: Commit Timing
+
+- One commit per phase, only when green (tests pass, lint clean)
+- Commit message reflects the phase scope
+- Never commit partial phases
+- Never batch multiple phases into one commit
+- Do not push unless explicitly asked
+
 ## Documentation
 
 Active docs in `docs/`:

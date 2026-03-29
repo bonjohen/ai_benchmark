@@ -36,8 +36,13 @@ class APIClient:
             return {"Authorization": f"Bearer {self.api_key}"}
         return {}
 
-    async def get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
-        """Make an authenticated GET request."""
+    async def get(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        max_retries: int = 3,
+    ) -> dict[str, Any]:
+        """Make an authenticated GET request with 429 retry support."""
         url = f"{self.base_url.rstrip('/')}/{path.lstrip('/')}" if self.base_url else path
         headers = {
             "Accept": "application/json",
@@ -45,9 +50,23 @@ class APIClient:
             **self.auth_header(),
         }
         async with self._semaphore, httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(url, headers=headers, params=params)
+            for attempt in range(max_retries):
+                response = await client.get(url, headers=headers, params=params)
+                if response.status_code == 429:
+                    retry_after = int(response.headers.get("Retry-After", "5"))
+                    logger.warning(
+                        "api_rate_limited",
+                        url=url,
+                        retry_after=retry_after,
+                        attempt=attempt + 1,
+                    )
+                    await asyncio.sleep(retry_after)
+                    continue
+                response.raise_for_status()
+                return response.json()
+            # Final attempt exhausted — raise the last response's status
             response.raise_for_status()
-            return response.json()
+            return response.json()  # unreachable, but satisfies type checker
 
     async def get_paginated(
         self,

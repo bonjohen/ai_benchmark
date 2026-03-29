@@ -18,14 +18,13 @@ if TYPE_CHECKING:
     from ...collection.snapshot import SnapshotManager
     from ...config.settings import PageConfig
 
-# Support/help thread patterns to filter out
+# Support/help thread patterns to filter out.
+# Only match clearly support-oriented threads; avoid broad patterns like
+# "error" or "how do" that also match legitimate technical discussion.
 SUPPORT_THREAD_PATTERNS: list[re.Pattern] = [
-    re.compile(r"\bhow (do|can|to)\b", re.IGNORECASE),
     re.compile(r"\bhelp\b.*\b(run|install|setup|configure)\b", re.IGNORECASE),
-    re.compile(r"\berror\b", re.IGNORECASE),
-    re.compile(r"\bbug\b", re.IGNORECASE),
     re.compile(r"\bnot working\b", re.IGNORECASE),
-    re.compile(r"\bcan't\b.*\b(run|install|load)\b", re.IGNORECASE),
+    re.compile(r"\bcan'?t\b.*\b(run|install|load)\b", re.IGNORECASE),
 ]
 
 

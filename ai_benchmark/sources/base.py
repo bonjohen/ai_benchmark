@@ -168,13 +168,14 @@ class SourceCollector(abc.ABC):
             if item.page_title is None:
                 item.page_title = page.page_type
 
-        # Lazy import to avoid circular dependency
-        from ..processing.quality_filter import is_low_value_page
+        # In backfill mode, skip quality filtering — the user explicitly
+        # requested historical data, so stale-date checks are counterproductive.
+        if not since_date:
+            from ..processing.quality_filter import is_low_value_page
 
-        max_age = (date.today() - since_date).days + 1 if since_date else 90
-        if is_low_value_page(diff, items, page, max_age_days=max_age):
-            log.warning("low_value_page_filtered", count=len(items))
-            return [], diff
+            if is_low_value_page(diff, items, page):
+                log.warning("low_value_page_filtered", count=len(items))
+                return [], diff
 
         log.info("items_extracted", count=len(items), change_ratio=diff.change_ratio)
         return items, diff

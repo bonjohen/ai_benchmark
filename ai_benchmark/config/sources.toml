@@ -298,11 +298,6 @@ polling_frequency = "6h"
 priority = true
 
 [[sources.pages]]
-canonical_url = "https://artificialanalysis.ai/text/arena?tab=Ranking"
-page_type = "methodology"
-polling_frequency = "weekly"
-
-[[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=%22artificial+analysis%22+ai+benchmark+OR+leaderboard&hl=en-US&gl=US&ceid=US:en"
 page_type = "rss feed"
 polling_frequency = "daily"
@@ -400,17 +395,6 @@ priority = true
 canonical_url = "https://www.swebench.com/lite.html"
 page_type = "leaderboard"
 polling_frequency = "daily"
-
-[[sources.pages]]
-canonical_url = "https://www.swebench.com/full.html"
-page_type = "leaderboard"
-polling_frequency = "daily"
-
-[[sources.pages]]
-canonical_url = "https://www.swebench.com/pro.html"
-page_type = "leaderboard"
-polling_frequency = "daily"
-priority = true
 
 [[sources.pages]]
 canonical_url = "https://www.swebench.com/multilingual.html"

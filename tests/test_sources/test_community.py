@@ -130,13 +130,13 @@ HF_FORUMS_MIXED_HTML = """
   <td><a class="title" href="/t/announce/200">Announcing new Llama 3.1 benchmarks</a></td>
 </tr>
 <tr class="topic-list-item" data-topic-id="201">
-  <td><a class="title" href="/t/help/201">How do I run Llama 3?</a></td>
+  <td><a class="title" href="/t/help/201">Please help me install transformers on Windows</a></td>
 </tr>
 <tr class="topic-list-item" data-topic-id="202">
-  <td><a class="title" href="/t/error/202">Error loading model weights</a></td>
+  <td><a class="title" href="/t/error/202">Error analysis in LLM reasoning tasks</a></td>
 </tr>
 <tr class="topic-list-item" data-topic-id="203">
-  <td><a class="title" href="/t/bug/203">Bug in tokenizer for special characters</a></td>
+  <td><a class="title" href="/t/notwork/203">Tokenizer not working after upgrade</a></td>
 </tr>
 </body></html>
 """
@@ -148,8 +148,10 @@ def test_hf_forums_filters_support_threads():
     page = PageConfig(canonical_url="https://discuss.huggingface.co", page_type="forum")
     items = collector.extract_items(HF_FORUMS_MIXED_HTML, page)
     titles = [i.title for i in items]
+    # Legitimate discussion topics pass through
     assert "Announcing new Llama 3.1 benchmarks" in titles
-    assert "How do I run Llama 3?" not in titles
-    assert "Error loading model weights" not in titles
-    assert "Bug in tokenizer for special characters" not in titles
-    assert len(items) == 1
+    assert "Error analysis in LLM reasoning tasks" in titles
+    # Clearly support-oriented threads are filtered
+    assert "Please help me install transformers on Windows" not in titles
+    assert "Tokenizer not working after upgrade" not in titles
+    assert len(items) == 2

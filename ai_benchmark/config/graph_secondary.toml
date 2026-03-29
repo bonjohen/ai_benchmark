@@ -7,7 +7,7 @@ name = "Secondary Sources"
 classification = "secondary"
 description = "Benchmarks, leaderboards, news outlets, Semantic Scholar, HF leaderboard docs"
 source_count = 11
-page_count = 29
+page_count = 26
 
 # ════════════════════════════════════════════
 #  Control Nodes
@@ -161,15 +161,6 @@ polling_frequency = "6h"
 priority = true
 
 [[nodes]]
-id = "aa.methodology"
-type = "page"
-label = "AA Arena Methodology"
-url = "https://artificialanalysis.ai/text/arena?tab=Ranking"
-page_type = "methodology"
-collection_method = "html"
-polling_frequency = "weekly"
-
-[[nodes]]
 id = "aa.rss"
 type = "page"
 label = "Artificial Analysis RSS"
@@ -298,25 +289,6 @@ url = "https://www.swebench.com/lite.html"
 page_type = "leaderboard"
 collection_method = "html"
 polling_frequency = "daily"
-
-[[nodes]]
-id = "swebench.full"
-type = "page"
-label = "SWE-bench Full"
-url = "https://www.swebench.com/full.html"
-page_type = "leaderboard"
-collection_method = "html"
-polling_frequency = "daily"
-
-[[nodes]]
-id = "swebench.pro"
-type = "page"
-label = "SWE-bench Pro"
-url = "https://www.swebench.com/pro.html"
-page_type = "leaderboard"
-collection_method = "html"
-polling_frequency = "daily"
-priority = true
 
 [[nodes]]
 id = "swebench.multilingual"
@@ -557,11 +529,6 @@ relationship = "monitors"
 
 [[edges]]
 source = "artificial_analysis"
-target = "aa.methodology"
-relationship = "monitors"
-
-[[edges]]
-source = "artificial_analysis"
 target = "aa.rss"
 relationship = "monitors"
 
@@ -626,16 +593,6 @@ relationship = "monitors"
 [[edges]]
 source = "swebench"
 target = "swebench.lite"
-relationship = "monitors"
-
-[[edges]]
-source = "swebench"
-target = "swebench.full"
-relationship = "monitors"
-
-[[edges]]
-source = "swebench"
-target = "swebench.pro"
 relationship = "monitors"
 
 [[edges]]
@@ -732,11 +689,6 @@ target = "END"
 relationship = "produces"
 
 [[edges]]
-source = "aa.methodology"
-target = "END"
-relationship = "produces"
-
-[[edges]]
 source = "aa.rss"
 target = "END"
 relationship = "produces"
@@ -798,16 +750,6 @@ relationship = "produces"
 
 [[edges]]
 source = "swebench.lite"
-target = "END"
-relationship = "produces"
-
-[[edges]]
-source = "swebench.full"
-target = "END"
-relationship = "produces"
-
-[[edges]]
-source = "swebench.pro"
 target = "END"
 relationship = "produces"
 
