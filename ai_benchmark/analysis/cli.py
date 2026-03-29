@@ -148,3 +148,166 @@ def analyze_model(ctx: click.Context, slug: str, output_format: str) -> None:
         await engine.dispose()
 
     asyncio.run(_run())
+
+
+@analyze_group.command("benchmarks")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_benchmarks(ctx: click.Context, output_format: str) -> None:
+    """List all tracked benchmarks."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.benchmark_trends import list_benchmarks
+
+            benchmarks = await list_benchmarks(session)
+
+            if not benchmarks:
+                click.echo("No benchmarks found.")
+                return
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(benchmarks))
+            else:
+                for b in benchmarks:
+                    top = f"top: {b.top_model} ({b.top_score})" if b.top_model else ""
+                    click.echo(f"  {b.benchmark_name:<30} {b.entry_count:>3} entries  {top}")
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+@analyze_group.command("benchmark")
+@click.argument("name")
+@click.option("--model", "model_slug", default=None, help="Filter by model slug.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown", "csv"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_benchmark(
+    ctx: click.Context, name: str, model_slug: str | None, output_format: str
+) -> None:
+    """Show leaderboard for a specific benchmark."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.benchmark_trends import get_benchmark_leaderboard
+
+            leaderboard = await get_benchmark_leaderboard(session, name)
+
+            if not leaderboard.entries:
+                click.echo(f"No entries found for benchmark '{name}'.")
+                return
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(leaderboard))
+            elif output_format == "markdown":
+                from .formatters.markdown import leaderboard_to_markdown
+
+                click.echo(leaderboard_to_markdown(leaderboard))
+            elif output_format == "csv":
+                from .formatters.csv_export import leaderboard_to_csv
+
+                click.echo(leaderboard_to_csv(leaderboard))
+            else:
+                for i, entry in enumerate(leaderboard.entries, 1):
+                    score_str = f"{entry.score}" if entry.score is not None else "—"
+                    click.echo(
+                        f"  {i:>3}. {entry.model_slug:<25} {score_str:>10} "
+                        f"({entry.date}, {entry.source_name})"
+                    )
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+@analyze_group.command("competitive")
+@click.option("--days", default=30, help="Lookback window in days.")
+@click.option("--org", "organizations", multiple=True, help="Filter by organization(s).")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown"]),
+    default="text",
+    help="Output format.",
+)
+@click.pass_context
+def analyze_competitive(
+    ctx: click.Context, days: int, organizations: tuple[str, ...], output_format: str
+) -> None:
+    """Show competitive activity timeline."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.competitive_intel import get_activity_timeline
+
+            org_list = list(organizations) if organizations else None
+            timeline = await get_activity_timeline(
+                session, window_days=days, organizations=org_list
+            )
+
+            if output_format == "json":
+                from .formatters.json_export import to_json
+
+                click.echo(to_json(timeline))
+            elif output_format == "markdown":
+                from .formatters.markdown import activity_timeline_to_markdown
+
+                click.echo(activity_timeline_to_markdown(timeline))
+            else:
+                click.echo(f"Activity: {timeline.window_start} to {timeline.window_end}")
+                if timeline.org_activities:
+                    click.echo("\nOrganizations:")
+                    for org in timeline.org_activities:
+                        models_str = ", ".join(org.active_models[:5])
+                        click.echo(
+                            f"  {org.organization:<20} {org.total_events:>3} events  "
+                            f"models: {models_str}"
+                        )
+                if timeline.clusters:
+                    click.echo("\nCompetitive Clusters:")
+                    for cluster in timeline.clusters:
+                        orgs = ", ".join(cluster.organizations)
+                        click.echo(
+                            f"  {cluster.event_type}: {orgs} "
+                            f"({cluster.start_date} to {cluster.end_date}, "
+                            f"{cluster.event_count} events)"
+                        )
+
+        await engine.dispose()
+
+    asyncio.run(_run())

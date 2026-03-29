@@ -81,8 +81,8 @@ Open  ──>  Started  ──>  Completed
 | 2.7 | Completed | 2026-03-29 06:45 PM | 2026-03-29 06:50 PM | Create `tests/test_analysis/test_formatters.py` — formatter output tests |
 | 2.8 | Completed | 2026-03-29 06:50 PM | 2026-03-29 06:52 PM | Run `pytest` — 723 passed, 0 failures |
 | 2.9 | Completed | 2026-03-29 06:50 PM | 2026-03-29 06:52 PM | Run `ruff check` + `ruff format --check` — clean |
-| 2.10 | Open | | | Stage all Phase 2 changes |
-| 2.11 | Open | | | Commit: "Add model lifecycle service with formatters and CLI commands" |
+| 2.10 | Completed | 2026-03-29 06:52 PM | 2026-03-29 06:53 PM | Stage all Phase 2 changes |
+| 2.11 | Completed | 2026-03-29 06:53 PM | 2026-03-29 06:53 PM | Commit: "Add model lifecycle service with formatters and CLI commands" |
 
 ### Phase 2 Summary
 
@@ -97,22 +97,22 @@ Open  ──>  Started  ──>  Completed
 
 | # | Status | Started (PST) | Completed (PST) | Description |
 |---|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Create `ai_benchmark/analysis/services/benchmark_trends.py` — `extract_benchmark_score`, `list_benchmarks`, `get_benchmark_leaderboard`, `get_benchmark_timeline` per PDR §5.2 |
-| 3.2 | Open | | | Create `ai_benchmark/analysis/services/competitive_intel.py` — `get_activity_timeline`, `detect_competitive_clusters`, `org_activity_summary` per PDR §5.3 |
-| 3.3 | Open | | | Add formatters — `leaderboard_to_markdown`, `leaderboard_to_csv`, `activity_timeline_to_markdown` |
-| 3.4 | Open | | | Add CLI subcommands — `analyze benchmarks`, `analyze benchmark <name>`, `analyze competitive` with options |
-| 3.5 | Open | | | Create `tests/test_analysis/test_benchmark_trends.py` — score extraction tests + leaderboard tests |
-| 3.6 | Open | | | Create `tests/test_analysis/test_competitive_intel.py` — cluster detection + activity timeline tests |
-| 3.7 | Open | | | Run `pytest` — all tests pass |
-| 3.8 | Open | | | Run `ruff check` + `ruff format --check` — clean |
-| 3.9 | Open | | | Stage all Phase 3 changes |
-| 3.10 | Open | | | Commit: "Add benchmark trends and competitive intelligence services" |
+| 3.1 | Completed | 2026-03-29 06:55 PM | 2026-03-29 07:00 PM | Create `ai_benchmark/analysis/services/benchmark_trends.py` — `extract_benchmark_score`, `list_benchmarks`, `get_benchmark_leaderboard`, `get_benchmark_timeline` per PDR §5.2 |
+| 3.2 | Completed | 2026-03-29 06:55 PM | 2026-03-29 07:00 PM | Create `ai_benchmark/analysis/services/competitive_intel.py` — `get_activity_timeline`, `detect_competitive_clusters`, `org_activity_summary` per PDR §5.3 |
+| 3.3 | Completed | 2026-03-29 06:30 PM | 2026-03-29 06:35 PM | Add formatters — `leaderboard_to_markdown`, `leaderboard_to_csv`, `activity_timeline_to_markdown` (already created in Phase 2) |
+| 3.4 | Completed | 2026-03-29 07:00 PM | 2026-03-29 07:05 PM | Add CLI subcommands — `analyze benchmarks`, `analyze benchmark <name>`, `analyze competitive` with options |
+| 3.5 | Completed | 2026-03-29 07:05 PM | 2026-03-29 07:10 PM | Create `tests/test_analysis/test_benchmark_trends.py` — score extraction tests + leaderboard tests |
+| 3.6 | Completed | 2026-03-29 07:05 PM | 2026-03-29 07:10 PM | Create `tests/test_analysis/test_competitive_intel.py` — cluster detection + activity timeline tests |
+| 3.7 | Completed | 2026-03-29 07:10 PM | 2026-03-29 07:12 PM | Run `pytest` — 752 passed, 0 failures |
+| 3.8 | Completed | 2026-03-29 07:10 PM | 2026-03-29 07:12 PM | Run `ruff check` + `ruff format --check` — clean |
+| 3.9 | Completed | 2026-03-29 07:12 PM | 2026-03-29 07:13 PM | Stage all Phase 3 changes |
+| 3.10 | Completed | 2026-03-29 07:13 PM | 2026-03-29 07:13 PM | Commit: "Add benchmark trends and competitive intelligence services" |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `ai_benchmark/analysis/services/benchmark_trends.py` (extract_benchmark_score with 4-priority regex, list_benchmarks, get_benchmark_leaderboard, get_benchmark_timeline), `ai_benchmark/analysis/services/competitive_intel.py` (get_activity_timeline, detect_competitive_clusters with iso-week bucketing, org_activity_summary). Added 3 CLI subcommands (analyze benchmarks, analyze benchmark, analyze competitive). 29 new tests (19 benchmark + 10 competitive), 752 total passing.
 - **Changes hosted at:** TBD
-- **Commit:** TBD
+- **Commit:** `Add benchmark trends and competitive intelligence services`
 
 ## Phase 4: Research Pulse + Anomaly Detection
 
