@@ -223,7 +223,7 @@ class TestMigrationChain:
         engine.dispose()
 
         assert len(rows) == 1
-        assert rows[0][0] == "007"
+        assert rows[0][0] == "008"
 
     def test_core_tables_have_expected_columns(self, tmp_path):
         """Spot-check columns on sources, runs, and event_records."""

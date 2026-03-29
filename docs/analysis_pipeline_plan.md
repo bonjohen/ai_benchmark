@@ -43,27 +43,27 @@ Open  ──>  Started  ──>  Completed
 
 | # | Status | Started (PST) | Completed (PST) | Description |
 |---|--------|---------------|------------------|-------------|
-| 1.1 | Open | | | Create `ai_benchmark/analysis/__init__.py` — empty package marker |
-| 1.2 | Open | | | Create `ai_benchmark/analysis/models.py` — `AnalysisSnapshot` + `AnalysisInsight` ORM models per PDR §3.1-3.2 |
-| 1.3 | Open | | | Create `ai_benchmark/analysis/types.py` — all 15 result dataclasses per PDR §4 |
-| 1.4 | Open | | | Create `ai_benchmark/analysis/services/__init__.py` — empty package marker |
-| 1.5 | Open | | | Create `ai_benchmark/analysis/formatters/__init__.py` — empty package marker |
-| 1.6 | Open | | | Create `ai_benchmark/analysis/cli.py` — Click group `analyze` with `--help` only, no subcommands yet |
-| 1.7 | Open | | | Modify `ai_benchmark/cli.py` — register `analyze_group` after eval group (after line 276) |
-| 1.8 | Open | | | Create `alembic/versions/008_analysis_pipeline.py` — 2 tables + 7 indexes per PDR §3.3 |
-| 1.9 | Open | | | Create `tests/test_analysis/__init__.py` and `tests/test_analysis/conftest.py` with shared fixtures |
-| 1.10 | Open | | | Create `tests/test_analysis/test_models.py` — test ORM model creation and field defaults |
-| 1.11 | Open | | | Create `tests/test_analysis/test_types.py` — test dataclass instantiation and field types |
-| 1.12 | Open | | | Run `pytest` — all existing + new tests pass |
-| 1.13 | Open | | | Run `ruff check` + `ruff format --check` — clean |
+| 1.1 | Completed | 2026-03-29 06:10 PM | 2026-03-29 06:10 PM | Create `ai_benchmark/analysis/__init__.py` — empty package marker |
+| 1.2 | Completed | 2026-03-29 06:10 PM | 2026-03-29 06:12 PM | Create `ai_benchmark/analysis/models.py` — `AnalysisSnapshot` + `AnalysisInsight` ORM models per PDR §3.1-3.2 |
+| 1.3 | Completed | 2026-03-29 06:12 PM | 2026-03-29 06:14 PM | Create `ai_benchmark/analysis/types.py` — all 15 result dataclasses per PDR §4 |
+| 1.4 | Completed | 2026-03-29 06:10 PM | 2026-03-29 06:10 PM | Create `ai_benchmark/analysis/services/__init__.py` — empty package marker |
+| 1.5 | Completed | 2026-03-29 06:10 PM | 2026-03-29 06:10 PM | Create `ai_benchmark/analysis/formatters/__init__.py` — empty package marker |
+| 1.6 | Completed | 2026-03-29 06:14 PM | 2026-03-29 06:15 PM | Create `ai_benchmark/analysis/cli.py` — Click group `analyze` with `--help` only, no subcommands yet |
+| 1.7 | Completed | 2026-03-29 06:15 PM | 2026-03-29 06:15 PM | Modify `ai_benchmark/cli.py` — register `analyze_group` after eval group (after line 276) |
+| 1.8 | Completed | 2026-03-29 06:14 PM | 2026-03-29 06:15 PM | Create `alembic/versions/008_analysis_pipeline.py` — 2 tables + 7 indexes per PDR §3.3 |
+| 1.9 | Completed | 2026-03-29 06:16 PM | 2026-03-29 06:18 PM | Create `tests/test_analysis/__init__.py` and `tests/test_analysis/conftest.py` with shared fixtures |
+| 1.10 | Completed | 2026-03-29 06:18 PM | 2026-03-29 06:20 PM | Create `tests/test_analysis/test_models.py` — test ORM model creation and field defaults |
+| 1.11 | Completed | 2026-03-29 06:18 PM | 2026-03-29 06:20 PM | Create `tests/test_analysis/test_types.py` — test dataclass instantiation and field types |
+| 1.12 | Completed | 2026-03-29 06:20 PM | 2026-03-29 06:25 PM | Run `pytest` — 685 passed, 0 failures |
+| 1.13 | Completed | 2026-03-29 06:22 PM | 2026-03-29 06:25 PM | Run `ruff check` + `ruff format --check` — clean |
 | 1.14 | Open | | | Stage all Phase 1 changes |
 | 1.15 | Open | | | Commit: "Add analysis pipeline foundation: models, types, migration, CLI skeleton" |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `ai_benchmark/analysis/` package with models (AnalysisSnapshot, AnalysisInsight), 15 result dataclasses, CLI skeleton, alembic migration 008 (2 tables + 7 indexes). Updated `tests/conftest.py` for model registration, `tests/test_migrations.py` for head revision. 19 new tests all passing. 685 total tests, 0 failures.
 - **Changes hosted at:** TBD
-- **Commit:** TBD
+- **Commit:** `Add analysis pipeline foundation: models, types, migration, CLI skeleton`
 
 ## Phase 2: Model Lifecycle Service + Formatters
 

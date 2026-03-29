@@ -14,6 +14,7 @@ async def db_engine():
     """Create an in-memory SQLite engine for testing."""
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     # Import models to register them
+    from ai_benchmark.analysis import models as analysis_models  # noqa: F401
     from ai_benchmark.eval.models import (  # noqa: F401
         artifact,
         audit,
@@ -45,6 +46,7 @@ async def db_engine_fk():
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
+    from ai_benchmark.analysis import models as analysis_models  # noqa: F401
     from ai_benchmark.eval.models import (  # noqa: F401
         artifact,
         audit,
