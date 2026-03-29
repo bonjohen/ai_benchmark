@@ -83,7 +83,7 @@
             <tbody>
                 {% for e in spotlight.entries %}
                 <tr>
-                    <td><a href="/eval/analysis/models/{{ e.model_slug }}">{{ e.model_slug }}</a></td>
+                    <td><a href="/eval/analysis/models/{{ e.model_slug }}">{{ e.model_slug | prettify_slug }}</a></td>
                     <td>{{ e.organization }}</td>
                     <td>{{ e.first_seen }}</td>
                     <td>{{ e.benchmark_count }}</td>
@@ -185,7 +185,7 @@
                 {% for s in evolution %}
                 <tr>
                     <td>{{ s.benchmark_name }}</td>
-                    <td>{{ s.current_leader or "—" }}</td>
+                    <td>{{ s.current_leader | prettify_slug if s.current_leader else "—" }}</td>
                     <td>{{ s.current_top_score if s.current_top_score is not none else "—" }}</td>
                     <td>{{ "%.2f"|format(s.total_improvement) if s.total_improvement is not none else "—" }}</td>
                     <td>{{ "%.2f"|format(s.improvement_rate_per_month) if s.improvement_rate_per_month is not none else "—" }}</td>

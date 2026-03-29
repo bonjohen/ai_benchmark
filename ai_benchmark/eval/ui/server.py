@@ -23,6 +23,14 @@ STATIC_DIR = UI_DIR / "static"
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+
+def _prettify_slug(value: str) -> str:
+    """Convert 'some-model-name' to 'Some Model Name' for display."""
+    return value.replace("-", " ").replace("_", " ").title()
+
+
+templates.env.filters["prettify_slug"] = _prettify_slug
+
 router = APIRouter()
 
 

@@ -55,7 +55,7 @@
             <tbody>
                 {% for m in models %}
                 <tr>
-                    <td><a href="/eval/analysis/models/{{ m.model_slug }}">{{ m.model_slug }}</a></td>
+                    <td><a href="/eval/analysis/models/{{ m.model_slug }}">{{ m.model_slug | prettify_slug }}</a></td>
                     <td>{{ m.organization }}</td>
                     <td>{{ m.first_seen or "—" }}</td>
                     <td>{{ m.latest_activity or "—" }}</td>

@@ -62,7 +62,7 @@
             <tbody>
                 {% for m in report.model_verifications %}
                 <tr>
-                    <td><a href="/eval/analysis/models/{{ m.model_slug }}">{{ m.model_slug }}</a></td>
+                    <td><a href="/eval/analysis/models/{{ m.model_slug }}">{{ m.model_slug | prettify_slug }}</a></td>
                     <td>{{ m.organization }}</td>
                     <td>{{ m.total_claims }}</td>
                     <td>{{ "%.1f%%"|format(m.confirmed_pct) }}</td>

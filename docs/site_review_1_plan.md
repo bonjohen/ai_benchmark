@@ -95,18 +95,18 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 4.1     | Open   |               |                  | Register `prettify_slug` Jinja2 filter in `ai_benchmark/eval/ui/server.py` on the `templates` env: replace hyphens with spaces, title-case |
-| 4.2     | Open   |               |                  | Apply `prettify_slug` filter in `templates/analysis/models.html` model name table cell (display only, not href) |
-| 4.3     | Open   |               |                  | Apply `prettify_slug` filter in `templates/analysis/overview.html` spotlight and landscape model/org names where slugs appear |
-| 4.4     | Open   |               |                  | Apply `prettify_slug` filter in `templates/analysis/verification.html` model name column |
-| 4.5     | Open   |               |                  | Apply `prettify_slug` filter in `templates/analysis/model_detail.html` page title and related models section |
-| 4.6     | Open   |               |                  | Run `ruff check` and `ruff format --check` on modified files |
-| 4.7     | Open   |               |                  | Run full test suite `pytest` |
-| 4.8     | Open   |               |                  | Stage all Phase 4 changes |
-| 4.9     | Open   |               |                  | Commit all Phase 4 changes |
+| 4.1     | Completed | 2026-03-29 03:44 PM | 2026-03-29 03:44 PM | Register `prettify_slug` Jinja2 filter in `ai_benchmark/eval/ui/server.py` on the `templates` env: replace hyphens with spaces, title-case |
+| 4.2     | Completed | 2026-03-29 03:44 PM | 2026-03-29 03:45 PM | Apply `prettify_slug` filter in `templates/analysis/models.html` model name table cell (display only, not href) |
+| 4.3     | Completed | 2026-03-29 03:45 PM | 2026-03-29 03:45 PM | Apply `prettify_slug` filter in `templates/analysis/overview.html` spotlight model names and evolution leader |
+| 4.4     | Completed | 2026-03-29 03:45 PM | 2026-03-29 03:46 PM | Apply `prettify_slug` filter in `templates/analysis/verification.html` model name column |
+| 4.5     | Completed | 2026-03-29 03:46 PM | 2026-03-29 03:46 PM | Apply `prettify_slug` filter in `templates/analysis/model_detail.html` page title and related models section |
+| 4.6     | Completed | 2026-03-29 03:46 PM | 2026-03-29 03:47 PM | Run `ruff check` and `ruff format --check` on modified files — clean |
+| 4.7     | Completed | 2026-03-29 03:47 PM | 2026-03-29 03:48 PM | Run full test suite `pytest` — 879 passed |
+| 4.8     | Completed | 2026-03-29 03:48 PM | 2026-03-29 03:48 PM | Stage all Phase 4 changes |
+| 4.9     | Completed | 2026-03-29 03:48 PM | 2026-03-29 03:48 PM | Commit all Phase 4 changes |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Registered `prettify_slug` Jinja2 filter in server.py. Applied to model name display in models.html, overview.html (spotlight + evolution leader), verification.html, and model_detail.html (title, h1, related models).
+- **Changes hosted at:** `ai_benchmark/eval/ui/server.py`, `ai_benchmark/eval/ui/templates/analysis/{models,overview,verification,model_detail}.html`
 - **Commit:** `Site review 1: prettify model slug display in Intelligence UI`

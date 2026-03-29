@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% set active_page = "intel_models" %}
-{% block title %}{{ profile.model_slug }}{% endblock %}
+{% block title %}{{ profile.model_slug | prettify_slug }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1>{{ profile.model_slug }}</h1>
+    <h1>{{ profile.model_slug | prettify_slug }}</h1>
     <a href="/eval/analysis/models" class="btn btn-outline btn-sm">Back to Models</a>
 </div>
 
@@ -127,7 +127,7 @@
 <h2 class="section-heading">Related Models</h2>
 <div class="card" style="padding: 1rem;">
     {% for slug in profile.related_models %}
-    <a href="/eval/analysis/models/{{ slug }}" class="btn btn-sm btn-outline" style="margin: 0.25rem;">{{ slug }}</a>
+    <a href="/eval/analysis/models/{{ slug }}" class="btn btn-sm btn-outline" style="margin: 0.25rem;">{{ slug | prettify_slug }}</a>
     {% endfor %}
 </div>
 {% endif %}
