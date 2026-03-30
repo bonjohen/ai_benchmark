@@ -76,17 +76,17 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 3.1     | Open   |               |                  | Add `seed` Click command to `ai_benchmark/eval/cli.py` that calls `seed_all(session)` and prints summary |
-| 3.2     | Open   |               |                  | Fix `run_launch_submit` in `ai_benchmark/eval/ui/server.py` — read `evaluation_id` from form, query latest EvaluationVersion, use its ID |
-| 3.3     | Open   |               |                  | Run `ruff check` and `ruff format --check` on modified files |
-| 3.4     | Open   |               |                  | Run `pytest tests/` — full suite must pass |
-| 3.5     | Open   |               |                  | Stage all Phase 3 changes |
-| 3.6     | Open   |               |                  | Commit all Phase 3 changes |
+| 3.1     | Completed | 2026-03-29 05:17 PM | 2026-03-29 05:19 PM | Add `seed` Click command to `ai_benchmark/eval/cli/commands.py` that calls `seed_all(session)` and prints summary |
+| 3.2     | Completed | 2026-03-29 05:19 PM | 2026-03-29 05:21 PM | Fix `run_launch_submit` in `ai_benchmark/eval/ui/server.py` — read `evaluation_id` from form, query latest EvaluationVersion, use its ID |
+| 3.3     | Completed | 2026-03-29 05:21 PM | 2026-03-29 05:21 PM | Run `ruff check` and `ruff format --check` on modified files — clean |
+| 3.4     | Completed | 2026-03-29 05:21 PM | 2026-03-29 05:22 PM | Run `pytest tests/` — 879 passed |
+| 3.5     | Completed | 2026-03-29 05:22 PM | 2026-03-29 05:22 PM | Stage all Phase 3 changes |
+| 3.6     | Completed | 2026-03-29 05:22 PM | 2026-03-29 05:22 PM | Commit all Phase 3 changes |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added `eval seed` CLI command to `commands.py`. Fixed hardcoded `evaluation_version_id=1` in `run_launch_submit` to resolve the form-selected evaluation to its latest version.
+- **Changes hosted at:** `ai_benchmark/eval/cli/commands.py`, `ai_benchmark/eval/ui/server.py`
 - **Commit:** `Add eval seed CLI command, fix launch page evaluation selection`
 
 ## Phase 4: Seed & Verify

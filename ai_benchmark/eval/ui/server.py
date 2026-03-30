@@ -688,18 +688,35 @@ async def run_launch_submit(request: Request, session: AsyncSession = Depends(ge
 
     form = await request.form()
     target_ids = form.getlist("target_ids")
-    if not target_ids:
+    evaluation_id = form.get("evaluation_id")
+    if not target_ids or not evaluation_id:
         from starlette.responses import RedirectResponse
 
         return RedirectResponse("/eval/runs/launch", status_code=303)
 
-    # For simplicity, create runs directly (the orchestrator would be used
-    # in real execution — this creates the DB records for the UI flow)
+    # Resolve evaluation_id to its latest EvaluationVersion
+    from sqlalchemy import select
+
+    from ..models.evaluation import EvaluationVersion
+
+    ev_stmt = (
+        select(EvaluationVersion)
+        .where(EvaluationVersion.evaluation_id == int(evaluation_id))
+        .order_by(EvaluationVersion.version_number.desc())
+        .limit(1)
+    )
+    ev_result = await session.execute(ev_stmt)
+    eval_version = ev_result.scalar_one_or_none()
+    if eval_version is None:
+        from starlette.responses import RedirectResponse
+
+        return RedirectResponse("/eval/runs/launch", status_code=303)
+
     first_run_id = None
     for tid in target_ids:
         run = await run_service.create_run(
             session,
-            evaluation_version_id=1,  # Would come from selected evaluation
+            evaluation_version_id=eval_version.id,
             target_config_id=int(tid),
             trigger_type="ui",
             priority=int(form.get("priority", 0)),

@@ -497,6 +497,34 @@ def eval_serve(host: str, port: int):
     uvicorn.run(app, host=host, port=port)
 
 
+@eval_group.command("seed")
+@click.pass_context
+def eval_seed(ctx: click.Context):
+    """Seed evaluation pipeline with starter data (idempotent)."""
+    settings = ctx.obj["settings"]
+
+    async def _seed():
+        engine = _get_eval_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from ..services.seed import seed_all
+
+            result = await seed_all(session)
+            await session.commit()
+
+        await engine.dispose()
+
+        click.echo("Eval seed complete:")
+        for entity, count in result.items():
+            status = f"{count} created" if count else "already exists"
+            click.echo(f"  {entity}: {status}")
+
+    asyncio.run(_seed())
+
+
 # ── Helpers ──
 
 
