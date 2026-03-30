@@ -123,6 +123,9 @@ echo   Database ready at data\ai_benchmark.db
 :: ── Register scheduled task ──
 echo.
 echo [6/6] Registering scheduled task...
+:: Remove stale duplicate task if present
+schtasks /delete /tn "AI Benchmark Daily Collection" /f >nul 2>&1
+:: Register the sole daily collection task
 schtasks /create /tn "%TASK_NAME%" /tr "cmd.exe /c %INSTALL_DIR%\bin\collect.bat" /sc %TASK_SCHEDULE% /st %TASK_TIME% /rl highest /f >nul 2>&1
 if errorlevel 1 (
     echo   WARNING: Could not create scheduled task. Create it manually:

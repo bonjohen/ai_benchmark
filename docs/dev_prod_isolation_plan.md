@@ -64,17 +64,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Update `scripts/daily_collect.ps1`: Change `$ProjectDir = "C:\Projects\ai_benchmark"` to `$ProjectDir = "C:\ai-benchmark"`. Update `$LogDir` to `Join-Path $ProjectDir "logs"`. Update Claude Code prompt to skip `collect` (already done by batch task at 05:00) and instead run `status` + `analyze digest --output logs/digest_$Timestamp.md`. Use venv Python: `& "C:\ai-benchmark\venv\Scripts\python.exe" -m ai_benchmark.cli`. |
-| 2.2 | Open | | | Update `scripts/install.ps1` step [6/6]: Add logic to remove stale `AI Benchmark Daily Collection` task if present: `Unregister-ScheduledTask -TaskName "AI Benchmark Daily Collection" -Confirm:$false -ErrorAction SilentlyContinue`. Add comment that `AIBenchmarkCollect` is the sole daily collector. |
-| 2.3 | Open | | | Update `scripts/install.bat` step [6/6]: Add `schtasks /delete /tn "AI Benchmark Daily Collection" /f >nul 2>&1` to remove stale task. |
-| 2.4 | Open | | | Optionally register Claude Code agent task at 06:00 in installers (analysis-only, not collection). Add as commented-out optional step with instructions to enable. |
-| 2.5 | Open | | | Stage all Phase 2 changes |
-| 2.6 | Open | | | Commit all Phase 2 changes |
+| 2.1 | Completed | 2026-03-30 10:42 AM | 2026-03-30 10:44 AM | Update `scripts/daily_collect.ps1`: Change `$ProjectDir = "C:\Projects\ai_benchmark"` to `$InstallDir = "C:\ai-benchmark"`. Update log paths. Update Claude Code prompt to skip `collect` and run `status` + `analyze digest`. Use venv Python. Load .env for database URL. |
+| 2.2 | Completed | 2026-03-30 10:44 AM | 2026-03-30 10:46 AM | Update `scripts/install.ps1` step [6/6]: Add `Unregister-ScheduledTask -TaskName "AI Benchmark Daily Collection"` to remove stale task. Add commented-out optional analysis task registration at 06:00. |
+| 2.3 | Completed | 2026-03-30 10:46 AM | 2026-03-30 10:47 AM | Update `scripts/install.bat` step [6/6]: Add `schtasks /delete /tn "AI Benchmark Daily Collection" /f` to remove stale task. |
+| 2.4 | Completed | 2026-03-30 10:47 AM | 2026-03-30 10:47 AM | Added commented-out optional Claude Code analysis task registration at 06:00 in install.ps1 with instructions to enable. |
+| 2.5 | Completed | 2026-03-30 10:47 AM | 2026-03-30 10:47 AM | Stage all Phase 2 changes |
+| 2.6 | Completed | 2026-03-30 10:47 AM | 2026-03-30 10:47 AM | Commit all Phase 2 changes |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Rewrote `daily_collect.ps1` to target production (`C:\ai-benchmark`) and run analysis-only (status + digest, no collect). Updated `install.ps1` to remove stale `AI Benchmark Daily Collection` task and added commented-out optional analysis task at 06:00. Updated `install.bat` to delete stale task.
+- **Changes hosted at:** `scripts/daily_collect.ps1`, `scripts/install.ps1`, `scripts/install.bat`
 - **Commit:** `Phase 2: Consolidate scheduled tasks and retarget daily_collect.ps1`
 
 ---

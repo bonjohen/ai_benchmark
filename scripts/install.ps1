@@ -156,6 +156,11 @@ try {
 # ── Register scheduled task ──
 Write-Host ""
 Write-Host "[6/6] Registering scheduled task..." -ForegroundColor Yellow
+
+# Remove stale duplicate task if present (was 'AI Benchmark Daily Collection' at 05:00)
+Unregister-ScheduledTask -TaskName "AI Benchmark Daily Collection" -Confirm:$false -ErrorAction SilentlyContinue
+
+# Register the sole daily collection task
 try {
     $action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$InstallDir\bin\collect.bat`""
     $trigger = New-ScheduledTaskTrigger -Daily -At $TaskTime
@@ -168,6 +173,13 @@ try {
     Write-Host "  Create it manually from an admin Command Prompt:"
     Write-Host "  schtasks /create /tn `"$TaskName`" /tr `"cmd.exe /c $InstallDir\bin\collect.bat`" /sc daily /st $TaskTime /rl highest /f"
 }
+
+# Optional: register Claude Code analysis task at 06:00 (uncomment to enable)
+# $analysisAction = New-ScheduledTaskAction -Execute "powershell.exe" `
+#     -Argument "-ExecutionPolicy Bypass -File `"$InstallDir\..\Projects\ai_benchmark\scripts\daily_collect.ps1`""
+# $analysisTrigger = New-ScheduledTaskTrigger -Daily -At "06:00"
+# Register-ScheduledTask -TaskName "AIBenchmarkAnalysis" -Action $analysisAction `
+#     -Trigger $analysisTrigger -Settings $settings -RunLevel Highest -Force | Out-Null
 
 # ── Done ──
 Write-Host ""
