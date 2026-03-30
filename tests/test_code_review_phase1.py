@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -21,7 +21,6 @@ from ai_benchmark.eval.models.evaluation import EvaluationDefinition, Evaluation
 from ai_benchmark.eval.models.run import Run
 from ai_benchmark.eval.models.target import TargetConfiguration
 from ai_benchmark.models.base import create_session_factory
-from ai_benchmark.models.sources import Page, Source
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -58,267 +57,106 @@ async def api_client(db_engine_fk):
 
 
 class TestSchedulerCollectSource:
-    """Integration tests for the fixed collect_source method."""
+    """Integration tests for collect_source delegation to CollectionCoordinator."""
 
     @pytest.mark.asyncio
-    async def test_collect_source_creates_page_records(self, db_engine_fk):
-        """Verify collect_source looks up/creates Page records with real IDs."""
-        session_factory = create_session_factory(db_engine_fk)
-
-        # Create a source record
-        async with session_factory() as session:
-            source = Source(
-                source_name="Test Source",
-                category="primary",
-                organization="TestOrg",
-                homepage_url="https://test.example.com",
-                base_domain="test.example.com",
-                trust_rating=5.0,
-                source_role="vendor",
-                classification="primary",
-            )
-            session.add(source)
-            await session.commit()
-
-        from ai_benchmark.config.settings import PageConfig, PipelineSettings, SourceConfig
-
-        mock_source_config = SourceConfig(
-            source_name="Test Source",
-            category="primary",
-            organization="TestOrg",
-            homepage_url="https://test.example.com",
-            base_domain="test.example.com",
-            trust_rating=5.0,
-            source_role="vendor",
-            classification="primary",
-            pages=[
-                PageConfig(
-                    canonical_url="https://test.example.com/models",
-                    page_type="model_catalog",
-                ),
-            ],
-        )
-
-        # Mock the collector
-        mock_collector = MagicMock()
-        mock_collector.get_pages.return_value = mock_source_config.pages
-        mock_collector.collect_page = AsyncMock(return_value=([], None))
-
-        settings = PipelineSettings(database_url="sqlite+aiosqlite:///:memory:")
-
+    async def test_collect_source_delegates_to_coordinator(self, db_engine_fk):
+        """Verify collect_source calls coordinator.collect_all with the organization."""
+        from ai_benchmark.config.settings import PipelineSettings
         from ai_benchmark.scheduling.scheduler import PipelineScheduler
 
+        settings = PipelineSettings(database_url="sqlite+aiosqlite:///:memory:")
         scheduler = PipelineScheduler(settings)
-        scheduler._session_factory = session_factory
-        scheduler._fetcher = MagicMock()
 
-        with (
-            patch(
-                "ai_benchmark.scheduling.scheduler.load_source_catalog",
-                return_value=[mock_source_config],
-            ),
-            patch(
-                "ai_benchmark.scheduling.scheduler.get_collector",
-                return_value=mock_collector,
-            ),
-        ):
-            await scheduler.collect_source("TestOrg")
+        mock_coordinator = AsyncMock()
+        mock_coordinator.collect_all = AsyncMock(
+            return_value={
+                "tasks_created": 2,
+                "tasks_completed": 2,
+                "tasks_failed": 0,
+                "items_processed": 5,
+                "events_created": 3,
+            }
+        )
+        scheduler._coordinator = mock_coordinator
 
-        # Verify the page was created in the DB
-        async with session_factory() as session:
-            from sqlalchemy import select
+        await scheduler.collect_source("TestOrg")
 
-            result = await session.execute(
-                select(Page).where(Page.canonical_url == "https://test.example.com/models")
-            )
-            page = result.scalar_one_or_none()
-            assert page is not None, "Page record should have been created"
-            assert page.page_type == "model_catalog"
-            assert page.id > 0, "Page should have a real database ID"
+        mock_coordinator.collect_all.assert_called_once_with(
+            organizations=["TestOrg"],
+            since_date=None,
+        )
+        # Health should record success
+        assert scheduler.health.get_status("TestOrg")["consecutive_failures"] == 0
 
     @pytest.mark.asyncio
-    async def test_collect_source_passes_session_to_snapshot_manager(self, db_engine_fk):
-        """Verify SnapshotManager receives an AsyncSession, not a factory."""
-        session_factory = create_session_factory(db_engine_fk)
+    async def test_collect_source_with_since_date(self, db_engine_fk):
+        """Verify since_date is passed through to coordinator."""
+        from datetime import date
 
-        # Create a source record
-        async with session_factory() as session:
-            source = Source(
-                source_name="Test Source 2",
-                category="primary",
-                organization="TestOrg2",
-                homepage_url="https://test2.example.com",
-                base_domain="test2.example.com",
-                trust_rating=5.0,
-                source_role="vendor",
-                classification="primary",
-            )
-            session.add(source)
-            await session.commit()
-
-        from ai_benchmark.config.settings import PageConfig, PipelineSettings, SourceConfig
-
-        mock_source_config = SourceConfig(
-            source_name="Test Source 2",
-            category="primary",
-            organization="TestOrg2",
-            homepage_url="https://test2.example.com",
-            base_domain="test2.example.com",
-            trust_rating=5.0,
-            source_role="vendor",
-            classification="primary",
-            pages=[
-                PageConfig(
-                    canonical_url="https://test2.example.com/models",
-                    page_type="model_catalog",
-                ),
-            ],
-        )
-
-        mock_collector = MagicMock()
-        mock_collector.get_pages.return_value = mock_source_config.pages
-        mock_collector.collect_page = AsyncMock(return_value=([], None))
-
-        captured_snapshot_mgr = {}
-
-        original_init = None
-
-        def capture_snapshot_mgr(self_inner, session):
-            from sqlalchemy.ext.asyncio import AsyncSession
-
-            assert isinstance(session, AsyncSession), f"Expected AsyncSession, got {type(session)}"
-            captured_snapshot_mgr["session"] = session
-            original_init(self_inner, session)
-
-        from ai_benchmark.collection.snapshot import SnapshotManager
-
-        original_init = SnapshotManager.__init__
-
-        settings = PipelineSettings(database_url="sqlite+aiosqlite:///:memory:")
-
+        from ai_benchmark.config.settings import PipelineSettings
         from ai_benchmark.scheduling.scheduler import PipelineScheduler
 
+        settings = PipelineSettings(database_url="sqlite+aiosqlite:///:memory:")
         scheduler = PipelineScheduler(settings)
-        scheduler._session_factory = session_factory
-        scheduler._fetcher = MagicMock()
 
-        with (
-            patch(
-                "ai_benchmark.scheduling.scheduler.load_source_catalog",
-                return_value=[mock_source_config],
-            ),
-            patch(
-                "ai_benchmark.scheduling.scheduler.get_collector",
-                return_value=mock_collector,
-            ),
-            patch.object(SnapshotManager, "__init__", capture_snapshot_mgr),
-        ):
-            await scheduler.collect_source("TestOrg2")
+        mock_coordinator = AsyncMock()
+        mock_coordinator.collect_all = AsyncMock(
+            return_value={
+                "tasks_created": 1,
+                "tasks_completed": 1,
+                "tasks_failed": 0,
+                "items_processed": 0,
+                "events_created": 0,
+            }
+        )
+        scheduler._coordinator = mock_coordinator
 
-        assert "session" in captured_snapshot_mgr, "SnapshotManager should have been created"
+        since = date(2026, 1, 1)
+        await scheduler.collect_source("TestOrg", since_date=since)
+
+        mock_coordinator.collect_all.assert_called_once_with(
+            organizations=["TestOrg"],
+            since_date=since,
+        )
 
     @pytest.mark.asyncio
-    async def test_collect_source_updates_page_metadata(self, db_engine_fk):
-        """Verify page metadata (times_polled, last_polled_at) is updated after collection."""
-        session_factory = create_session_factory(db_engine_fk)
-
-        async with session_factory() as session:
-            source = Source(
-                source_name="Test Source 3",
-                category="primary",
-                organization="TestOrg3",
-                homepage_url="https://test3.example.com",
-                base_domain="test3.example.com",
-                trust_rating=5.0,
-                source_role="vendor",
-                classification="primary",
-            )
-            session.add(source)
-            await session.flush()
-
-            page = Page(
-                source_id=source.id,
-                canonical_url="https://test3.example.com/pricing",
-                page_type="pricing",
-                times_polled=0,
-            )
-            session.add(page)
-            await session.commit()
-
-        from ai_benchmark.config.settings import PageConfig, PipelineSettings, SourceConfig
-
-        mock_source_config = SourceConfig(
-            source_name="Test Source 3",
-            category="primary",
-            organization="TestOrg3",
-            homepage_url="https://test3.example.com",
-            base_domain="test3.example.com",
-            trust_rating=5.0,
-            source_role="vendor",
-            classification="primary",
-            pages=[
-                PageConfig(
-                    canonical_url="https://test3.example.com/pricing",
-                    page_type="pricing",
-                ),
-            ],
-        )
-
-        mock_collector = MagicMock()
-        mock_collector.get_pages.return_value = mock_source_config.pages
-        mock_collector.collect_page = AsyncMock(return_value=([], None))
-
-        settings = PipelineSettings(database_url="sqlite+aiosqlite:///:memory:")
-
+    async def test_collect_source_records_failure_on_exception(self, db_engine_fk):
+        """Verify health tracker records failure when coordinator raises."""
+        from ai_benchmark.config.settings import PipelineSettings
         from ai_benchmark.scheduling.scheduler import PipelineScheduler
 
+        settings = PipelineSettings(database_url="sqlite+aiosqlite:///:memory:")
         scheduler = PipelineScheduler(settings)
-        scheduler._session_factory = session_factory
-        scheduler._fetcher = MagicMock()
 
-        with (
-            patch(
-                "ai_benchmark.scheduling.scheduler.load_source_catalog",
-                return_value=[mock_source_config],
-            ),
-            patch(
-                "ai_benchmark.scheduling.scheduler.get_collector",
-                return_value=mock_collector,
-            ),
-        ):
-            await scheduler.collect_source("TestOrg3")
+        mock_coordinator = AsyncMock()
+        mock_coordinator.collect_all = AsyncMock(side_effect=RuntimeError("DB locked"))
+        scheduler._coordinator = mock_coordinator
 
-        # Verify page metadata was updated
-        async with session_factory() as session:
-            from sqlalchemy import select
+        await scheduler.collect_source("FailOrg")
 
-            result = await session.execute(
-                select(Page).where(Page.canonical_url == "https://test3.example.com/pricing")
-            )
-            page = result.scalar_one()
-            assert page.times_polled >= 1, "times_polled should have been incremented"
-            assert page.last_polled_at is not None, "last_polled_at should be set"
+        status = scheduler.health.get_status("FailOrg")
+        assert status["consecutive_failures"] == 1
+        assert "DB locked" in status["last_error"]
 
     @pytest.mark.asyncio
     async def test_collect_source_circuit_open_skips(self, db_engine_fk):
         """Verify collect_source skips when circuit breaker is open."""
-        session_factory = create_session_factory(db_engine_fk)
-
         from ai_benchmark.config.settings import PipelineSettings
         from ai_benchmark.scheduling.scheduler import MAX_CONSECUTIVE_FAILURES, PipelineScheduler
 
         settings = PipelineSettings(database_url="sqlite+aiosqlite:///:memory:")
         scheduler = PipelineScheduler(settings)
-        scheduler._session_factory = session_factory
-        scheduler._fetcher = MagicMock()
+
+        mock_coordinator = AsyncMock()
+        scheduler._coordinator = mock_coordinator
 
         # Trip the circuit breaker
         for i in range(MAX_CONSECUTIVE_FAILURES):
             scheduler.health.record_failure("BrokenOrg", f"Error {i}")
 
-        with patch("ai_benchmark.scheduling.scheduler.load_source_catalog") as mock_catalog:
-            await scheduler.collect_source("BrokenOrg")
-            mock_catalog.assert_not_called()
+        await scheduler.collect_source("BrokenOrg")
+        mock_coordinator.collect_all.assert_not_called()
 
 
 # ─── F-05: Parallel execution race condition ───

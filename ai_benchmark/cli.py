@@ -86,21 +86,27 @@ def collect(ctx: click.Context, source: str | None, since: click.DateTime | None
         click.echo(f"Backfill mode: collecting data since {since_date.isoformat()}")
 
     async def _collect() -> None:
-        from .scheduling.scheduler import PipelineScheduler
+        from .coordination.coordinator import CollectionCoordinator
 
-        scheduler = PipelineScheduler(settings)
-        await scheduler.setup()
-
-        if source:
-            click.echo(f"Collecting from: {source}")
-            await scheduler.collect_source(source, since_date=since_date)
-        else:
-            sources = load_source_catalog()
-            for s in sources:
-                click.echo(f"Collecting from: {s.organization}")
-                await scheduler.collect_source(s.organization, since_date=since_date)
+        coordinator = CollectionCoordinator(settings)
+        await coordinator.setup()
+        try:
+            organizations = [source] if source else None
+            stats = await coordinator.collect_all(
+                organizations=organizations,
+                since_date=since_date,
+            )
+        finally:
+            await coordinator.shutdown()
 
         click.echo("Collection complete.")
+        click.echo(
+            f"  Tasks: {stats['tasks_created']} created, "
+            f"{stats['tasks_completed']} completed, "
+            f"{stats['tasks_failed']} failed"
+        )
+        click.echo(f"  Items processed: {stats['items_processed']}")
+        click.echo(f"  Events created: {stats['events_created']}")
 
     asyncio.run(_collect())
 
@@ -265,6 +271,7 @@ def run(ctx: click.Context) -> None:
             pass
         finally:
             scheduler.shutdown()
+            await scheduler.shutdown_coordinator()
             click.echo("Pipeline stopped.")
 
     asyncio.run(_run())

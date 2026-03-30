@@ -13,16 +13,12 @@ import structlog
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from ..collection.fetcher import Fetcher
-from ..collection.snapshot import SnapshotManager
-from ..config.settings import PipelineSettings, load_source_catalog
-from ..models.base import create_engine, create_session_factory
+from ..coordination.coordinator import CollectionCoordinator
 from ..processing.normalizer import extract_date
-from ..processing.pipeline import process_items
-from ..sources.registry import get_collector
 from .cadence import ScheduleEntry, load_schedules, parse_cron_fields
 
 if TYPE_CHECKING:
+    from ..config.settings import PipelineSettings
     from ..sources.base import RawItem
 
 logger = structlog.get_logger()
@@ -81,19 +77,12 @@ class PipelineScheduler:
         self.settings = settings
         self.scheduler = AsyncIOScheduler()
         self.health = SourceHealthTracker()
-        self._fetcher: Fetcher | None = None
-        self._session_factory = None
+        self._coordinator: CollectionCoordinator | None = None
 
     async def setup(self) -> None:
-        """Initialize database and HTTP client."""
-        engine = create_engine(self.settings.database_url)
-        self._session_factory = create_session_factory(engine)
-        self._fetcher = Fetcher(
-            user_agent=self.settings.user_agent,
-            timeout=self.settings.request_timeout,
-            max_concurrency=self.settings.max_concurrency,
-            retry_attempts=self.settings.retry_attempts,
-        )
+        """Initialize coordinator."""
+        self._coordinator = CollectionCoordinator(self.settings)
+        await self._coordinator.setup()
 
     async def collect_source(
         self,
@@ -108,93 +97,16 @@ class PipelineScheduler:
             return
 
         try:
-            sources = load_source_catalog()
-            source_config = next((s for s in sources if s.organization == organization), None)
-            if not source_config:
-                log.error("source_not_found")
-                return
-
-            collector = get_collector(
-                source_config,
-                github_token=self.settings.github_token,
-                semantic_scholar_api_key=self.settings.semantic_scholar_api_key,
+            stats = await self._coordinator.collect_all(
+                organizations=[organization],
+                since_date=since_date,
             )
-
-            all_items = []
-            # Open a proper session for snapshot management and page lookup
-            async with self._session_factory() as session:
-                snapshot_mgr = SnapshotManager(session)
-
-                # Look up source in DB for source_id
-                from sqlalchemy import select
-
-                from ..models.sources import Page as PageModel
-                from ..models.sources import Source as SourceModel
-
-                source_stmt = select(SourceModel).where(SourceModel.organization == organization)
-                source_result = await session.execute(source_stmt)
-                source_record = source_result.scalar_one_or_none()
-                source_id = source_record.id if source_record else None
-
-                for page in collector.get_pages():
-                    try:
-                        # Look up or create the Page record for this URL
-                        page_stmt = select(PageModel).where(
-                            PageModel.canonical_url == page.canonical_url
-                        )
-                        page_result = await session.execute(page_stmt)
-                        page_record = page_result.scalar_one_or_none()
-
-                        if page_record is None and source_id is not None:
-                            page_record = PageModel(
-                                source_id=source_id,
-                                canonical_url=page.canonical_url,
-                                page_type=page.page_type,
-                            )
-                            session.add(page_record)
-                            await session.flush()
-
-                        page_db_id = page_record.id if page_record else 0
-
-                        items, _diff = await collector.collect_page(
-                            page,
-                            self._fetcher,
-                            snapshot_mgr,
-                            page_id=page_db_id,
-                            since_date=since_date,
-                        )
-                        all_items.extend(items)
-
-                        # Update page polling metadata
-                        if page_record is not None:
-                            page_record.times_polled = (page_record.times_polled or 0) + 1
-                            page_record.last_polled_at = datetime.now(UTC)
-                            if items:
-                                page_record.last_changed_at = datetime.now(UTC)
-
-                    except Exception as e:
-                        log.warning("page_error", page=page.canonical_url, error=str(e))
-
-                await session.commit()
-
-            # Post-extraction date filter: drop items before since_date
-            if since_date and all_items:
-                all_items = [item for item in all_items if _item_in_date_range(item, since_date)]
-
-            if all_items:
-                async with self._session_factory() as session, session.begin():
-                    await process_items(
-                        session,
-                        all_items,
-                        source_id=source_id or 0,
-                        page_id=None,
-                        organization=organization,
-                        source_type=source_config.classification,
-                        classification=source_config.classification,
-                    )
-
             self.health.record_success(organization)
-            log.info("collection_complete", items=len(all_items))
+            log.info(
+                "collection_complete",
+                items=stats["items_processed"],
+                events=stats["events_created"],
+            )
 
         except Exception as e:
             self.health.record_failure(organization, str(e))
@@ -225,6 +137,11 @@ class PipelineScheduler:
         """Start the scheduler."""
         self.scheduler.start()
         logger.info("scheduler_started", jobs=len(self.scheduler.get_jobs()))
+
+    async def shutdown_coordinator(self) -> None:
+        """Shut down the coordinator (close Fetcher, dispose engine)."""
+        if self._coordinator:
+            await self._coordinator.shutdown()
 
     def shutdown(self) -> None:
         """Gracefully shut down the scheduler."""

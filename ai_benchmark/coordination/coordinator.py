@@ -14,7 +14,6 @@ from ..collection.snapshot import SnapshotManager
 from ..config.settings import PipelineSettings, load_source_catalog
 from ..models.base import create_engine, create_session_factory
 from ..processing.pipeline import process_items
-from ..scheduling.scheduler import _item_in_date_range
 from .types import CoordFetchResult, FetchTask
 from .worker import worker_loop
 
@@ -264,6 +263,8 @@ class CollectionCoordinator:
 
             # Date filter for backfill
             if result.since_date and items:
+                from ..scheduling.scheduler import _item_in_date_range
+
                 items = [item for item in items if _item_in_date_range(item, result.since_date)]
 
             # Process items

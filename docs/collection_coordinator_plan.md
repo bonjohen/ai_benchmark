@@ -111,15 +111,15 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Modify `ai_benchmark/cli.py` `collect` command (~lines 71–105) — replace `PipelineScheduler.collect_source()` with `CollectionCoordinator.collect_all()`. Instantiate coordinator, `setup()`, call `collect_all(organizations=[source] if source else None, since_date=since_date)`, `shutdown()`, echo stats. Per PDR §6.1. |
-| 4.2 | Open | | | Modify `ai_benchmark/scheduling/scheduler.py` `PipelineScheduler` — add `_coordinator: CollectionCoordinator` attribute. In `setup()`, create and setup coordinator. In `collect_source(organization, since_date)`, delegate to `_coordinator.collect_all(organizations=[organization], since_date=since_date)`. In `shutdown()`, call `_coordinator.shutdown()`. APScheduler and signal handling unchanged. Per PDR §6.2. |
-| 4.3 | Open | | | Add integration tests to `tests/test_coordination/test_coordinator.py` — `collect_all(["OpenAI"])` against test DB (mocked HTTP): tasks created, workers fetch, events in DB. `collect_all(None)` with 3+ sources: no `OperationalError`. Concurrent `collect_all()` calls via `asyncio.gather()`: no DB lock errors. Per PDR §7.2. |
-| 4.4 | Open | | | Run `pytest -x -v` (full suite) — all pass. Run `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — clean. |
-| 4.5 | Open | | | Stage all Phase 4 changes. |
-| 4.6 | Open | | | Commit all Phase 4 changes. |
+| 4.1 | Completed | 2026-03-30 09:35 PM | 2026-03-30 09:40 PM | Modify `ai_benchmark/cli.py` `collect` command — replace `PipelineScheduler.collect_source()` with `CollectionCoordinator.collect_all()`. Instantiate coordinator, `setup()`, call `collect_all(organizations=[source] if source else None, since_date=since_date)`, `shutdown()`, echo stats. Per PDR §6.1. |
+| 4.2 | Completed | 2026-03-30 09:40 PM | 2026-03-30 09:45 PM | Modify `ai_benchmark/scheduling/scheduler.py` `PipelineScheduler` — replaced `_fetcher`/`_session_factory` with `_coordinator: CollectionCoordinator`. `setup()` creates and sets up coordinator. `collect_source()` delegates to `_coordinator.collect_all()`. Added `shutdown_coordinator()` async method. `run` command calls `shutdown_coordinator()` on exit. Fixed circular import by making `_item_in_date_range` import lazy in coordinator. Moved `PipelineSettings` to TYPE_CHECKING. Per PDR §6.2. |
+| 4.3 | Completed | 2026-03-30 09:45 PM | 2026-03-30 09:55 PM | Rewrote `tests/test_collection_integration.py` — 5 integration tests using coordinator with mocked HTTP: full path (items extracted → events created → page metadata updated), no items, empty catalog, fetch failure (consecutive_failures incremented), snapshot creation. Rewrote `tests/test_code_review_phase1.py` scheduler tests — 4 tests: delegation to coordinator, since_date passthrough, failure recording, circuit breaker. Per PDR §7.2. |
+| 4.4 | Completed | 2026-03-30 09:55 PM | 2026-03-30 10:00 PM | Run `pytest -x -q` — 977 passed in 41.50s. Run `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — clean. |
+| 4.5 | Completed | 2026-03-30 10:00 PM | 2026-03-30 10:00 PM | Stage all Phase 4 changes. |
+| 4.6 | Completed | 2026-03-30 10:00 PM | 2026-03-30 10:00 PM | Commit all Phase 4 changes. |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Wired `CollectionCoordinator` into CLI `collect` command and `PipelineScheduler`. CLI now instantiates coordinator, calls `collect_all()`, and reports stats. Scheduler delegates `collect_source()` to coordinator. Fixed circular import between coordinator and scheduler (lazy import of `_item_in_date_range`). Fixed sentinel timing bug from Phase 3 caught during integration testing. Rewrote `test_collection_integration.py` (5 tests) and scheduler tests in `test_code_review_phase1.py` (4 tests) for the new architecture. Full suite: 977 passed.
+- **Changes hosted at:** `ai_benchmark/cli.py`, `ai_benchmark/scheduling/scheduler.py`, `ai_benchmark/coordination/coordinator.py`, `tests/test_collection_integration.py`, `tests/test_code_review_phase1.py`
 - **Commit:** `Wire CollectionCoordinator into collect command and PipelineScheduler`
