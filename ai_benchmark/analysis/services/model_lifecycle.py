@@ -175,11 +175,13 @@ async def build_model_profile(
                 )
             )
 
-    # Related models via cross-references
+    # Related models via cross-references (only meaningful relationships)
     related_slugs: set[str] = set()
+    _meaningful_rels = {"confirms", "conflicts_with", "cites"}
     for event in events:
         xref_stmt = select(CrossReference).where(
-            (CrossReference.record_a_id == event.id) | (CrossReference.record_b_id == event.id)
+            ((CrossReference.record_a_id == event.id) | (CrossReference.record_b_id == event.id)),
+            CrossReference.relationship_type.in_(_meaningful_rels),
         )
         xref_result = await session.execute(xref_stmt)
         for xref in xref_result.scalars().all():

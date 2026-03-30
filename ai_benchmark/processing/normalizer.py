@@ -186,12 +186,20 @@ def validate_model_slug(slug: str) -> str | None:
     if normalized in _NON_MODEL_BLOCKLIST:
         return None
 
+    # Purely numeric strings (row IDs, ranks, measure IDs)
+    if normalized.isdigit():
+        return None
+
     # Repository paths (contains "/")
     if "/" in slug:
         return None
 
     # Bare year labels
     if _BARE_YEAR_RE.match(normalized):
+        return None
+
+    # Single generic word that isn't a model name
+    if normalized in {"model", "test", "benchmark", "score", "rank", "result", "output"}:
         return None
 
     return slug
@@ -202,45 +210,53 @@ async def cleanup_invalid_slugs(session: AsyncSession) -> dict[str, int]:
 
     Returns counts: {"slugs_cleaned": N, "xrefs_removed": N}.
     """
-    from sqlalchemy import select, update
+    from sqlalchemy import or_, select, update
 
     from ..models.events import CrossReference, EventRecord
 
-    # Find all distinct model_slugs that fail validation
+    # Step 1: Find and null out invalid model_slugs
     result = await session.execute(
         select(EventRecord.model_slug).where(EventRecord.model_slug.is_not(None)).distinct()
     )
     all_slugs = [row[0] for row in result.all()]
     invalid_slugs = [s for s in all_slugs if validate_model_slug(s) is None]
 
-    if not invalid_slugs:
-        return {"slugs_cleaned": 0, "xrefs_removed": 0}
-
-    # Collect event IDs that will lose their model_slug
-    id_result = await session.execute(
-        select(EventRecord.id).where(EventRecord.model_slug.in_(invalid_slugs))
-    )
-    affected_ids = {row[0] for row in id_result.all()}
-
-    # Null out the invalid slugs
-    await session.execute(
-        update(EventRecord).where(EventRecord.model_slug.in_(invalid_slugs)).values(model_slug=None)
-    )
-
-    # Remove cross-references where BOTH endpoints are in the affected set
-    xref_result = await session.execute(
-        select(CrossReference).where(
-            CrossReference.record_a_id.in_(affected_ids),
-            CrossReference.record_b_id.in_(affected_ids),
+    slugs_cleaned = 0
+    if invalid_slugs:
+        id_result = await session.execute(
+            select(EventRecord.id).where(EventRecord.model_slug.in_(invalid_slugs))
         )
+        slugs_cleaned = len(id_result.all())
+        await session.execute(
+            update(EventRecord)
+            .where(EventRecord.model_slug.in_(invalid_slugs))
+            .values(model_slug=None)
+        )
+
+    # Step 2: Remove cross-references where EITHER endpoint has a null model_slug.
+    # These can't contribute meaningful "related model" links.
+    all_null_result = await session.execute(
+        select(EventRecord.id).where(EventRecord.model_slug.is_(None))
     )
-    orphaned_xrefs = list(xref_result.scalars().all())
-    for xref in orphaned_xrefs:
-        await session.delete(xref)
+    null_slug_ids = {row[0] for row in all_null_result.all()}
+
+    orphaned_xrefs: list = []
+    if null_slug_ids:
+        xref_result = await session.execute(
+            select(CrossReference).where(
+                or_(
+                    CrossReference.record_a_id.in_(null_slug_ids),
+                    CrossReference.record_b_id.in_(null_slug_ids),
+                )
+            )
+        )
+        orphaned_xrefs = list(xref_result.scalars().all())
+        for xref in orphaned_xrefs:
+            await session.delete(xref)
 
     await session.flush()
     return {
-        "slugs_cleaned": len(affected_ids),
+        "slugs_cleaned": slugs_cleaned,
         "xrefs_removed": len(orphaned_xrefs),
     }
 

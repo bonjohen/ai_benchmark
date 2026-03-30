@@ -86,6 +86,6 @@ Open  ──>  Started  ──>  Completed
 
 ### Phase 3 Summary
 
-- **Changes:** Added `cleanup_invalid_slugs()` async function to normalizer.py. Added `cleanup-slugs` CLI command. Ran cleanup: 61 events had model_slug nulled, 1311 orphaned cross-references removed. 588 valid model slugs remain.
-- **Changes hosted at:** `ai_benchmark/processing/normalizer.py`, `ai_benchmark/cli.py`
-- **Commit:** `Clean up invalid model slugs and orphaned cross-references`
+- **Changes:** Added `cleanup_invalid_slugs()` to normalizer.py. Added `cleanup-slugs` CLI. Extended validation to reject numeric strings and generic words. Cleanup removed null-slug xrefs (77,319) and filtered `build_model_profile` related models to only meaningful relationships (confirms, conflicts_with, cites). Total cleanup: 199 events cleaned, 87,946 xrefs removed. 450 valid model slugs remain.
+- **Changes hosted at:** `ai_benchmark/processing/normalizer.py`, `ai_benchmark/cli.py`, `ai_benchmark/analysis/services/model_lifecycle.py`, `tests/test_sources/test_collectors.py`
+- **Commit:** `Clean up invalid model slugs, spurious xrefs, and noisy related models`

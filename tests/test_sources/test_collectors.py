@@ -94,6 +94,17 @@ def test_validate_model_slug_rejects_feature_terms():
     assert validate_model_slug("enterprise") is None
 
 
+def test_validate_model_slug_rejects_numeric_ids():
+    assert validate_model_slug("19") is None
+    assert validate_model_slug("333") is None
+    assert validate_model_slug("1528") is None
+
+
+def test_validate_model_slug_rejects_generic_words():
+    assert validate_model_slug("Model") is None
+    assert validate_model_slug("test") is None
+
+
 def test_validate_model_slug_rejects_empty_or_short():
     assert validate_model_slug("") is None
     assert validate_model_slug("a") is None
