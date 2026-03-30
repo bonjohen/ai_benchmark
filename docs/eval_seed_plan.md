@@ -96,15 +96,15 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 4.1     | Open   |               |                  | Run `ai-benchmark eval seed` — verify 7 scorers, 3 datasets, 4 evaluations, 6 targets created |
-| 4.2     | Open   |               |                  | Run `ai-benchmark eval seed` a second time — verify idempotent (0 new records) |
-| 4.3     | Open   |               |                  | Start eval server and verify `/eval/runs/launch` shows evaluations in dropdown and targets as checkboxes |
-| 4.4     | Open   |               |                  | Run `pytest tests/` — full suite must pass |
-| 4.5     | Open   |               |                  | Stage all Phase 4 changes (if any fixes needed) |
-| 4.6     | Open   |               |                  | Commit all Phase 4 changes |
+| 4.1     | Completed | 2026-03-29 05:23 PM | 2026-03-29 05:23 PM | Run `ai-benchmark eval seed` — 8 runners, 7 machines, 7 scorers, 3 datasets, 4 evaluations, 6 targets created |
+| 4.2     | Completed | 2026-03-29 05:23 PM | 2026-03-29 05:23 PM | Run `ai-benchmark eval seed` a second time — idempotent (all "already exists") |
+| 4.3     | Completed | 2026-03-29 05:24 PM | 2026-03-29 05:24 PM | Verified `/eval/runs/launch` — 4 evaluations in dropdown, 6 targets as checkboxes |
+| 4.4     | Completed | 2026-03-29 05:22 PM | 2026-03-29 05:22 PM | `pytest tests/` — 879 passed (verified in Phase 3) |
+| 4.5     | Completed | 2026-03-29 05:25 PM | 2026-03-29 05:25 PM | Stage all Phase 4 changes |
+| 4.6     | Completed | 2026-03-29 05:25 PM | 2026-03-29 05:25 PM | Commit all Phase 4 changes |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Verified seed data creation, idempotency, and launch page rendering. No code changes needed.
+- **Changes hosted at:** `docs/eval_seed_plan.md`
 - **Commit:** `Verify eval seed data and launch page functionality`
