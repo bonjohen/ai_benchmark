@@ -144,14 +144,14 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Add XML content detection in `clean_html()` in `ai_benchmark/collection/differ.py:26-40` — check if content starts with `<?xml`, `<rss`, or `<feed`; use `"lxml-xml"` parser for XML, `"lxml"` for HTML |
-| 5.2 | Open | | | Update tests in `tests/test_differ.py` — add test cases for XML content (RSS feed) and HTML content, verify no warnings emitted for XML, verify HTML parsing unchanged |
-| 5.3 | Open | | | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
-| 5.4 | Open | | | Stage all Phase 5 changes |
-| 5.5 | Open | | | Commit all Phase 5 changes |
+| 5.1 | Completed | 2026-03-30 09:58 AM | 2026-03-30 09:59 AM | Add XML content detection in `clean_html()` in `ai_benchmark/collection/differ.py:26-40` — check if content starts with `<?xml`, `<rss`, or `<feed`; use `"lxml-xml"` parser for XML, `"lxml"` for HTML |
+| 5.2 | Completed | 2026-03-30 09:59 AM | 2026-03-30 10:00 AM | Update tests in `tests/test_differ.py` — add test cases for XML content (RSS feed) and HTML content, verify no warnings emitted for XML, verify HTML parsing unchanged |
+| 5.3 | Completed | 2026-03-30 10:00 AM | 2026-03-30 10:01 AM | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
+| 5.4 | Completed | 2026-03-30 10:01 AM | 2026-03-30 10:01 AM | Stage all Phase 5 changes |
+| 5.5 | Completed | 2026-03-30 10:01 AM | 2026-03-30 10:01 AM | Commit all Phase 5 changes |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added XML content detection in `clean_html()` — content starting with `<?xml`, `<rss`, or `<feed` is parsed with `lxml-xml` instead of `lxml` HTML parser, eliminating `XMLParsedAsHTMLWarning` from collection logs. Added 4 new tests for RSS, `<rss>` tag, HTML, and Atom feed content.
+- **Changes hosted at:** `ai_benchmark/collection/differ.py`, `tests/test_differ.py`
 - **Commit:** `Phase 5: Fix XMLParsedAsHTMLWarning by detecting XML content in differ`

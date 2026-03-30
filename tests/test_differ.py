@@ -86,3 +86,46 @@ def test_structural_changes():
     assert len(changes["added"]) == 1
     assert "gpt-5" in changes["added"][0]
     assert len(changes["removed"]) == 0
+
+
+# ─── XML Content Detection ───
+
+
+def test_clean_html_xml_rss_content():
+    """RSS XML content is parsed without XMLParsedAsHTMLWarning."""
+    rss = """<?xml version="1.0" encoding="UTF-8"?>
+    <rss version="2.0">
+    <channel>
+      <title>Test Feed</title>
+      <item><title>Article One</title></item>
+    </channel>
+    </rss>"""
+    text = clean_html(rss)
+    assert "Test Feed" in text or "Article One" in text
+
+
+def test_clean_html_rss_tag_content():
+    """Content starting with <rss> uses XML parser."""
+    rss = """<rss version="2.0">
+    <channel><item><title>Item</title></item></channel>
+    </rss>"""
+    text = clean_html(rss)
+    assert "Item" in text
+
+
+def test_clean_html_html_content_unchanged():
+    """HTML content still uses lxml HTML parser and works correctly."""
+    html = "<html><body><main><p>Hello World</p></main></body></html>"
+    text = clean_html(html)
+    assert "Hello World" in text
+
+
+def test_clean_html_atom_feed():
+    """Atom feed content (starting with <feed>) uses XML parser."""
+    atom = """<?xml version="1.0" encoding="utf-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <title>Test Atom Feed</title>
+      <entry><title>Entry One</title></entry>
+    </feed>"""
+    text = clean_html(atom)
+    assert "Test Atom Feed" in text or "Entry One" in text

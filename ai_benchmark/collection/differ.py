@@ -37,7 +37,10 @@ def clean_html(
     Returns:
         Cleaned, normalized text suitable for diffing.
     """
-    soup = BeautifulSoup(html, "lxml")
+    # Detect XML content (RSS, Atom) and use appropriate parser
+    stripped = html.lstrip()
+    parser = "lxml-xml" if stripped.startswith(("<?xml", "<rss", "<feed")) else "lxml"
+    soup = BeautifulSoup(html, parser)
 
     # Remove noise tags
     for tag_name in NOISE_TAGS:
