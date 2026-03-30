@@ -293,6 +293,30 @@ def cleanup_slugs(ctx: click.Context) -> None:
     asyncio.run(_cleanup())
 
 
+@cli.command("cleanup-lmarena")
+@click.pass_context
+def cleanup_lmarena(ctx: click.Context) -> None:
+    """Delete all bad LMArena event records, claims, and cross-references."""
+    settings: PipelineSettings = ctx.obj["settings"]
+
+    async def _cleanup() -> None:
+        engine = create_engine(settings.database_url)
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .processing.normalizer import cleanup_lmarena_data
+
+            result = await cleanup_lmarena_data(session)
+            await session.commit()
+        await engine.dispose()
+
+        click.echo("LMArena cleanup complete:")
+        click.echo(f"  Events deleted: {result['events_deleted']}")
+        click.echo(f"  Claims deleted: {result['claims_deleted']}")
+        click.echo(f"  Cross-references deleted: {result['xrefs_deleted']}")
+
+    asyncio.run(_cleanup())
+
+
 # Register eval subcommands
 from .eval.cli.commands import eval_group  # noqa: E402
 

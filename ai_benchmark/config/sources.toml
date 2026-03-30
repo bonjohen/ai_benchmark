@@ -306,50 +306,50 @@ polling_frequency = "daily"
 source_name = "LMArena"
 category = "benchmark / arena leaderboard"
 organization = "LMArena"
-homepage_url = "https://lmarena.ai/leaderboard/"
-base_domain = "lmarena.ai"
+homepage_url = "https://arena.ai/leaderboard/"
+base_domain = "arena.ai"
 trust_rating = 4.5
 source_role = "human-preference arena for text, image, vision"
 classification = "secondary"
 collection_method = "html"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/"
+canonical_url = "https://arena.ai/leaderboard/"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/text"
+canonical_url = "https://arena.ai/leaderboard/text"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/code"
+canonical_url = "https://arena.ai/leaderboard/code"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/vision"
+canonical_url = "https://arena.ai/leaderboard/vision"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/text-to-image"
+canonical_url = "https://arena.ai/leaderboard/text-to-image"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/text-to-video"
+canonical_url = "https://arena.ai/leaderboard/text-to-video"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/document"
+canonical_url = "https://arena.ai/leaderboard/document"
 page_type = "leaderboard"
 polling_frequency = "6h"
 
 [[sources.pages]]
-canonical_url = "https://lmarena.ai/leaderboard/search"
+canonical_url = "https://arena.ai/leaderboard/search"
 page_type = "leaderboard"
 polling_frequency = "6h"
 

@@ -261,6 +261,63 @@ async def cleanup_invalid_slugs(session: AsyncSession) -> dict[str, int]:
     }
 
 
+async def cleanup_lmarena_data(session: AsyncSession) -> dict[str, int]:
+    """Delete all LMArena event records and their associated claims and xrefs.
+
+    Returns counts: {"events_deleted": N, "claims_deleted": N, "xrefs_deleted": N}.
+    """
+    from sqlalchemy import delete, func, or_, select
+
+    from ..models.events import ClaimRecord, CrossReference, EventRecord
+
+    # Find all LMArena event IDs
+    result = await session.execute(
+        select(EventRecord.id).where(EventRecord.organization == "LMArena")
+    )
+    event_ids = [row[0] for row in result.all()]
+
+    if not event_ids:
+        return {"events_deleted": 0, "claims_deleted": 0, "xrefs_deleted": 0}
+
+    # Delete cross-references involving these events
+    xref_result = await session.execute(
+        select(func.count())
+        .select_from(CrossReference)
+        .where(
+            or_(
+                CrossReference.record_a_id.in_(event_ids),
+                CrossReference.record_b_id.in_(event_ids),
+            )
+        )
+    )
+    xrefs_count = xref_result.scalar() or 0
+    await session.execute(
+        delete(CrossReference).where(
+            or_(
+                CrossReference.record_a_id.in_(event_ids),
+                CrossReference.record_b_id.in_(event_ids),
+            )
+        )
+    )
+
+    # Delete claims for these events
+    claims_result = await session.execute(
+        select(func.count()).select_from(ClaimRecord).where(ClaimRecord.event_id.in_(event_ids))
+    )
+    claims_count = claims_result.scalar() or 0
+    await session.execute(delete(ClaimRecord).where(ClaimRecord.event_id.in_(event_ids)))
+
+    # Delete the events themselves
+    await session.execute(delete(EventRecord).where(EventRecord.organization == "LMArena"))
+
+    await session.flush()
+    return {
+        "events_deleted": len(event_ids),
+        "claims_deleted": claims_count,
+        "xrefs_deleted": xrefs_count,
+    }
+
+
 def extract_version(text: str) -> str | None:
     """Extract a version string like v1.2.3 or 2026-03-28."""
     # Semver-like
