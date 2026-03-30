@@ -40,11 +40,11 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 1.1 | Open | | | Create `ai_benchmark/coordination/__init__.py` — empty package init. |
-| 1.2 | Open | | | Create `ai_benchmark/coordination/types.py` — `FetchTask` (`frozen=True`, `slots=True`, 12 fields per PDR §3.1) and `CoordFetchResult` (`slots=True`, 18 fields per PDR §3.2). |
-| 1.3 | Open | | | Create `tests/test_coordination/__init__.py` — empty test package init. |
-| 1.4 | Open | | | Create `tests/test_coordination/test_types.py` — tests: `FetchTask` construction with all fields, frozen immutability raises `FrozenInstanceError`, `CoordFetchResult` construction, error variant (`fetch_error` set, `items=[]`), `has_custom_collect` flag variants. |
-| 1.5 | Open | | | Run `pytest tests/test_coordination/test_types.py -x -v` — all pass. Run `ruff check ai_benchmark/coordination/ tests/test_coordination/` and `ruff format --check` — clean. |
+| 1.1 | Completed | 2026-03-30 08:37 PM | 2026-03-30 08:37 PM | Create `ai_benchmark/coordination/__init__.py` — empty package init. |
+| 1.2 | Completed | 2026-03-30 08:37 PM | 2026-03-30 08:39 PM | Create `ai_benchmark/coordination/types.py` — `FetchTask` (`frozen=True`, `slots=True`, 12 fields per PDR §3.1) and `CoordFetchResult` (`slots=True`, 18 fields per PDR §3.2). |
+| 1.3 | Completed | 2026-03-30 08:37 PM | 2026-03-30 08:37 PM | Create `tests/test_coordination/__init__.py` — empty test package init. |
+| 1.4 | Completed | 2026-03-30 08:39 PM | 2026-03-30 08:41 PM | Create `tests/test_coordination/test_types.py` — tests: `FetchTask` construction with all fields, frozen immutability raises `FrozenInstanceError`, `CoordFetchResult` construction, error variant (`fetch_error` set, `items=[]`), `has_custom_collect` flag variants. |
+| 1.5 | Completed | 2026-03-30 08:41 PM | 2026-03-30 08:42 PM | Run `pytest tests/test_coordination/test_types.py -x -v` — 9 passed. Run `ruff check ai_benchmark/coordination/ tests/test_coordination/` and `ruff format --check` — clean. |
 | 1.6 | Open | | | Stage all Phase 1 changes. |
 | 1.7 | Open | | | Commit all Phase 1 changes. |
 
