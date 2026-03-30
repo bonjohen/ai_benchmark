@@ -76,16 +76,16 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 3.1     | Open   |               |                  | Write cleanup function in `ai_benchmark/processing/normalizer.py` — `async def cleanup_invalid_slugs(session)` that nulls invalid model_slugs and removes orphaned xrefs |
-| 3.2     | Open   |               |                  | Add `cleanup-slugs` CLI command to `ai_benchmark/cli.py` that runs the cleanup |
-| 3.3     | Open   |               |                  | Run `ai-benchmark cleanup-slugs` — report counts of cleaned records |
-| 3.4     | Open   |               |                  | Verify `/eval/analysis/models` no longer shows programming languages or repos |
-| 3.5     | Open   |               |                  | Run `pytest tests/` — full suite must pass |
-| 3.6     | Open   |               |                  | Stage all Phase 3 changes |
-| 3.7     | Open   |               |                  | Commit all Phase 3 changes |
+| 3.1     | Completed | 2026-03-29 05:49 PM | 2026-03-29 05:52 PM | Write `cleanup_invalid_slugs(session)` in `normalizer.py` — nulls invalid model_slugs, removes orphaned xrefs |
+| 3.2     | Completed | 2026-03-29 05:52 PM | 2026-03-29 05:53 PM | Add `cleanup-slugs` CLI command to `ai_benchmark/cli.py` |
+| 3.3     | Completed | 2026-03-29 05:54 PM | 2026-03-29 05:54 PM | Run `ai-benchmark cleanup-slugs` — 61 events cleaned, 1311 xrefs removed |
+| 3.4     | Completed | 2026-03-29 05:54 PM | 2026-03-29 05:55 PM | Verified `/eval/analysis/models` — no languages, repos, or aggregates. 588 valid model slugs remain, 0 invalid. |
+| 3.5     | Completed | 2026-03-29 05:53 PM | 2026-03-29 05:54 PM | Run `pytest tests/` — 886 passed |
+| 3.6     | Completed | 2026-03-29 05:55 PM | 2026-03-29 05:55 PM | Stage all Phase 3 changes |
+| 3.7     | Completed | 2026-03-29 05:55 PM | 2026-03-29 05:55 PM | Commit all Phase 3 changes |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added `cleanup_invalid_slugs()` async function to normalizer.py. Added `cleanup-slugs` CLI command. Ran cleanup: 61 events had model_slug nulled, 1311 orphaned cross-references removed. 588 valid model slugs remain.
+- **Changes hosted at:** `ai_benchmark/processing/normalizer.py`, `ai_benchmark/cli.py`
 - **Commit:** `Clean up invalid model slugs and orphaned cross-references`

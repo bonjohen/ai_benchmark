@@ -270,6 +270,29 @@ def run(ctx: click.Context) -> None:
     asyncio.run(_run())
 
 
+@cli.command("cleanup-slugs")
+@click.pass_context
+def cleanup_slugs(ctx: click.Context) -> None:
+    """Clean up invalid model slugs and orphaned cross-references."""
+    settings: PipelineSettings = ctx.obj["settings"]
+
+    async def _cleanup() -> None:
+        engine = create_engine(settings.database_url)
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .processing.normalizer import cleanup_invalid_slugs
+
+            result = await cleanup_invalid_slugs(session)
+            await session.commit()
+        await engine.dispose()
+
+        click.echo("Slug cleanup complete:")
+        click.echo(f"  Events cleaned: {result['slugs_cleaned']}")
+        click.echo(f"  Cross-references removed: {result['xrefs_removed']}")
+
+    asyncio.run(_cleanup())
+
+
 # Register eval subcommands
 from .eval.cli.commands import eval_group  # noqa: E402
 

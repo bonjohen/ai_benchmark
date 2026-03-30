@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 # Known model family patterns — capture model name + version + variant
 # Uses word boundaries and captures up to 5 additional name parts, trimmed by stop words
@@ -191,6 +195,54 @@ def validate_model_slug(slug: str) -> str | None:
         return None
 
     return slug
+
+
+async def cleanup_invalid_slugs(session: AsyncSession) -> dict[str, int]:
+    """Null out invalid model_slugs on existing EventRecords and remove orphaned xrefs.
+
+    Returns counts: {"slugs_cleaned": N, "xrefs_removed": N}.
+    """
+    from sqlalchemy import select, update
+
+    from ..models.events import CrossReference, EventRecord
+
+    # Find all distinct model_slugs that fail validation
+    result = await session.execute(
+        select(EventRecord.model_slug).where(EventRecord.model_slug.is_not(None)).distinct()
+    )
+    all_slugs = [row[0] for row in result.all()]
+    invalid_slugs = [s for s in all_slugs if validate_model_slug(s) is None]
+
+    if not invalid_slugs:
+        return {"slugs_cleaned": 0, "xrefs_removed": 0}
+
+    # Collect event IDs that will lose their model_slug
+    id_result = await session.execute(
+        select(EventRecord.id).where(EventRecord.model_slug.in_(invalid_slugs))
+    )
+    affected_ids = {row[0] for row in id_result.all()}
+
+    # Null out the invalid slugs
+    await session.execute(
+        update(EventRecord).where(EventRecord.model_slug.in_(invalid_slugs)).values(model_slug=None)
+    )
+
+    # Remove cross-references where BOTH endpoints are in the affected set
+    xref_result = await session.execute(
+        select(CrossReference).where(
+            CrossReference.record_a_id.in_(affected_ids),
+            CrossReference.record_b_id.in_(affected_ids),
+        )
+    )
+    orphaned_xrefs = list(xref_result.scalars().all())
+    for xref in orphaned_xrefs:
+        await session.delete(xref)
+
+    await session.flush()
+    return {
+        "slugs_cleaned": len(affected_ids),
+        "xrefs_removed": len(orphaned_xrefs),
+    }
 
 
 def extract_version(text: str) -> str | None:
