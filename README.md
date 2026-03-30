@@ -438,8 +438,10 @@ seed data for 7 target machines.
 
 ### Active
 
+- **Collection coordinator:** 4 phases — centralized coordinator replacing concurrent `collect_source()` calls to eliminate SQLite write contention (`docs/collection_coordinator_plan.md`)
+- **Unified installer:** 6 phases — instance-aware installation, multi-instance support, in-place upgrades with rollback, unified CLI entry point (`docs/unified_installer_plan.md`)
 - **Mistral/Cohere parser fixes:** 6 phases — RSC payload extraction for Mistral Next.js pages, Cohere RSS-only designation (`docs/mistral_cohere_parsers_plan.md`)
-- **Data presentation layer:** design + PDR complete (`docs/data_presentation_plan.md`)
+- **Data presentation layer:** 6 phases complete — spotlight, evolution, capability, landscape, research pipeline, verification, correlation (`docs/data_presentation_1_plan.md`)
 
 ### Archived (complete)
 

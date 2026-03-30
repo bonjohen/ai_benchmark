@@ -440,8 +440,9 @@ Active docs in `docs/`:
 - Naming conventions: `docs/naming_conventions.md`
 - Eval automation examples: `docs/eval_automation_examples.md`
 - Mistral/Cohere parser fixes: `docs/mistral_cohere_parsers_design.md`, `docs/mistral_cohere_parsers_pdr.md`, `docs/mistral_cohere_parsers_plan.md`
-- Data presentation layer: `docs/data_presentation_design.md`, `docs/data_presentation_pdr.md`, `docs/data_presentation_plan.md`
-- Unified installer: `docs/unified_installer_design.md`
+- Data presentation layer: `docs/data_presentation_design.md`, `docs/data_presentation_pdr.md`, `docs/data_presentation_1_plan.md`
+- Collection coordinator: `docs/collection_coordinator_design.md`, `docs/collection_coordinator_pdr.md`, `docs/collection_coordinator_plan.md`
+- Unified installer: `docs/unified_installer_design.md`, `docs/unified_installer_plan.md`
 - Backfill collection fixes: `docs/plan_fix_backfill_collection_issues.md`
 
 Archived plans and design docs in `docs/archive/`:
