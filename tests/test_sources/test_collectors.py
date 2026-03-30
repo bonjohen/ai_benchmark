@@ -13,6 +13,7 @@ from ai_benchmark.processing.normalizer import (
     validate_model_slug,
 )
 from ai_benchmark.sources.anthropic import AnthropicCollector
+from ai_benchmark.sources.base import extract_nextjs_rsc_payloads
 from ai_benchmark.sources.benchmarks.lmarena import LMArenaCollector
 from ai_benchmark.sources.google import GoogleCollector
 from ai_benchmark.sources.meta import MetaCollector
@@ -135,6 +136,41 @@ def test_classify_deprecation():
 
 def test_classify_api_update():
     assert classify_event_type("New API endpoint for batch processing") == "api_update"
+
+
+# ─── RSC payload extraction tests ───
+
+
+def test_extract_nextjs_rsc_payloads_basic():
+    html = """
+    <html><body>
+    <script>self.__next_f.push([1,"hello world"])</script>
+    <script>self.__next_f.push([1,"second payload"])</script>
+    </body></html>
+    """
+    payloads = extract_nextjs_rsc_payloads(html)
+    assert len(payloads) == 2
+    assert payloads[0] == "hello world"
+    assert payloads[1] == "second payload"
+
+
+def test_extract_nextjs_rsc_payloads_empty():
+    html = "<html><body><h1>No RSC here</h1></body></html>"
+    payloads = extract_nextjs_rsc_payloads(html)
+    assert payloads == []
+
+
+def test_extract_nextjs_rsc_payloads_escaped():
+    html = r"""
+    <html><body>
+    <script>self.__next_f.push([1,"escaped \"quotes\" and \\backslash"])</script>
+    <script>self.__next_f.push([1,"unicode \u0041\u0042\u0043"])</script>
+    </body></html>
+    """
+    payloads = extract_nextjs_rsc_payloads(html)
+    assert len(payloads) == 2
+    assert 'escaped "quotes" and \\backslash' in payloads[0]
+    assert "ABC" in payloads[1]
 
 
 # ─── Collector extraction tests ───

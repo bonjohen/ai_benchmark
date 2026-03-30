@@ -37,16 +37,16 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 1.1  | Open   |               |                  | Add `extract_nextjs_rsc_payloads(html) -> list[str]` to `ai_benchmark/sources/base.py` alongside `extract_title()`. Regex finds `self.__next_f.push([...])` calls, extracts string payloads, handles escaped chars. |
-| 1.2  | Open   |               |                  | Add `test_extract_nextjs_rsc_payloads_basic`, `_empty`, `_escaped` tests to `tests/test_sources/test_collectors.py`. Use inline HTML strings (not fixtures yet). |
-| 1.3  | Open   |               |                  | Run `pytest tests/test_sources/test_collectors.py` — all pass. |
-| 1.4  | Open   |               |                  | Run `ruff check` and `ruff format --check` — clean. |
-| 1.5  | Open   |               |                  | Stage all Phase 1 changes. |
+| 1.1  | Completed | 2026-03-30 05:05 PM | 2026-03-30 05:07 PM | Add `extract_nextjs_rsc_payloads(html) -> list[str]` to `ai_benchmark/sources/base.py` alongside `extract_title()`. Regex finds `self.__next_f.push([...])` calls, extracts string payloads, handles escaped chars. |
+| 1.2  | Completed | 2026-03-30 05:07 PM | 2026-03-30 05:09 PM | Add `test_extract_nextjs_rsc_payloads_basic`, `_empty`, `_escaped` tests to `tests/test_sources/test_collectors.py`. Use inline HTML strings (not fixtures yet). |
+| 1.3  | Completed | 2026-03-30 05:09 PM | 2026-03-30 05:09 PM | Run `pytest tests/test_sources/test_collectors.py` — all pass (38 passed). |
+| 1.4  | Completed | 2026-03-30 05:09 PM | 2026-03-30 05:09 PM | Run `ruff check` and `ruff format --check` — clean. |
+| 1.5  | Started | 2026-03-30 05:10 PM |                  | Stage all Phase 1 changes. |
 | 1.6  | Open   |               |                  | Commit all Phase 1 changes. |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
+- **Changes:** Added `extract_nextjs_rsc_payloads()` to `ai_benchmark/sources/base.py`, 3 unit tests to `tests/test_sources/test_collectors.py`.
 - **Changes hosted at:** TBD
 - **Commit:** `add extract_nextjs_rsc_payloads() utility for Next.js RSC streaming pages`
 

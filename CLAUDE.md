@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install -e ".[dev]"          # Install with dev dependencies
 pip install -e ".[dev,research]" # Include research extras (S2, PDF)
-pytest                           # Run all tests (879 pass, 0 failures)
+pytest                           # Run all tests (938 pass, 0 failures)
 pytest tests/test_config.py      # Single file
 pytest -x -v                     # Verbose, stop on first failure
 ai-benchmark init-db             # Create database
@@ -104,7 +104,7 @@ Also supports `.env` file in project root.
 
 ## Core Domain Concepts
 
-- **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector); 86 monitored pages (including Google News RSS feeds and API endpoints)
+- **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector); 86 monitored pages (including Google News RSS feeds and API endpoints). Mistral pages use Next.js RSC streaming; Cohere pages are JS-rendered shells (RSS-only)
 - **Source classifications**: primary (official vendor pages), secondary (independent benchmarks, reputable news), discovery-only (community forums, arXiv, trending feeds)
 - **Trust tiers**: sources rated 1-5; official vendor pages are 5, community sources as low as 3
 - **Event records**: normalized change records with source, title, path, observed timestamp, and extracted model/version names
@@ -439,7 +439,10 @@ When autonomous execution is instructed, don't wait for approval after ExitPlanM
 Active docs in `docs/`:
 - Naming conventions: `docs/naming_conventions.md`
 - Eval automation examples: `docs/eval_automation_examples.md`
-- Collection bug tracker: `docs/collection_bugs.md`
+- Mistral/Cohere parser fixes: `docs/mistral_cohere_parsers_design.md`, `docs/mistral_cohere_parsers_pdr.md`, `docs/mistral_cohere_parsers_plan.md`
+- Data presentation layer: `docs/data_presentation_design.md`, `docs/data_presentation_pdr.md`, `docs/data_presentation_plan.md`
+- Unified installer: `docs/unified_installer_design.md`
+- Backfill collection fixes: `docs/plan_fix_backfill_collection_issues.md`
 
 Archived plans and design docs in `docs/archive/`:
 - Source requirements: `docs/archive/core_requirements.md`

@@ -276,7 +276,7 @@ Settings are loaded via Pydantic with the `AI_BENCH_` env prefix. Also reads `.e
 | `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent fetch requests |
 | `AI_BENCH_RETRY_ATTEMPTS` | `3` | Retry count with exponential backoff |
 
-Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 87 pages)
+Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 86 pages)
 Schedule config: `ai_benchmark/config/schedules.toml` (24 cron entries)
 
 ## Database Models
@@ -314,17 +314,19 @@ All commands support `--format text|json|markdown|csv` where applicable.
 ```
 ai_benchmark/analysis/
   models.py           AnalysisSnapshot + AnalysisInsight ORM tables
-  types.py            15 result dataclasses (pure data, no DB dependency)
-  services/           6 async service modules (model_lifecycle, benchmark_trends,
-                      competitive_intel, research_pulse, anomaly_detector, digest)
+  types.py            31 result dataclasses (pure data, no DB dependency)
+  services/           12 async service modules (model_lifecycle, benchmark_trends,
+                      competitive_intel, research_pulse, anomaly_detector, digest,
+                      spotlight, evolution, capability, landscape,
+                      research_pipeline, verification, correlation)
   formatters/         Markdown, JSON, CSV output formatters
-  cli.py              9 Click subcommands registered under 'analyze' group
-  api.py              FastAPI router with 11 endpoints at /api/analysis/
+  cli.py              16 Click subcommands registered under 'analyze' group
+  api.py              FastAPI router with 18 endpoints at /api/analysis/
 ```
 
 ### REST API
 
-The analysis pipeline exposes 11 endpoints mounted at `/api/analysis/` on the eval server:
+The analysis pipeline exposes 18 endpoints mounted at `/api/analysis/` on the eval server:
 
 | Endpoint | Description |
 |---|---|
@@ -339,6 +341,13 @@ The analysis pipeline exposes 11 endpoints mounted at `/api/analysis/` on the ev
 | `GET /insights` | Recent anomalies |
 | `GET /digest` | Generate digest (no persist) |
 | `POST /digest` | Generate and persist digest |
+| `GET /spotlight` | New model spotlight |
+| `GET /evolution` | Benchmark evolution trends |
+| `GET /capability/{slug}` | Model capability profile |
+| `GET /landscape` | Org landscape overview |
+| `GET /research-pipeline` | Research pipeline analysis |
+| `GET /verification` | Verification report |
+| `GET /correlations` | Benchmark correlations |
 
 ## Model Evaluation Pipeline
 
@@ -427,7 +436,14 @@ seed data for 7 target machines.
 
 ## Implementation Plans
 
-All implementation plans are complete and archived in `docs/archive/`:
+### Active
+
+- **Mistral/Cohere parser fixes:** 6 phases — RSC payload extraction for Mistral Next.js pages, Cohere RSS-only designation (`docs/mistral_cohere_parsers_plan.md`)
+- **Data presentation layer:** design + PDR complete (`docs/data_presentation_plan.md`)
+
+### Archived (complete)
+
+All completed plans in `docs/archive/`:
 
 - **Source pipeline:** 7 phases complete
 - **Eval pipeline:** 9 phases (E1–E9) complete
@@ -442,7 +458,7 @@ All implementation plans are complete and archived in `docs/archive/`:
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all tests (799 tests, 0 failures)
+pytest                       # Run all tests (938 tests, 0 failures)
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint
