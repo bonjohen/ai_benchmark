@@ -9,19 +9,47 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
-# Known model family patterns — capture model name + version + variant
-# Uses word boundaries and captures up to 5 additional name parts, trimmed by stop words
+# Known model variant tokens (used in trailing captures after version numbers)
+_VARIANT_TOKENS = (
+    r"(?:Pro|Ultra|Flash|Lite|Scout|Maverick|Sonnet|Opus|Haiku|"
+    r"Thinking|Turbo|Mini|Nano|Large|Medium|Small|Preview|Instruct|"
+    r"Chat|Latest|Nightly|Exp|Plus|Max|Base|Tiny|Giant|High)"
+)
+
+# Known model family patterns — capture model name + version + known variant tokens
 MODEL_PATTERNS: list[re.Pattern] = [
     re.compile(r"\b(gpt-[\w.-]+)", re.IGNORECASE),
     re.compile(r"\b(o[1-9][\w.-]*)", re.IGNORECASE),
-    re.compile(r"\b(claude[\s-][\d]+(?:\.[\d]+)?(?:[\s-][A-Z][\w]*){0,3})", re.IGNORECASE),
-    re.compile(r"\b(gemini[\s-][\d]+(?:\.[\d]+)?(?:[\s-][A-Z][\w]*){0,3})", re.IGNORECASE),
-    re.compile(r"\b(grok[\s-][\d]+(?:\.[\d]+)?(?:[\s-][A-Z][\w]*){0,3})", re.IGNORECASE),
-    re.compile(r"\b(mistral[\s-][A-Z][\w]*(?:[\s-][\w]+){0,2})", re.IGNORECASE),
+    # Claude: "Claude Opus 4.6", "Claude 3.5 Sonnet", "Claude Sonnet 4"
+    re.compile(
+        r"\b(claude(?:[\s-](?:opus|sonnet|haiku))?"
+        r"[\s-][\d]+(?:\.[\d]+)?"
+        rf"(?:[\s-]{_VARIANT_TOKENS}){{0,2}})",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(gemini[\s-][\d]+(?:\.[\d]+)?"
+        rf"(?:[\s-]{_VARIANT_TOKENS}){{0,2}})",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(grok[\s-][\d]+(?:\.[\d]+)?"
+        rf"(?:[\s-]{_VARIANT_TOKENS}){{0,2}})",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        rf"\b(mistral[\s-]{_VARIANT_TOKENS}(?:[\s-][\w]+){{0,1}})",
+        re.IGNORECASE,
+    ),
     re.compile(r"\b(codestral[\s-][\w]+)", re.IGNORECASE),
     re.compile(r"\b(pixtral[\s-][\w]+)", re.IGNORECASE),
-    re.compile(r"\b(command[\s-][A-Z][\w]*(?:[\s-][\w]+){0,2})", re.IGNORECASE),
-    re.compile(r"\b(llama[\s-][\d]+(?:\.[\d]+)?(?:[\s-][A-Z][\w]*){0,3})", re.IGNORECASE),
+    # Command R, Command R+, Command A — single letter + optional plus
+    re.compile(r"\b(command[\s-][A-Za-z]\+?(?:[\s-][\w]+){0,1})", re.IGNORECASE),
+    re.compile(
+        r"\b(llama[\s-][\d]+(?:\.[\d]+)?"
+        rf"(?:[\s-]{_VARIANT_TOKENS}){{0,2}})",
+        re.IGNORECASE,
+    ),
 ]
 
 # Date formats commonly found in changelogs and newsrooms
@@ -62,6 +90,7 @@ def normalize_title(raw_title: str) -> str:
 
 # Words that signal end of a model name
 _STOP_WORDS = {
+    # Articles, prepositions, conjunctions
     "is",
     "was",
     "are",
@@ -90,6 +119,36 @@ _STOP_WORDS = {
     "could",
     "been",
     "being",
+    # Headline verbs/adjectives that appear after model names in titles
+    "becomes",
+    "beats",
+    "hits",
+    "wins",
+    "leads",
+    "tops",
+    "reaches",
+    "achieves",
+    "scores",
+    "gets",
+    "sets",
+    "takes",
+    "shows",
+    "released",
+    "launches",
+    "announced",
+    "available",
+    "delivers",
+    # Common headline nouns that aren't model variants
+    "top",
+    "new",
+    "best",
+    "first",
+    "model",
+    "benchmark",
+    "leaderboard",
+    "performance",
+    "update",
+    "release",
 }
 
 
