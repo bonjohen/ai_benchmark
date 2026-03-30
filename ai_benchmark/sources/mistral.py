@@ -1,4 +1,4 @@
-"""Mistral AI source collector: changelog, news, pricing."""
+"""Mistral AI source collector: changelog, news, pricing, model catalog."""
 
 from __future__ import annotations
 
@@ -28,6 +28,8 @@ class MistralCollector(SourceCollector):
             return self._extract_news(html)
         if "pricing" in page.page_type:
             return self._extract_pricing(html)
+        if "model" in page.page_type:
+            return self._extract_model_docs(html)
         return []
 
     def _extract_changelog(self, html: str) -> list[RawItem]:
@@ -67,6 +69,21 @@ class MistralCollector(SourceCollector):
                         url=str(article.get("href", "")),
                         body=article.get_text(strip=True),
                         item_type="news_post",
+                    )
+                )
+        return items
+
+    def _extract_model_docs(self, html: str) -> list[RawItem]:
+        soup = BeautifulSoup(html, "lxml")
+        items: list[RawItem] = []
+        for section in soup.select("tr, .model-card, section, h3"):
+            text = section.get_text(strip=True)
+            if text and len(text) > 5:
+                items.append(
+                    RawItem(
+                        title=extract_title(text),
+                        body=text,
+                        item_type="model_entry",
                     )
                 )
         return items

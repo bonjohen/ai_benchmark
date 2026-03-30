@@ -15,6 +15,7 @@ from ai_benchmark.processing.normalizer import (
 from ai_benchmark.sources.anthropic import AnthropicCollector
 from ai_benchmark.sources.benchmarks.lmarena import LMArenaCollector
 from ai_benchmark.sources.google import GoogleCollector
+from ai_benchmark.sources.meta import MetaCollector
 from ai_benchmark.sources.mistral import MistralCollector
 from ai_benchmark.sources.openai import OpenAICollector
 from ai_benchmark.sources.registry import get_collector, list_registered_organizations
@@ -356,6 +357,54 @@ def test_lmarena_items_have_correct_titles():
     assert len(items) == 2
     assert items[0].title == "LMArena: claude-opus-4-6-thinking = 1504"
     assert items[0].model_hint == "claude-opus-4-6-thinking"
+
+
+# ─── Model catalog tests ───
+
+MISTRAL_MODEL_DOCS_HTML = """
+<html><body><main>
+<h1>Models</h1>
+<table>
+<tr><th>Model</th><th>Description</th><th>Context</th></tr>
+<tr><td>Mistral Large</td><td>Flagship model for complex tasks</td><td>128k</td></tr>
+<tr><td>Mistral Small</td><td>Efficient model for simple tasks</td><td>32k</td></tr>
+</table>
+<section>
+<h3>Codestral</h3>
+<p>Specialized code generation model with fill-in-the-middle support</p>
+</section>
+</main></body></html>
+"""
+
+
+def test_mistral_model_docs_extraction():
+    collector = MistralCollector(_make_source("Mistral AI"))
+    page = PageConfig(
+        canonical_url="https://docs.mistral.ai/models",
+        page_type="model catalog",
+    )
+    items = collector.extract_items(MISTRAL_MODEL_DOCS_HTML, page)
+    assert len(items) >= 2
+    assert all(item.item_type == "model_entry" for item in items)
+    assert any("mistral" in item.title.lower() for item in items)
+
+
+def test_meta_model_docs_extraction():
+    collector = MetaCollector(_make_source("Meta"), github_token=None)
+    page = PageConfig(
+        canonical_url="https://llama.meta.com/",
+        page_type="model catalog",
+    )
+    html = """
+    <html><body>
+    <section><h3>Llama 4 Scout</h3><p>Open-weight model for general use</p></section>
+    <section><h3>Llama 4 Maverick</h3><p>Large open-weight model</p></section>
+    </body></html>
+    """
+    items = collector.extract_items(html, page)
+    assert len(items) >= 2
+    assert all(item.item_type == "model_entry" for item in items)
+    assert any("llama" in item.title.lower() for item in items)
 
 
 # ─── Registry tests ───

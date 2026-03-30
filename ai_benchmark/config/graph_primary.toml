@@ -367,6 +367,15 @@ collection_method = "html"
 polling_frequency = "daily"
 
 [[nodes]]
+id = "mistral.models"
+type = "page"
+label = "Mistral Model Catalog"
+url = "https://docs.mistral.ai/models"
+page_type = "model catalog"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
 id = "mistral.rss"
 type = "page"
 label = "Mistral Google News RSS"
@@ -446,6 +455,15 @@ type = "page"
 label = "Meta Open Source AI Landing"
 url = "https://ai.meta.com/opensourceAI/"
 page_type = "landing page"
+collection_method = "html"
+polling_frequency = "daily"
+
+[[nodes]]
+id = "meta.models"
+type = "page"
+label = "Meta Llama Model Catalog"
+url = "https://llama.meta.com/"
+page_type = "model catalog"
 collection_method = "html"
 polling_frequency = "daily"
 
@@ -753,6 +771,11 @@ relationship = "monitors"
 
 [[edges]]
 source = "mistral"
+target = "mistral.models"
+relationship = "monitors"
+
+[[edges]]
+source = "mistral"
 target = "mistral.rss"
 relationship = "monitors"
 
@@ -791,6 +814,11 @@ relationship = "monitors"
 [[edges]]
 source = "meta"
 target = "meta.landing"
+relationship = "monitors"
+
+[[edges]]
+source = "meta"
+target = "meta.models"
 relationship = "monitors"
 
 [[edges]]
@@ -991,6 +1019,11 @@ target = "END"
 relationship = "produces"
 
 [[edges]]
+source = "mistral.models"
+target = "END"
+relationship = "produces"
+
+[[edges]]
 source = "mistral.rss"
 target = "END"
 relationship = "produces"
@@ -1027,6 +1060,11 @@ relationship = "produces"
 
 [[edges]]
 source = "meta.landing"
+target = "END"
+relationship = "produces"
+
+[[edges]]
+source = "meta.models"
 target = "END"
 relationship = "produces"
 

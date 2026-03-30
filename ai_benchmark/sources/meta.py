@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from bs4 import BeautifulSoup
 
 from ..collection.api_client import APIClient
-from .base import RawItem, SourceCollector
+from .base import RawItem, SourceCollector, extract_title
 
 if TYPE_CHECKING:
     from datetime import date
@@ -85,6 +85,8 @@ class MetaCollector(SourceCollector):
             return []
         if "landing" in page.page_type:
             return self._extract_landing(html)
+        if "model" in page.page_type:
+            return self._extract_model_docs(html)
         return []
 
     def _extract_landing(self, html: str) -> list[RawItem]:
@@ -101,6 +103,21 @@ class MetaCollector(SourceCollector):
                         title=title,
                         body=section.get_text(strip=True),
                         item_type="landing_section",
+                    )
+                )
+        return items
+
+    def _extract_model_docs(self, html: str) -> list[RawItem]:
+        soup = BeautifulSoup(html, "lxml")
+        items: list[RawItem] = []
+        for section in soup.select("tr, .model-card, section, h3"):
+            text = section.get_text(strip=True)
+            if text and len(text) > 5:
+                items.append(
+                    RawItem(
+                        title=extract_title(text),
+                        body=text,
+                        item_type="model_entry",
                     )
                 )
         return items

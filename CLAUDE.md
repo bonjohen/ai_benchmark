@@ -53,7 +53,7 @@ ai-benchmark analyze correlations [--min-overlap 5]
 
 ## Core Domain Concepts
 
-- **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector); 87 monitored pages (including Google News RSS feeds and API endpoints)
+- **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector); 86 monitored pages (including Google News RSS feeds and API endpoints)
 - **Source classifications**: primary (official vendor pages), secondary (independent benchmarks, reputable news), discovery-only (community forums, arXiv, trending feeds)
 - **Trust tiers**: sources rated 1-5; official vendor pages are 5, community sources as low as 3
 - **Event records**: normalized change records with source, title, path, observed timestamp, and extracted model/version names
