@@ -228,6 +228,97 @@ _NON_MODEL_BLOCKLIST: set[str] = {
 # Bare year pattern: "2019" through "2030" and partial labels like "≤2021"
 _BARE_YEAR_RE = re.compile(r"^[≤≥<>]?\d{4}$")
 
+# Words that can never be part of a model slug (pricing, features, headlines)
+_SLUG_POISON_WORDS = {
+    # Pricing/billing terms
+    "price",
+    "pricing",
+    "tier",
+    "tuning",
+    "input",
+    "output",
+    # Feature/product terms
+    "grounding",
+    "caching",
+    "execution",
+    "generation",
+    "endpoint",
+    "agents",
+    "api",
+    # Concatenation artifacts
+    "deprecated",
+    "isdeprecatedand",
+    "previewshut",
+    # Documentation/page titles
+    "documentation",
+    "bienvenue",
+    "basics",
+    "docs",
+    "forge",
+    "moderation",
+    # Headline verbs/nouns
+    "hackathon",
+    "recap",
+    "agreement",
+    "license",
+    "community",
+    "responsible",
+    "validate",
+    "partners",
+    "prompting",
+    "capabilities",
+    "raises",
+    "studio",
+    "tailor",
+    "entered",
+    "introducing",
+    "arrives",
+    "suggests",
+    "temporarily",
+    "unavailable",
+    "capacity",
+    "issues",
+    "increased",
+    "slower",
+    "impact",
+    "grants",
+    "inference",
+    "returns",
+    "options",
+    "including",
+    "forward",
+    "artificial",
+    "frontier",
+    "improve",
+    "products",
+    "models",
+    "herd",
+    "look",
+    "support",
+    "show",
+    "promise",
+    "build",
+    "create",
+    "driven",
+    "sap",
+    "instant",
+    "enterprise",
+    "got",
+}
+
+# Brand names — used to detect bare brand names and duplicate-brand concatenation
+_BRAND_NAMES = {
+    "gemini",
+    "claude",
+    "gpt",
+    "grok",
+    "llama",
+    "mistral",
+    "codestral",
+    "pixtral",
+    "command",
+}
+
 
 def validate_model_slug(slug: str) -> str | None:
     """Validate that a string is plausibly an AI model name.
@@ -259,6 +350,32 @@ def validate_model_slug(slug: str) -> str | None:
 
     # Single generic word that isn't a model name
     if normalized in {"model", "test", "benchmark", "score", "rank", "result", "output"}:
+        return None
+
+    # Slugs with spaces or parentheses are raw table text, not proper model slugs
+    if " " in slug or "(" in slug or ")" in slug:
+        return None
+
+    # Contains pricing/feature/headline poison words
+    slug_words = set(re.split(r"[\s\-]+", normalized))
+    if slug_words & _SLUG_POISON_WORDS:
+        return None
+
+    # Brand name appears more than once (concatenation artifact)
+    for brand in _BRAND_NAMES:
+        if normalized.count(brand) > 1:
+            return None
+
+    # Bare brand or company name without a model identifier
+    if normalized in _BRAND_NAMES or normalized in {
+        "mistral-ai",
+        "mistral-code",
+        "mistral-has",
+        "openai",
+        "anthropic",
+        "google",
+        "meta",
+    }:
         return None
 
     return slug
