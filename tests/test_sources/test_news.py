@@ -96,3 +96,71 @@ def test_reuters_empty_html():
     page = PageConfig(canonical_url="https://reuters.com/ai", page_type="news")
     items = collector.extract_items("<html><body></body></html>", page)
     assert items == []
+
+
+# ─── TechCrunch RSS Parsing ───
+
+TECHCRUNCH_RSS_VALID = """<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <item>
+    <title>OpenAI launches GPT-5 API</title>
+    <link>https://techcrunch.com/2026/03/28/openai-gpt5/</link>
+    <pubDate>Thu, 28 Mar 2026 12:00:00 +0000</pubDate>
+    <description>OpenAI released GPT-5 today.</description>
+  </item>
+  <item>
+    <title>Anthropic raises new round</title>
+    <link>https://techcrunch.com/2026/03/27/anthropic-funding/</link>
+    <pubDate>Wed, 27 Mar 2026 10:00:00 +0000</pubDate>
+    <description>Anthropic secured funding.</description>
+  </item>
+</channel>
+</rss>"""
+
+TECHCRUNCH_RSS_WITH_BOM = "\ufeff" + TECHCRUNCH_RSS_VALID
+
+TECHCRUNCH_RSS_MALFORMED = """<rss>
+<channel>
+<item><title><![CDATA[GPT-5 released]]></title>
+<link>https://tc.com/gpt5</link>
+<pubDate>Thu, 28 Mar 2026</pubDate></item>
+<item><title>Another article</title>
+<link>https://tc.com/other</link></item>
+</channel></rss>"""
+
+
+def test_techcrunch_rss_valid():
+    """Standard RSS feed parses correctly."""
+    collector = TechCrunchCollector(_make_source("TechCrunch"))
+    page = PageConfig(canonical_url="https://tc.com/feed/", page_type="rss feed")
+    items = collector.extract_items(TECHCRUNCH_RSS_VALID, page)
+    assert len(items) == 2
+    assert items[0].title == "OpenAI launches GPT-5 API"
+    assert items[0].url == "https://techcrunch.com/2026/03/28/openai-gpt5/"
+
+
+def test_techcrunch_rss_with_bom():
+    """RSS feed with UTF-8 BOM still parses."""
+    collector = TechCrunchCollector(_make_source("TechCrunch"))
+    page = PageConfig(canonical_url="https://tc.com/feed/", page_type="rss feed")
+    items = collector.extract_items(TECHCRUNCH_RSS_WITH_BOM, page)
+    assert len(items) == 2
+
+
+def test_techcrunch_regex_fallback():
+    """Regex fallback extracts items from malformed XML."""
+    collector = TechCrunchCollector(_make_source("TechCrunch"))
+    # Test the regex method directly
+    items = collector._regex_extract_rss(TECHCRUNCH_RSS_MALFORMED)
+    assert len(items) == 2
+    assert items[0].title == "GPT-5 released"
+    assert items[1].title == "Another article"
+
+
+def test_techcrunch_rss_empty():
+    """Empty RSS returns empty list."""
+    collector = TechCrunchCollector(_make_source("TechCrunch"))
+    page = PageConfig(canonical_url="https://tc.com/feed/", page_type="rss feed")
+    items = collector.extract_items("<html></html>", page)
+    assert items == []

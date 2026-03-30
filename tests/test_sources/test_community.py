@@ -122,6 +122,55 @@ def test_hf_leaderboard_docs_empty():
     assert items == []
 
 
+# Realistic HF docs page structure (matches actual huggingface.co/docs/leaderboards/en/index)
+HF_LEADERBOARD_DOCS_REALISTIC_HTML = """
+<html><body>
+<main>
+  <p>The Hub contains leaderboards and evaluations for machine learning models.</p>
+  <ul>
+    <li><a href="https://huggingface.co/docs/hub/eval-results">Eval Results</a>
+        from official benchmark datasets.</li>
+    <li><a href="https://huggingface.co/spaces?category=model-benchmarking">
+        Community Managed Leaderboards</a> live on Spaces.</li>
+    <li><a href="https://huggingface.co/docs/leaderboards/en/open-llm">
+        Open LLM Leaderboard</a> documentation.</li>
+  </ul>
+  <a href="#intro">Intro</a>
+  <a href="/docs/leaderboards/en/index">Self</a>
+</main>
+</body></html>
+"""
+
+
+def test_hf_leaderboard_docs_realistic_page():
+    """Collector extracts links from realistic HF docs page structure."""
+    collector = HFLeaderboardDocsCollector(_make_source("Hugging Face Leaderboard Docs"))
+    page = PageConfig(
+        canonical_url="https://huggingface.co/docs/leaderboards/en/index",
+        page_type="leaderboard docs",
+    )
+    items = collector.extract_items(HF_LEADERBOARD_DOCS_REALISTIC_HTML, page)
+    # Should find 3 relevant links (eval-results, spaces, open-llm)
+    # Should skip #intro (anchor) and /index (self-referential)
+    assert len(items) == 3
+    urls = [i.url for i in items]
+    assert "https://huggingface.co/docs/hub/eval-results" in urls
+    assert "https://huggingface.co/spaces?category=model-benchmarking" in urls
+    assert "https://huggingface.co/docs/leaderboards/en/open-llm" in urls
+
+
+def test_hf_leaderboard_docs_deduplicates():
+    """Collector deduplicates links with same URL."""
+    html = """<main>
+    <a href="https://huggingface.co/spaces?category=model-benchmarking">Leaderboards</a>
+    <a href="https://huggingface.co/spaces?category=model-benchmarking">Leaderboards Again</a>
+    </main>"""
+    collector = HFLeaderboardDocsCollector(_make_source("Hugging Face Leaderboard Docs"))
+    page = PageConfig(canonical_url="https://example.com", page_type="leaderboard docs")
+    items = collector.extract_items(html, page)
+    assert len(items) == 1
+
+
 # ─── HF Forums Support Thread Filtering ───
 
 HF_FORUMS_MIXED_HTML = """

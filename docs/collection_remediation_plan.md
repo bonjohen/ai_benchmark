@@ -68,20 +68,20 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Fetch `https://huggingface.co/docs/leaderboards/en/index` and inspect actual DOM structure to determine correct CSS selectors for the HF docs template |
-| 2.2 | Open | | | Rewrite `extract_items()` in `ai_benchmark/sources/community/hf_leaderboard_docs.py:24-56` — target links in main content area matching `/docs/leaderboards/` or `/spaces/` hrefs, with dedup via `seen_urls` set |
-| 2.3 | Open | | | Add BOM stripping to `_extract_rss()` in `ai_benchmark/sources/news/techcrunch.py:27-70` — `xml_text.lstrip("\ufeff").strip()` before parsing |
-| 2.4 | Open | | | Add regex-based last-resort RSS fallback in `techcrunch.py` — `_regex_extract_rss()` method using `re.findall(r"<item>(.*?)</item>", ...)` to extract title, link, pubDate when both parsers fail |
-| 2.5 | Open | | | Add/update tests in `tests/test_sources/test_community.py` for HF Leaderboard Docs — verify new selectors extract items from a representative HTML fixture |
-| 2.6 | Open | | | Add/update tests in `tests/test_sources/test_news.py` for TechCrunch — verify BOM-prefixed RSS, malformed RSS, and normal RSS all produce items |
-| 2.7 | Open | | | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
-| 2.8 | Open | | | Stage all Phase 2 changes |
-| 2.9 | Open | | | Commit all Phase 2 changes |
+| 2.1 | Completed | 2026-03-30 09:22 AM | 2026-03-30 09:23 AM | Fetch `https://huggingface.co/docs/leaderboards/en/index` and inspect actual DOM structure to determine correct CSS selectors for the HF docs template |
+| 2.2 | Completed | 2026-03-30 09:23 AM | 2026-03-30 09:25 AM | Rewrite `extract_items()` in `ai_benchmark/sources/community/hf_leaderboard_docs.py:24-56` — target links in main content area matching `/docs/leaderboards/` or `/spaces/` hrefs, with dedup via `seen_urls` set |
+| 2.3 | Completed | 2026-03-30 09:25 AM | 2026-03-30 09:26 AM | Add BOM stripping to `_extract_rss()` in `ai_benchmark/sources/news/techcrunch.py:27-70` — `xml_text.lstrip("\ufeff").strip()` before parsing |
+| 2.4 | Completed | 2026-03-30 09:26 AM | 2026-03-30 09:28 AM | Add regex-based last-resort RSS fallback in `techcrunch.py` — `_regex_extract_rss()` method using `re.findall(r"<item>(.*?)</item>", ...)` to extract title, link, pubDate when both parsers fail |
+| 2.5 | Completed | 2026-03-30 09:28 AM | 2026-03-30 09:30 AM | Add/update tests in `tests/test_sources/test_community.py` for HF Leaderboard Docs — verify new selectors extract items from a representative HTML fixture |
+| 2.6 | Completed | 2026-03-30 09:30 AM | 2026-03-30 09:32 AM | Add/update tests in `tests/test_sources/test_news.py` for TechCrunch — verify BOM-prefixed RSS, malformed RSS, and normal RSS all produce items |
+| 2.7 | Completed | 2026-03-30 09:32 AM | 2026-03-30 09:33 AM | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
+| 2.8 | Completed | 2026-03-30 09:34 AM | 2026-03-30 09:34 AM | Stage all Phase 2 changes |
+| 2.9 | Started | 2026-03-30 09:34 AM | | Commit all Phase 2 changes |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Rewrote HF Leaderboard Docs collector to target links in main content area with relevant href patterns, dedup, anchor/self-link filtering. Added BOM stripping and regex-based last-resort RSS fallback to TechCrunch collector. Added 6 new tests (realistic HF docs page, dedup, valid RSS, BOM RSS, regex fallback, empty RSS).
+- **Changes hosted at:** `ai_benchmark/sources/community/hf_leaderboard_docs.py`, `ai_benchmark/sources/news/techcrunch.py`, `tests/test_sources/test_community.py`, `tests/test_sources/test_news.py`
 - **Commit:** `Phase 2: Repair HF Leaderboard Docs collector and harden TechCrunch RSS parsing`
 
 ---

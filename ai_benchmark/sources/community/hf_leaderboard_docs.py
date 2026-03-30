@@ -21,33 +21,49 @@ class HFLeaderboardDocsCollector(SourceCollector):
 
     CONFIDENCE_TIER = "low_discovery"
 
+    # Href patterns that indicate leaderboard/evaluation-related links
+    _RELEVANT_HREF_PATTERNS = (
+        "/spaces",
+        "/docs/leaderboards/",
+        "/docs/hub/eval",
+        "leaderboard",
+        "benchmark",
+    )
+
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
         soup = BeautifulSoup(html, "lxml")
         items: list[RawItem] = []
 
-        # Look for leaderboard space cards or links
-        for card in soup.select("a[href*='/spaces/'], .space-card, article"):
-            title_el = card.select_one("h3, h2, .title, p")
-            title = card.get_text(strip=True) if not title_el else title_el.get_text(strip=True)
+        # Target links in the main content area of the HF docs page
+        main = soup.select_one("main, .doc-content, [role='main'], .prose")
+        if main is None:
+            main = soup
 
+        seen_urls: set[str] = set()
+        for link in main.select("a[href]"):
+            href = str(link.get("href", ""))
+            title = link.get_text(strip=True)
             if not title or len(title) < 5:
                 continue
-
-            href = str(card.get("href", ""))
-
-            # Look for likes/upvotes
-            likes_el = card.select_one(".likes, [data-likes]")
-            likes = likes_el.get_text(strip=True) if likes_el else "0"
+            # Filter for leaderboard/evaluation-related links
+            href_lower = href.lower()
+            if not any(pat in href_lower for pat in self._RELEVANT_HREF_PATTERNS):
+                continue
+            # Skip anchors and self-referential links
+            if href.startswith("#") or href.endswith("/index"):
+                continue
+            if href in seen_urls:
+                continue
+            seen_urls.add(href)
 
             items.append(
                 RawItem(
                     title=title,
                     url=href,
-                    body=card.get_text(strip=True)[:300],
+                    body=title,
                     item_type="leaderboard_space",
                     metadata={
                         "source": "hf_leaderboard_docs",
-                        "likes": likes,
                         "confidence_tier": self.CONFIDENCE_TIER,
                     },
                 )

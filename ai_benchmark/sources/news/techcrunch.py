@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import structlog
@@ -24,17 +25,60 @@ class TechCrunchCollector(SourceCollector):
 
     CONFIDENCE_TIER = "medium_discovery"
 
+    # Regex patterns for last-resort RSS item extraction from malformed XML
+    _RSS_ITEM_RE = re.compile(r"<item[^>]*>(.*?)</item>", re.DOTALL)
+    _RSS_TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.DOTALL)
+    _RSS_LINK_RE = re.compile(r"<link[^>]*>(.*?)</link>", re.DOTALL)
+    _RSS_PUBDATE_RE = re.compile(r"<pubDate[^>]*>(.*?)</pubDate>", re.DOTALL)
+
+    def _regex_extract_rss(self, xml_text: str) -> list[RawItem]:
+        """Last-resort regex extraction for malformed RSS XML."""
+        items: list[RawItem] = []
+        for block in self._RSS_ITEM_RE.findall(xml_text):
+            title_m = self._RSS_TITLE_RE.search(block)
+            link_m = self._RSS_LINK_RE.search(block)
+            date_m = self._RSS_PUBDATE_RE.search(block)
+            if not title_m:
+                continue
+            title = title_m.group(1).strip()
+            # Strip CDATA wrappers
+            title = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", title).strip()
+            if not title:
+                continue
+            link = link_m.group(1).strip() if link_m else ""
+            date_text = date_m.group(1).strip() if date_m else None
+            items.append(
+                RawItem(
+                    title=title,
+                    url=link,
+                    date_text=date_text,
+                    body="",
+                    item_type="news_article",
+                    metadata={
+                        "source": "techcrunch",
+                        "confidence_tier": self.CONFIDENCE_TIER,
+                    },
+                )
+            )
+        return items
+
     def _extract_rss(self, xml_text: str) -> list[RawItem]:
         """Parse TechCrunch WordPress RSS feed."""
-        soup = BeautifulSoup(xml_text, "lxml-xml")
+        # Strip BOM if present
+        clean = xml_text.lstrip("\ufeff").strip()
+        soup = BeautifulSoup(clean, "lxml-xml")
         items: list[RawItem] = []
         rss_items = soup.find_all("item")
         if not rss_items:
             # Fallback: lxml-xml may fail if content is not well-formed XML.
             # Retry with the lxml HTML parser which is more lenient.
             logger.warning("rss_xml_parse_empty", parser="lxml-xml", source="techcrunch")
-            soup = BeautifulSoup(xml_text, "lxml")
+            soup = BeautifulSoup(clean, "lxml")
             rss_items = soup.find_all("item")
+        if not rss_items:
+            # Last resort: regex-based extraction for severely malformed XML
+            logger.warning("rss_html_parse_empty", parser="lxml", source="techcrunch")
+            return self._regex_extract_rss(clean)
         for item in rss_items:
             title_el = item.find("title")
             link_el = item.find("link")
