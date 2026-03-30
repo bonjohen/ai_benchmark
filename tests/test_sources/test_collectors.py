@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from ai_benchmark.config.settings import PageConfig, SourceConfig
@@ -264,6 +266,7 @@ def test_google_changelog_extraction():
 
 
 def test_mistral_changelog_labels():
+    """Fallback extraction works with traditional DOM HTML."""
     collector = MistralCollector(_make_source("Mistral AI"))
     page = PageConfig(canonical_url="https://example.com/changelog", page_type="changelog")
     items = collector.extract_items(MISTRAL_CHANGELOG_HTML, page)
@@ -271,6 +274,64 @@ def test_mistral_changelog_labels():
     api_items = [i for i in items if i.item_type == "api_update"]
     assert len(model_items) >= 1
     assert len(api_items) >= 1
+
+
+# ─── Mistral RSC fixture tests ───
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+
+def test_mistral_changelog_extraction():
+    """RSC payload extraction returns items from real changelog HTML."""
+    fixture = FIXTURES_DIR / "mistral_changelog.html"
+    if not fixture.exists():
+        pytest.skip("Mistral changelog fixture not available")
+    html = fixture.read_text(encoding="utf-8")
+    collector = MistralCollector(_make_source("Mistral AI"))
+    page = PageConfig(
+        canonical_url="https://docs.mistral.ai/getting-started/changelog",
+        page_type="changelog",
+    )
+    items = collector.extract_items(html, page)
+    assert len(items) >= 20
+    model_items = [i for i in items if i.item_type == "model_release"]
+    api_items = [i for i in items if i.item_type == "api_update"]
+    assert len(model_items) >= 10
+    assert len(api_items) >= 5
+
+
+def test_mistral_changelog_date_extraction():
+    """Changelog items from RSC payloads include date_text."""
+    fixture = FIXTURES_DIR / "mistral_changelog.html"
+    if not fixture.exists():
+        pytest.skip("Mistral changelog fixture not available")
+    html = fixture.read_text(encoding="utf-8")
+    collector = MistralCollector(_make_source("Mistral AI"))
+    page = PageConfig(
+        canonical_url="https://docs.mistral.ai/getting-started/changelog",
+        page_type="changelog",
+    )
+    items = collector.extract_items(html, page)
+    dated = [i for i in items if i.date_text]
+    assert len(dated) >= 20
+    # Dates should be YYYY-MM-DD format
+    for item in dated:
+        assert len(item.date_text) == 10  # noqa: PLR2004
+        assert item.date_text[4] == "-"
+
+
+def test_mistral_fallback_on_empty_rsc():
+    """Extraction methods fall back gracefully when no RSC payloads found."""
+    plain_html = "<html><body><li>MODEL RELEASED: Some model</li></body></html>"
+    collector = MistralCollector(_make_source("Mistral AI"))
+    page = PageConfig(
+        canonical_url="https://docs.mistral.ai/getting-started/changelog",
+        page_type="changelog",
+    )
+    items = collector.extract_items(plain_html, page)
+    # Falls back to DOM-based extraction
+    assert len(items) >= 1
+    assert items[0].item_type == "model_release"
 
 
 # ─── LMArena collector tests ───

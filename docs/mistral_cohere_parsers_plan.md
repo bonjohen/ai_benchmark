@@ -62,8 +62,8 @@ Open  ──>  Started  ──>  Completed
 | 2.3  | Completed | 2026-03-30 05:12 PM | 2026-03-30 05:12 PM | Fetch `https://mistral.ai/news/` and save to `tests/test_sources/fixtures/mistral_news.html`. |
 | 2.4  | Completed | 2026-03-30 05:12 PM | 2026-03-30 05:12 PM | Fetch `https://docs.mistral.ai/models` and save to `tests/test_sources/fixtures/mistral_models.html`. |
 | 2.5  | Completed | 2026-03-30 05:13 PM | 2026-03-30 05:14 PM | Verify each fixture contains `self.__next_f.push` calls (129, 45, 105 respectively). Also improved RSC regex in base.py to handle nested brackets in payloads. |
-| 2.6  | Started | 2026-03-30 05:15 PM |                  | Stage all Phase 2 changes. |
-| 2.7  | Open   |               |                  | Commit all Phase 2 changes. |
+| 2.6  | Completed | 2026-03-30 05:15 PM | 2026-03-30 05:15 PM | Stage all Phase 2 changes. |
+| 2.7  | Completed | 2026-03-30 05:15 PM | 2026-03-30 05:15 PM | Commit all Phase 2 changes. |
 
 ### Phase 2 Summary
 
@@ -78,18 +78,18 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 3.1  | Open   |               |                  | Rewrite `_extract_changelog()` in `ai_benchmark/sources/mistral.py:35`. Call `extract_nextjs_rsc_payloads()`, concatenate, re-parse with BeautifulSoup, extract `<li>` elements with `data-badge-type`. Fall back to existing selectors if no RSC payloads. |
-| 3.2  | Open   |               |                  | Add `test_mistral_changelog_extraction` using changelog fixture — asserts items returned with correct `item_type` values (model_release, api_update, changelog_entry). |
-| 3.3  | Open   |               |                  | Add `test_mistral_changelog_date_extraction` — asserts `date_text` populated where dates are present in payload. |
-| 3.4  | Open   |               |                  | Add `test_mistral_fallback_on_empty_rsc` — `_extract_changelog()` with plain HTML (no RSC) falls back gracefully. |
-| 3.5  | Open   |               |                  | Run `pytest tests/test_sources/test_collectors.py` — all pass. |
-| 3.6  | Open   |               |                  | Run `ruff check` and `ruff format --check` — clean. |
-| 3.7  | Open   |               |                  | Stage all Phase 3 changes. |
+| 3.1  | Completed | 2026-03-30 05:20 PM | 2026-03-30 05:28 PM | Rewrite `_extract_changelog()` in `ai_benchmark/sources/mistral.py`. Extracts date/badge-type/text from serialized React virtual DOM via regex. Added `_is_content_text()`, `_clean_rsc_text()`, `_split_changelog_by_badges()`, `_extract_rsc_text_content()` helpers. Falls back to DOM selectors when no RSC payloads. |
+| 3.2  | Completed | 2026-03-30 05:28 PM | 2026-03-30 05:30 PM | Add `test_mistral_changelog_extraction` — asserts 20+ items with 10+ model_release, 5+ api_update. |
+| 3.3  | Completed | 2026-03-30 05:28 PM | 2026-03-30 05:30 PM | Add `test_mistral_changelog_date_extraction` — asserts 20+ items with YYYY-MM-DD dates. |
+| 3.4  | Completed | 2026-03-30 05:28 PM | 2026-03-30 05:30 PM | Add `test_mistral_fallback_on_empty_rsc` — DOM-based fallback works on plain HTML. |
+| 3.5  | Completed | 2026-03-30 05:30 PM | 2026-03-30 05:30 PM | Run `pytest tests/test_sources/test_collectors.py` — 41 passed. |
+| 3.6  | Completed | 2026-03-30 05:30 PM | 2026-03-30 05:31 PM | Run `ruff check` and `ruff format --check` — clean. |
+| 3.7  | Started | 2026-03-30 05:31 PM |                  | Stage all Phase 3 changes. |
 | 3.8  | Open   |               |                  | Commit all Phase 3 changes. |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
+- **Changes:** Rewrote `MistralCollector._extract_changelog()` to parse RSC payloads (56 items from real fixture: 33 model_release, 18 api_update, 5 changelog_entry — all with dates). Added text content filtering to exclude CSS class strings, React internals, and badge labels. DOM-based fallback preserved. 3 new tests.
 - **Changes hosted at:** TBD
 - **Commit:** `rewrite Mistral changelog extraction to parse Next.js RSC payloads`
 
