@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import structlog
 from bs4 import BeautifulSoup
 
 from .base import RawItem, SourceCollector, extract_title
@@ -11,22 +12,38 @@ from .base import RawItem, SourceCollector, extract_title
 if TYPE_CHECKING:
     from ..config.settings import PageConfig
 
+logger = structlog.get_logger()
+
 
 class CohereCollector(SourceCollector):
-    """Collector for Cohere official pages."""
+    """Collector for Cohere official pages.
+
+    Cohere's HTML pages are JS-rendered shells (Mintlify docs, Next.js + Sanity
+    CMS blog) that return no extractable content. The Google News RSS feed is
+    the primary collection path. HTML extraction methods are retained as
+    fallbacks in case Cohere adds server-side rendering.
+    """
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
         if "rss" in page.page_type:
             return self._extract_google_news_rss(html)
         if "release" in page.page_type:
-            return self._extract_release_notes(html)
-        if "blog" in page.page_type:
-            return self._extract_blog(html)
-        if "pricing" in page.page_type:
-            return self._extract_pricing(html)
-        if "model" in page.page_type:
-            return self._extract_model_docs(html)
-        return []
+            items = self._extract_release_notes(html)
+        elif "blog" in page.page_type:
+            items = self._extract_blog(html)
+        elif "pricing" in page.page_type:
+            items = self._extract_pricing(html)
+        elif "model" in page.page_type:
+            items = self._extract_model_docs(html)
+        else:
+            return []
+        if not items:
+            logger.debug(
+                "cohere_html_extraction_empty",
+                page_type=page.page_type,
+                note="Expected: Cohere pages are JS-rendered shells. RSS is primary.",
+            )
+        return items
 
     def _extract_release_notes(self, html: str) -> list[RawItem]:
         soup = BeautifulSoup(html, "lxml")

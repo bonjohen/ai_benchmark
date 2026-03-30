@@ -17,6 +17,7 @@ from ai_benchmark.processing.normalizer import (
 from ai_benchmark.sources.anthropic import AnthropicCollector
 from ai_benchmark.sources.base import extract_nextjs_rsc_payloads
 from ai_benchmark.sources.benchmarks.lmarena import LMArenaCollector
+from ai_benchmark.sources.cohere import CohereCollector
 from ai_benchmark.sources.google import GoogleCollector
 from ai_benchmark.sources.meta import MetaCollector
 from ai_benchmark.sources.mistral import MistralCollector
@@ -556,6 +557,32 @@ def test_meta_model_docs_extraction():
     assert len(items) >= 2
     assert all(item.item_type == "model_entry" for item in items)
     assert any("llama" in item.title.lower() for item in items)
+
+
+# ─── Cohere regression tests ───
+
+
+@pytest.mark.parametrize(
+    "page_type,method",
+    [
+        ("release_notes", "_extract_release_notes"),
+        ("blog", "_extract_blog"),
+        ("pricing", "_extract_pricing"),
+        ("model_catalog", "_extract_model_docs"),
+    ],
+)
+def test_cohere_html_returns_empty(page_type, method):
+    """Cohere HTML pages are JS-rendered shells — extraction returns empty lists."""
+    source = _make_source("Cohere")
+    collector = CohereCollector(source)
+    page = PageConfig(
+        canonical_url="https://docs.cohere.com/test",
+        page_type=page_type,
+    )
+    # Minimal HTML simulating JS-rendered shell with no extractable content
+    html = "<html><head></head><body><div id='__next'></div></body></html>"
+    items = collector.extract_items(html, page)
+    assert items == []
 
 
 # ─── Registry tests ───

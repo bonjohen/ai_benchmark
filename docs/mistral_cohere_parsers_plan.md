@@ -142,17 +142,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 6.1  | Open   |               |                  | Add `notes` fields to 4 Cohere HTML pages in `ai_benchmark/config/sources.toml:232-251` documenting JS-rendered shells and RSS-only status. |
-| 6.2  | Open   |               |                  | Add structlog import and debug logging to `CohereCollector.extract_items()` in `ai_benchmark/sources/cohere.py` for non-RSS pages returning 0 items. |
-| 6.3  | Open   |               |                  | Add `test_cohere_html_returns_empty` to `tests/test_sources/test_collectors.py` — regression test confirming Cohere HTML methods return empty lists. |
-| 6.4  | Open   |               |                  | Run full test suite: `pytest` — all pass. |
-| 6.5  | Open   |               |                  | Run `ruff check` and `ruff format --check` — clean. |
-| 6.6  | Open   |               |                  | Integration: run `ai-benchmark collect --source "Mistral AI"` and `ai-benchmark status` to verify Mistral pages now contribute items beyond RSS. |
-| 6.7  | Open   |               |                  | Stage all Phase 6 changes. |
-| 6.8  | Open   |               |                  | Commit all Phase 6 changes. |
+| 6.1  | Completed | 2026-03-30 05:51 PM | 2026-03-30 05:52 PM | Add `notes` fields to 4 Cohere HTML pages in `ai_benchmark/config/sources.toml:232-251` documenting JS-rendered shells and RSS-only status. |
+| 6.2  | Completed | 2026-03-30 05:52 PM | 2026-03-30 05:53 PM | Add structlog import and debug logging to `CohereCollector.extract_items()` in `ai_benchmark/sources/cohere.py` for non-RSS pages returning 0 items. |
+| 6.3  | Completed | 2026-03-30 07:30 PM | 2026-03-30 07:31 PM | Add `test_cohere_html_returns_empty` to `tests/test_sources/test_collectors.py` — parametrized regression test confirming Cohere HTML methods return empty lists (4 page types). |
+| 6.4  | Completed | 2026-03-30 07:31 PM | 2026-03-30 07:33 PM | Run full test suite: `pytest` — 951 passed. |
+| 6.5  | Completed | 2026-03-30 07:33 PM | 2026-03-30 07:34 PM | Run `ruff check` and `ruff format --check` — clean (fixed import sort). |
+| 6.6  | Completed | 2026-03-30 07:34 PM | 2026-03-30 07:37 PM | Integration: `ai-benchmark collect --source "Mistral AI"` extracted 248 items (56 changelog, 64 news, 28 models, 100 RSS). `ai-benchmark status` shows 347 Mistral events. |
+| 6.7  | Completed | 2026-03-30 07:37 PM | 2026-03-30 07:37 PM | Stage all Phase 6 changes. |
+| 6.8  | Completed | 2026-03-30 07:37 PM | 2026-03-30 07:37 PM | Commit all Phase 6 changes. |
 
 ### Phase 6 Summary
 
-- **Changes:** TBD
+- **Changes:** Added `notes` fields to 4 Cohere HTML pages in `sources.toml`. Added debug logging to `CohereCollector` for empty HTML extractions. Added parametrized regression test (`test_cohere_html_returns_empty`) covering 4 page types. Integration verified: Mistral collection extracts 248 items (56 changelog + 64 news + 28 models + 100 RSS), up from RSS-only. 951 tests pass, lint clean.
 - **Changes hosted at:** TBD
 - **Commit:** `mark Cohere pages as RSS-only, verify Mistral RSC extraction end-to-end`

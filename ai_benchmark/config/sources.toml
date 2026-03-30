@@ -233,21 +233,25 @@ collection_method = "html"
 canonical_url = "https://docs.cohere.com/changelog"
 page_type = "release notes"
 polling_frequency = "daily"
+notes = "Mintlify JS shell - returns empty HTML. RSS feed is primary collection path."
 
 [[sources.pages]]
 canonical_url = "https://cohere.com/blog"
 page_type = "blog"
 polling_frequency = "daily"
+notes = "Next.js + Sanity CMS - returns empty HTML. RSS feed is primary collection path."
 
 [[sources.pages]]
 canonical_url = "https://cohere.com/pricing"
 page_type = "pricing"
 polling_frequency = "daily"
+notes = "Next.js shell - returns empty HTML. RSS feed is primary collection path."
 
 [[sources.pages]]
 canonical_url = "https://docs.cohere.com/docs/models"
 page_type = "model catalog"
 polling_frequency = "daily"
+notes = "Mintlify JS shell - returns empty HTML. RSS feed is primary collection path."
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=cohere+ai+model+OR+release+site:cohere.com&hl=en-US&gl=US&ceid=US:en"
