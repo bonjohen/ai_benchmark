@@ -6,8 +6,11 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+import structlog
+from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = structlog.get_logger(__name__)
 
 CONFIG_DIR = Path(__file__).parent
 
@@ -44,6 +47,7 @@ class PipelineSettings(BaseSettings):
         env_prefix="AI_BENCH_",
         env_file=".env",
         env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     database_url: str = "sqlite+aiosqlite:///ai_benchmark.db"
@@ -60,6 +64,15 @@ class PipelineSettings(BaseSettings):
 
     github_token: str | None = None
     semantic_scholar_api_key: str | None = None
+
+    @model_validator(mode="after")
+    def _warn_relative_database_url(self) -> PipelineSettings:
+        if self.database_url == "sqlite+aiosqlite:///ai_benchmark.db":
+            logger.warning(
+                "database_url_is_relative_default",
+                hint="Set AI_BENCH_DATABASE_URL in .env or environment to an absolute path",
+            )
+        return self
 
 
 def load_source_catalog(path: Path | None = None) -> list[SourceConfig]:

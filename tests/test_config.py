@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 from ai_benchmark.config.settings import PipelineSettings, load_source_catalog
+from ai_benchmark.eval.config import EvalSettings
 
 
-def test_default_settings():
+def test_default_settings(monkeypatch):
+    monkeypatch.delenv("AI_BENCH_DATABASE_URL", raising=False)
+    monkeypatch.delenv("AI_BENCH_LOG_LEVEL", raising=False)
+    monkeypatch.delenv("AI_BENCH_LOG_FORMAT", raising=False)
+    # Isolate from .env file to test true defaults
+    monkeypatch.setattr(PipelineSettings, "model_config", {"env_prefix": "AI_BENCH_"})
     settings = PipelineSettings()
     assert settings.database_url == "sqlite+aiosqlite:///ai_benchmark.db"
     assert settings.max_concurrency == 5
@@ -42,3 +48,34 @@ def test_all_sources_have_pages():
     sources = load_source_catalog()
     for s in sources:
         assert len(s.pages) > 0, f"{s.source_name} has no pages"
+
+
+def test_pipeline_settings_no_warning_with_explicit_url(monkeypatch, capsys):
+    """Explicit AI_BENCH_DATABASE_URL should not trigger relative-path warning."""
+    monkeypatch.setenv("AI_BENCH_DATABASE_URL", "sqlite+aiosqlite:///C:/data/test.db")
+    settings = PipelineSettings()
+    assert settings.database_url == "sqlite+aiosqlite:///C:/data/test.db"
+    captured = capsys.readouterr()
+    assert "database_url_is_relative_default" not in captured.out
+
+
+def test_pipeline_settings_warns_on_relative_default(monkeypatch, capsys):
+    """Default relative database URL should trigger a warning."""
+    monkeypatch.delenv("AI_BENCH_DATABASE_URL", raising=False)
+    # Ensure .env doesn't override the default for this test
+    monkeypatch.setattr(
+        PipelineSettings,
+        "model_config",
+        {
+            "env_prefix": "AI_BENCH_",
+        },
+    )
+    PipelineSettings()
+    captured = capsys.readouterr()
+    assert "database_url_is_relative_default" in captured.out
+
+
+def test_eval_settings_loads_env_file():
+    """EvalSettings should have env_file configured."""
+    assert EvalSettings.model_config.get("env_file") == ".env"
+    assert EvalSettings.model_config.get("env_file_encoding") == "utf-8"

@@ -86,20 +86,20 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Create `scripts/env.dev.template` — template for dev `.env` with `AI_BENCH_DATABASE_URL=sqlite+aiosqlite:///C:/Projects/ai_benchmark/ai_benchmark.db`, `AI_BENCH_LOG_FORMAT=console`, `AI_BENCH_LOG_LEVEL=DEBUG` |
-| 3.2 | Open | | | Create `C:\Projects\ai_benchmark\.env` from the template (file is gitignored). This makes the dev database path explicit rather than CWD-dependent. |
-| 3.3 | Open | | | Update `ai_benchmark/config/settings.py`: Add a `model_validator(mode="after")` to `PipelineSettings` that logs a `structlog` warning if `database_url` equals the bare relative default `sqlite+aiosqlite:///ai_benchmark.db` — warns developers who forget to create `.env` |
-| 3.4 | Open | | | Update `ai_benchmark/eval/config.py`: Add `env_file=".env"` and `env_file_encoding="utf-8"` to `EvalSettings.model_config` so eval settings load from `.env`. Add same relative-path warning validator as 3.3. |
-| 3.5 | Open | | | Update `alembic/env.py`: Import `PipelineSettings`, read `database_url` from `PipelineSettings()`, and override `config.set_main_option("sqlalchemy.url", ...)` so alembic uses the same database as the application (respecting `.env` and env vars). Add comment in `alembic.ini` noting the URL is overridden at runtime. |
-| 3.6 | Open | | | Add tests in `tests/test_config.py`: (a) `PipelineSettings` with explicit `AI_BENCH_DATABASE_URL` env var does not trigger warning, (b) default value triggers warning (capture structlog output), (c) `EvalSettings` loads `env_file` |
-| 3.7 | Open | | | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
-| 3.8 | Open | | | Stage all Phase 3 changes |
-| 3.9 | Open | | | Commit all Phase 3 changes |
+| 3.1 | Completed | 2026-03-30 10:49 AM | 2026-03-30 10:49 AM | Create `scripts/env.dev.template` — template for dev `.env` with `AI_BENCH_DATABASE_URL=sqlite+aiosqlite:///C:/Projects/ai_benchmark/ai_benchmark.db`, `AI_BENCH_LOG_FORMAT=console`, `AI_BENCH_LOG_LEVEL=DEBUG` |
+| 3.2 | Completed | 2026-03-30 10:49 AM | 2026-03-30 10:49 AM | Create `C:\Projects\ai_benchmark\.env` from the template (file is gitignored). This makes the dev database path explicit rather than CWD-dependent. |
+| 3.3 | Completed | 2026-03-30 10:49 AM | 2026-03-30 10:50 AM | Update `ai_benchmark/config/settings.py`: Add a `model_validator(mode="after")` to `PipelineSettings` that logs a `structlog` warning if `database_url` equals the bare relative default `sqlite+aiosqlite:///ai_benchmark.db` — warns developers who forget to create `.env`. Added `extra="ignore"` so shared `.env` files work. |
+| 3.4 | Completed | 2026-03-30 10:50 AM | 2026-03-30 10:51 AM | Update `ai_benchmark/eval/config.py`: Add `env_file=".env"`, `env_file_encoding="utf-8"`, and `extra="ignore"` to `EvalSettings.model_config` so eval settings load from `.env`. Add same relative-path warning validator as 3.3. |
+| 3.5 | Completed | 2026-03-30 10:51 AM | 2026-03-30 10:51 AM | Update `alembic/env.py`: Import `PipelineSettings`, read `database_url` from `PipelineSettings()`, and override `config.set_main_option("sqlalchemy.url", ...)` so alembic uses the same database as the application (respecting `.env` and env vars). Add comment in `alembic.ini` noting the URL is overridden at runtime. |
+| 3.6 | Completed | 2026-03-30 10:51 AM | 2026-03-30 10:53 AM | Add tests in `tests/test_config.py`: (a) `PipelineSettings` with explicit `AI_BENCH_DATABASE_URL` env var does not trigger warning, (b) default value triggers warning (capture structlog output), (c) `EvalSettings` loads `env_file` |
+| 3.7 | Completed | 2026-03-30 10:53 AM | 2026-03-30 10:55 AM | Run `pytest` (938 passed) and `ruff check` and `ruff format --check` — all green |
+| 3.8 | Completed | 2026-03-30 10:55 AM | 2026-03-30 10:55 AM | Stage all Phase 3 changes |
+| 3.9 | Completed | 2026-03-30 10:55 AM | 2026-03-30 10:55 AM | Commit all Phase 3 changes |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `scripts/env.dev.template` for dev `.env` with explicit absolute database path. Added `model_validator` warnings to `PipelineSettings` and `EvalSettings` when database URL is the relative default. Added `env_file=".env"` and `extra="ignore"` to both settings classes so they can share a single `.env` file. Updated `alembic/env.py` to read database URL from `PipelineSettings` instead of `alembic.ini`. Added 3 tests. Updated `test_default_settings` to isolate from `.env`.
+- **Changes hosted at:** `scripts/env.dev.template`, `ai_benchmark/config/settings.py`, `ai_benchmark/eval/config.py`, `alembic/env.py`, `alembic.ini`, `tests/test_config.py`
 - **Commit:** `Phase 3: Add database safety guards and dev .env template`
 
 ---

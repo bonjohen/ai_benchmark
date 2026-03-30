@@ -8,6 +8,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from ai_benchmark.config.settings import PipelineSettings
 from ai_benchmark.models.base import Base
 
 # Import all models so metadata is populated
@@ -17,6 +18,10 @@ from ai_benchmark.eval.models import dataset, scorer, evaluation, machine, targe
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Override alembic.ini URL with the application's database URL (respects .env and env vars)
+_settings = PipelineSettings()
+config.set_main_option("sqlalchemy.url", _settings.database_url)
 
 target_metadata = Base.metadata
 
