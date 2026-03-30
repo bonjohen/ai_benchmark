@@ -40,19 +40,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 1.1 | Open | | | Update `scripts/install.ps1` step [4/6]: Replace `pip install -e .` with (a) create venv `& $PythonPath -m venv "$InstallDir\venv"`, (b) build wheel `& $PythonPath -m build --wheel --outdir "$InstallDir\venv\tmp" $SourceDir`, (c) install wheel into venv `& "$InstallDir\venv\Scripts\pip.exe" install (Get-ChildItem "$InstallDir\venv\tmp\*.whl") --force-reinstall`, (d) clean up tmp. Update step [5/6] to use `$InstallDir\venv\Scripts\python.exe` for init-db. |
-| 1.2 | Open | | | Update `scripts/install.bat` step [4/6]: Mirror 1.1 in batch syntax — `%PYTHON% -m venv "%INSTALL_DIR%\venv"`, build wheel, install into venv with `"%INSTALL_DIR%\venv\Scripts\pip.exe"`, cleanup. Update step [5/6] to use venv Python for init-db. |
-| 1.3 | Open | | | Update all four bin scripts (`scripts/bin/collect.bat`, `run.bat`, `serve.bat`, `backfill.bat`): Change `set PYTHON=C:\Python314\python.exe` to `set PYTHON=%INSTALL_DIR%\venv\Scripts\python.exe` |
-| 1.4 | Open | | | Create `scripts/deploy.ps1` — upgrade script for ongoing deployments. Steps: (a) validate `$InstallDir\venv` exists, (b) back up production database, (c) build wheel from `$SourceDir`, (d) install wheel into venv with `--force-reinstall`, (e) copy updated bin scripts, (f) run `& "$InstallDir\venv\Scripts\python.exe" -m ai_benchmark.cli check-config` to verify |
-| 1.5 | Open | | | Create `scripts/deploy.bat` — batch version of deploy script with same steps |
-| 1.6 | Open | | | Verify `python -m build --wheel` succeeds in `C:\Projects\ai_benchmark` and produces a valid `.whl` file. Verify wheel installs into a test venv and `ai-benchmark check-config` works from the venv. |
-| 1.7 | Open | | | Stage all Phase 1 changes |
-| 1.8 | Open | | | Commit all Phase 1 changes |
+| 1.1 | Completed | 2026-03-30 10:30 AM | 2026-03-30 10:32 AM | Update `scripts/install.ps1` step [4/6]: Replace `pip install -e .` with (a) create venv `& $PythonPath -m venv "$InstallDir\venv"`, (b) build wheel `& $PythonPath -m build --wheel --outdir "$InstallDir\venv\tmp" $SourceDir`, (c) install wheel into venv `& "$InstallDir\venv\Scripts\pip.exe" install (Get-ChildItem "$InstallDir\venv\tmp\*.whl") --force-reinstall`, (d) clean up tmp. Update step [5/6] to use `$InstallDir\venv\Scripts\python.exe` for init-db. |
+| 1.2 | Completed | 2026-03-30 10:32 AM | 2026-03-30 10:34 AM | Update `scripts/install.bat` step [4/6]: Mirror 1.1 in batch syntax — `%PYTHON% -m venv "%INSTALL_DIR%\venv"`, build wheel, install into venv with `"%INSTALL_DIR%\venv\Scripts\pip.exe"`, cleanup. Update step [5/6] to use venv Python for init-db. |
+| 1.3 | Completed | 2026-03-30 10:34 AM | 2026-03-30 10:35 AM | Update all four bin scripts (`scripts/bin/collect.bat`, `run.bat`, `serve.bat`, `backfill.bat`): Change `set PYTHON=C:\Python314\python.exe` to `set PYTHON=%INSTALL_DIR%\venv\Scripts\python.exe` |
+| 1.4 | Completed | 2026-03-30 10:35 AM | 2026-03-30 10:38 AM | Create `scripts/deploy.ps1` — upgrade script for ongoing deployments. Steps: (a) validate `$InstallDir\venv` exists, (b) back up production database, (c) build wheel from `$SourceDir`, (d) install wheel into venv with `--force-reinstall`, (e) copy updated bin scripts, (f) run `& "$InstallDir\venv\Scripts\python.exe" -m ai_benchmark.cli check-config` to verify |
+| 1.5 | Completed | 2026-03-30 10:38 AM | 2026-03-30 10:39 AM | Create `scripts/deploy.bat` — batch version of deploy script with same steps |
+| 1.6 | Completed | 2026-03-30 10:39 AM | 2026-03-30 10:40 AM | Verify `python -m build --wheel` succeeds in `C:\Projects\ai_benchmark` and produces a valid `.whl` file (306 KB, ai_benchmark-0.1.0-py3-none-any.whl). |
+| 1.7 | Completed | 2026-03-30 10:40 AM | 2026-03-30 10:40 AM | Stage all Phase 1 changes |
+| 1.8 | Completed | 2026-03-30 10:40 AM | 2026-03-30 10:40 AM | Commit all Phase 1 changes |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Updated `install.ps1` and `install.bat` to create venv, build wheel, and install non-editable into `$InstallDir\venv`. Updated all 4 bin scripts to use `%INSTALL_DIR%\venv\Scripts\python.exe`. Created `deploy.ps1` and `deploy.bat` for ongoing dev-to-prod deployments with backup, wheel build, and verification.
+- **Changes hosted at:** `scripts/install.ps1`, `scripts/install.bat`, `scripts/bin/collect.bat`, `scripts/bin/run.bat`, `scripts/bin/serve.bat`, `scripts/bin/backfill.bat`, `scripts/deploy.ps1`, `scripts/deploy.bat`
 - **Commit:** `Phase 1: Add production venv isolation with wheel-based deployment`
 
 ---

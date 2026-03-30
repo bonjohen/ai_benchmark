@@ -92,20 +92,50 @@ if (-not (Test-Path $envFile)) {
     Write-Host "  config\.env already exists - skipping (will not overwrite)"
 }
 
-# ── Install Python package ──
+# ── Create venv and install Python package (wheel, non-editable) ──
 Write-Host ""
-Write-Host "[4/6] Installing Python package..." -ForegroundColor Yellow
-Push-Location $SourceDir
-try {
-    & $PythonPath -m pip install -e . --quiet 2>&1 | Out-Null
+Write-Host "[4/6] Installing Python package into venv..." -ForegroundColor Yellow
+$VenvDir = Join-Path $InstallDir "venv"
+$VenvPython = Join-Path $VenvDir "Scripts\python.exe"
+$VenvPip = Join-Path $VenvDir "Scripts\pip.exe"
+$TmpDir = Join-Path $VenvDir "tmp"
+
+# Create venv if it doesn't exist
+if (-not (Test-Path $VenvPython)) {
+    Write-Host "  Creating virtual environment at $VenvDir..."
+    & $PythonPath -m venv $VenvDir
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: pip install failed" -ForegroundColor Red
+        Write-Host "ERROR: venv creation failed" -ForegroundColor Red
         exit 1
     }
-    Write-Host "  Package installed successfully"
-} finally {
-    Pop-Location
 }
+
+# Build wheel from source
+Write-Host "  Building wheel..."
+if (Test-Path $TmpDir) { Remove-Item $TmpDir -Recurse -Force }
+New-Item -ItemType Directory -Path $TmpDir -Force | Out-Null
+& $PythonPath -m build --wheel --outdir $TmpDir $SourceDir 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: wheel build failed" -ForegroundColor Red
+    exit 1
+}
+
+# Install wheel into venv
+$WheelFile = (Get-ChildItem -Path $TmpDir -Filter "*.whl" | Select-Object -First 1).FullName
+if (-not $WheelFile) {
+    Write-Host "ERROR: No .whl file found in $TmpDir" -ForegroundColor Red
+    exit 1
+}
+Write-Host "  Installing $([System.IO.Path]::GetFileName($WheelFile))..."
+& $VenvPip install $WheelFile --force-reinstall --quiet 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: pip install failed" -ForegroundColor Red
+    exit 1
+}
+
+# Cleanup
+Remove-Item $TmpDir -Recurse -Force -ErrorAction SilentlyContinue
+Write-Host "  Package installed into venv successfully"
 
 # ── Initialize database ──
 Write-Host ""
@@ -113,7 +143,7 @@ Write-Host "[5/6] Initializing database..." -ForegroundColor Yellow
 $env:AI_BENCH_DATABASE_URL = "sqlite+aiosqlite:///C:/ai-benchmark/data/ai_benchmark.db"
 Push-Location $InstallDir
 try {
-    & $PythonPath -m ai_benchmark.cli init-db 2>&1
+    & $VenvPython -m ai_benchmark.cli init-db 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Database initialization failed" -ForegroundColor Red
         exit 1
@@ -146,6 +176,7 @@ Write-Host " Installation complete!" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Green
 Write-Host ""
 Write-Host " Install dir  : $InstallDir"
+Write-Host " Venv         : $InstallDir\venv\"
 Write-Host " Config       : $InstallDir\config\.env"
 Write-Host " Database     : $InstallDir\data\ai_benchmark.db"
 Write-Host " Logs         : $InstallDir\logs\"

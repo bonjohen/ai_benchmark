@@ -65,18 +65,47 @@ if not exist "%INSTALL_DIR%\config\.env" (
     echo   config\.env already exists — skipping (will not overwrite)
 )
 
-:: ── Install Python package ──
+:: ── Create venv and install Python package (wheel, non-editable) ──
 echo.
-echo [4/6] Installing Python package...
-pushd "%SOURCE_DIR%"
-%PYTHON% -m pip install -e . --quiet
+echo [4/6] Installing Python package into venv...
+set VENV_DIR=%INSTALL_DIR%\venv
+set VENV_PYTHON=%VENV_DIR%\Scripts\python.exe
+set VENV_PIP=%VENV_DIR%\Scripts\pip.exe
+set TMP_DIR=%VENV_DIR%\tmp
+
+:: Create venv if it doesn't exist
+if not exist "%VENV_PYTHON%" (
+    echo   Creating virtual environment at %VENV_DIR%...
+    %PYTHON% -m venv "%VENV_DIR%"
+    if errorlevel 1 (
+        echo ERROR: venv creation failed
+        exit /b 1
+    )
+)
+
+:: Build wheel from source
+echo   Building wheel...
+if exist "%TMP_DIR%" rmdir /s /q "%TMP_DIR%"
+mkdir "%TMP_DIR%"
+%PYTHON% -m build --wheel --outdir "%TMP_DIR%" "%SOURCE_DIR%" >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: pip install failed
-    popd
+    echo ERROR: wheel build failed
     exit /b 1
 )
-popd
-echo   Package installed successfully
+
+:: Install wheel into venv
+for %%W in ("%TMP_DIR%\*.whl") do (
+    echo   Installing %%~nxW...
+    "%VENV_PIP%" install "%%W" --force-reinstall --quiet
+    if errorlevel 1 (
+        echo ERROR: pip install failed
+        exit /b 1
+    )
+)
+
+:: Cleanup
+rmdir /s /q "%TMP_DIR%" >nul 2>&1
+echo   Package installed into venv successfully
 
 :: ── Initialize database ──
 echo.
@@ -84,7 +113,7 @@ echo [5/6] Initializing database...
 :: Set env vars for init-db
 set AI_BENCH_DATABASE_URL=sqlite+aiosqlite:///C:/ai-benchmark/data/ai_benchmark.db
 cd /d "%INSTALL_DIR%"
-%PYTHON% -m ai_benchmark.cli init-db
+"%VENV_PYTHON%" -m ai_benchmark.cli init-db
 if errorlevel 1 (
     echo ERROR: Database initialization failed
     exit /b 1
@@ -109,6 +138,7 @@ echo  Installation complete!
 echo ============================================
 echo.
 echo  Install dir  : %INSTALL_DIR%
+echo  Venv         : %INSTALL_DIR%\venv\
 echo  Config       : %INSTALL_DIR%\config\.env
 echo  Database     : %INSTALL_DIR%\data\ai_benchmark.db
 echo  Logs         : %INSTALL_DIR%\logs\

@@ -7,7 +7,7 @@ setlocal enabledelayedexpansion
 
 set INSTALL_DIR=C:\ai-benchmark
 set ENV_FILE=%INSTALL_DIR%\config\.env
-set PYTHON=C:\Python314\python.exe
+set PYTHON=%INSTALL_DIR%\venv\Scripts\python.exe
 
 :: Load environment from .env
 if exist "%ENV_FILE%" (
