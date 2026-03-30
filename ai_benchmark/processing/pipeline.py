@@ -16,6 +16,7 @@ from .normalizer import (
     extract_date,
     extract_model_slug,
     normalize_title,
+    validate_model_slug,
 )
 from .triage import ingest_candidate
 from .verification import create_claim, update_confirmation_status
@@ -68,7 +69,8 @@ async def process_item(
     # 1. Normalize
     norm_title = normalize_title(item.title)
     combined_text = f"{item.title} {item.body}"
-    model_slug = item.model_hint or extract_model_slug(combined_text)
+    raw_slug = item.model_hint or extract_model_slug(combined_text)
+    model_slug = validate_model_slug(raw_slug) if raw_slug else None
     published_date = extract_date(item.date_text or item.body)
     event_type = classify_event_type(item.title, item.body)
 

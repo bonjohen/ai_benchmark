@@ -106,6 +106,93 @@ def extract_model_slug(text: str) -> str | None:
     return None
 
 
+# Known non-model strings that should never be stored as model_slug.
+# Normalized to lowercase for case-insensitive comparison.
+_NON_MODEL_BLOCKLIST: set[str] = {
+    # Programming languages
+    "c",
+    "c++",
+    "c/c++",
+    "dart",
+    "elixir",
+    "erlang",
+    "go",
+    "haskell",
+    "java",
+    "javascript",
+    "javascript/typescript",
+    "kotlin",
+    "lua",
+    "nim",
+    "objective-c",
+    "perl",
+    "php",
+    "python",
+    "r",
+    "ruby",
+    "rust",
+    "scala",
+    "swift",
+    "typescript",
+    "zig",
+    # Aggregate / metadata labels
+    "total",
+    "average",
+    "median",
+    "mean",
+    "overall",
+    "aggregate",
+    "combined",
+    "all",
+    "baseline",
+    "human",
+    "random",
+    "n/a",
+    "none",
+    "unknown",
+    # Product/feature terms (not model names)
+    "free",
+    "pro",
+    "enterprise",
+    "preview",
+    "beta",
+    "alpha",
+    "standard",
+    "premium",
+    "basic",
+}
+
+# Bare year pattern: "2019" through "2030" and partial labels like "≤2021"
+_BARE_YEAR_RE = re.compile(r"^[≤≥<>]?\d{4}$")
+
+
+def validate_model_slug(slug: str) -> str | None:
+    """Validate that a string is plausibly an AI model name.
+
+    Returns the slug unchanged if valid, None if it looks like a
+    programming language, repository path, aggregate label, or other
+    non-model string.
+    """
+    if not slug or len(slug) < 2 or len(slug) > 100:
+        return None
+
+    normalized = slug.strip().lower()
+
+    # Blocklist check
+    if normalized in _NON_MODEL_BLOCKLIST:
+        return None
+
+    # Repository paths (contains "/")
+    if "/" in slug:
+        return None
+
+    # Bare year labels
+    if _BARE_YEAR_RE.match(normalized):
+        return None
+
+    return slug
+
+
 def extract_version(text: str) -> str | None:
     """Extract a version string like v1.2.3 or 2026-03-28."""
     # Semver-like

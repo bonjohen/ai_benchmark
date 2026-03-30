@@ -10,6 +10,7 @@ from ai_benchmark.processing.normalizer import (
     extract_date,
     extract_model_slug,
     normalize_title,
+    validate_model_slug,
 )
 from ai_benchmark.sources.anthropic import AnthropicCollector
 from ai_benchmark.sources.google import GoogleCollector
@@ -43,6 +44,60 @@ def test_extract_model_slug_llama():
 
 def test_extract_model_slug_none():
     assert extract_model_slug("General announcement about AI safety") is None
+
+
+# ─── validate_model_slug tests ───
+
+
+def test_validate_model_slug_accepts_real_models():
+    assert validate_model_slug("gpt-4o") == "gpt-4o"
+    assert validate_model_slug("claude-3.5-sonnet") == "claude-3.5-sonnet"
+    assert validate_model_slug("gemini-2.0-flash") == "gemini-2.0-flash"
+    assert validate_model_slug("llama-4-scout") == "llama-4-scout"
+    assert validate_model_slug("mistral-large") == "mistral-large"
+
+
+def test_validate_model_slug_rejects_programming_languages():
+    assert validate_model_slug("Rust") is None
+    assert validate_model_slug("Go") is None
+    assert validate_model_slug("Java") is None
+    assert validate_model_slug("Python") is None
+    assert validate_model_slug("C/C++") is None
+    assert validate_model_slug("JavaScript/TypeScript") is None
+    assert validate_model_slug("ruby") is None
+    assert validate_model_slug("PHP") is None
+
+
+def test_validate_model_slug_rejects_repo_paths():
+    assert validate_model_slug("redis/redis") is None
+    assert validate_model_slug("tokio-rs/tokio") is None
+    assert validate_model_slug("babel/babel") is None
+    assert validate_model_slug("vuejs/core") is None
+
+
+def test_validate_model_slug_rejects_aggregate_labels():
+    assert validate_model_slug("Total") is None
+    assert validate_model_slug("average") is None
+    assert validate_model_slug("baseline") is None
+    assert validate_model_slug("human") is None
+
+
+def test_validate_model_slug_rejects_year_labels():
+    assert validate_model_slug("2022") is None
+    assert validate_model_slug("≤2021") is None
+    assert validate_model_slug("2025") is None
+
+
+def test_validate_model_slug_rejects_feature_terms():
+    assert validate_model_slug("free") is None
+    assert validate_model_slug("Pro") is None
+    assert validate_model_slug("enterprise") is None
+
+
+def test_validate_model_slug_rejects_empty_or_short():
+    assert validate_model_slug("") is None
+    assert validate_model_slug("a") is None
+    assert validate_model_slug("x" * 101) is None
 
 
 def test_extract_date_iso():
