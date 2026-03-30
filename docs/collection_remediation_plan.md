@@ -93,20 +93,20 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Add inter-query delay (`asyncio.sleep(3.0)`) between queries in `ai_benchmark/sources/research/semantic_scholar.py` `collect_via_api()` method (line 61-86) |
-| 3.2 | Open | | | Add per-query error handling in `collect_via_api()` — wrap each `search_paper()` call in try/except, log warning, continue to next query instead of failing entirely |
-| 3.3 | Open | | | Add missing API key warning in `collect_page()` override — log `semantic_scholar_no_api_key` with hint when `self.client.api_key` is None |
-| 3.4 | Open | | | Annotate OpenAI blocked pages in `ai_benchmark/config/sources.toml` (lines 17-44) with `notes` field documenting WAF block since 2026-03 and that RSS is the primary collection path |
-| 3.5 | Open | | | Annotate xAI blocked page (`x.ai/news`) and stale pages (`docs.x.ai/docs/release-notes`, `docs.x.ai/developers/models`) similarly in `sources.toml` |
-| 3.6 | Open | | | Update tests in `tests/test_sources/test_semantic_scholar.py` — verify inter-query delay, per-query error handling (mock one query failing, others succeed), and missing API key warning |
-| 3.7 | Open | | | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
-| 3.8 | Open | | | Stage all Phase 3 changes |
-| 3.9 | Open | | | Commit all Phase 3 changes |
+| 3.1 | Completed | 2026-03-30 09:36 AM | 2026-03-30 09:37 AM | Add inter-query delay (`asyncio.sleep(3.0)`) between queries in `ai_benchmark/sources/research/semantic_scholar.py` `collect_via_api()` method (line 61-86) |
+| 3.2 | Completed | 2026-03-30 09:37 AM | 2026-03-30 09:38 AM | Add per-query error handling in `collect_via_api()` — wrap each `search_paper()` call in try/except, log warning, continue to next query instead of failing entirely |
+| 3.3 | Completed | 2026-03-30 09:38 AM | 2026-03-30 09:39 AM | Add missing API key warning in `collect_page()` override — log `semantic_scholar_no_api_key` with hint when `self.client.api_key` is None |
+| 3.4 | Completed | 2026-03-30 09:39 AM | 2026-03-30 09:40 AM | Annotate OpenAI blocked pages in `ai_benchmark/config/sources.toml` (lines 17-44) with `notes` field documenting WAF block since 2026-03 and that RSS is the primary collection path |
+| 3.5 | Completed | 2026-03-30 09:40 AM | 2026-03-30 09:41 AM | Annotate xAI blocked page (`x.ai/news`) and stale pages (`docs.x.ai/docs/release-notes`, `docs.x.ai/developers/models`) similarly in `sources.toml` |
+| 3.6 | Completed | 2026-03-30 09:41 AM | 2026-03-30 09:43 AM | Update tests in `tests/test_sources/test_semantic_scholar.py` — verify inter-query delay, per-query error handling (mock one query failing, others succeed), and missing API key warning |
+| 3.7 | Completed | 2026-03-30 09:43 AM | 2026-03-30 09:44 AM | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
+| 3.8 | Completed | 2026-03-30 09:44 AM | 2026-03-30 09:44 AM | Stage all Phase 3 changes |
+| 3.9 | Completed | 2026-03-30 09:44 AM | 2026-03-30 09:44 AM | Commit all Phase 3 changes |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added 3-second inter-query delay and per-query try/except error handling in `collect_via_api()`. Added missing API key warning in `collect_page()`. Annotated OpenAI WAF-blocked pages (product-news, pricing, system-cards) and xAI blocked/stale pages (news, release-notes, models) with `notes` fields in sources.toml. Added 3 new tests for delay, error handling, and API key warning.
+- **Changes hosted at:** `ai_benchmark/sources/research/semantic_scholar.py`, `ai_benchmark/config/sources.toml`, `tests/test_sources/test_semantic_scholar.py`
 - **Commit:** `Phase 3: Harden Semantic Scholar rate limiting and document OpenAI/xAI access gaps`
 
 ---

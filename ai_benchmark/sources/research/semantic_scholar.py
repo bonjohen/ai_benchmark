@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
+
+import structlog
 
 from ...collection.api_client import APIClient
 from ..base import RawItem, SourceCollector
@@ -14,6 +17,8 @@ if TYPE_CHECKING:
     from ...collection.fetcher import Fetcher
     from ...collection.snapshot import SnapshotManager
     from ...config.settings import PageConfig, SourceConfig
+
+logger = structlog.get_logger()
 
 # Default queries for discovery polling
 _DEFAULT_QUERIES = [
@@ -44,6 +49,11 @@ class SemanticScholarCollector(SourceCollector):
     ) -> tuple[list[RawItem], DiffResult | None]:
         """Override to use Semantic Scholar API instead of HTML."""
         if "api" in page.page_type:
+            if not self.client.api_key:
+                logger.warning(
+                    "semantic_scholar_no_api_key",
+                    hint="Set AI_BENCH_SEMANTIC_SCHOLAR_API_KEY for higher rate limits",
+                )
             items = await self.collect_via_api(_DEFAULT_QUERIES)
             return items, None
         return await super().collect_page(
@@ -61,8 +71,18 @@ class SemanticScholarCollector(SourceCollector):
     async def collect_via_api(self, queries: list[str], limit: int = 5) -> list[RawItem]:
         """Search Semantic Scholar for papers matching queries."""
         items: list[RawItem] = []
-        for query in queries:
-            results = await self.client.search_paper(query, limit=limit)
+        for i, query in enumerate(queries):
+            if i > 0:
+                await asyncio.sleep(3.0)
+            try:
+                results = await self.client.search_paper(query, limit=limit)
+            except Exception:
+                logger.warning(
+                    "semantic_scholar_query_failed",
+                    query=query,
+                    exc_info=True,
+                )
+                continue
             for paper in results:
                 authors = ", ".join(a.get("name", "") for a in paper.get("authors", []))
                 ext_ids = paper.get("externalIds", {}) or {}
