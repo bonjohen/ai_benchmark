@@ -234,7 +234,14 @@ async def test_seed_machines_idempotent(session):
 async def test_seed_all(session):
     result = await seed_all(session)
     await session.commit()
-    assert result == {"runners": 8, "machines": 7, "scorers": 7, "datasets": 3}
+    assert result == {
+        "runners": 8,
+        "machines": 7,
+        "scorers": 7,
+        "datasets": 3,
+        "evaluations": 4,
+        "targets": 6,
+    }
 
 
 @pytest.mark.asyncio

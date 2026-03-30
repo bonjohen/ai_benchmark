@@ -6,9 +6,11 @@ import json
 from typing import TYPE_CHECKING
 
 from ..models.dataset import Dataset, DatasetVersion, TestCase
+from ..models.evaluation import EvaluationDefinition, EvaluationVersion
 from ..models.machine import MachineProfile
 from ..models.runner import RunnerProfile
 from ..models.scorer import Scorer, ScorerVersion
+from ..models.target import TargetConfiguration
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -754,15 +756,260 @@ async def seed_datasets(session: AsyncSession) -> list[Dataset]:
     return created
 
 
+EVALUATION_SEEDS: list[dict] = [
+    {
+        "name": "General Knowledge v1",
+        "description": "Factual QA accuracy using exact match scoring.",
+        "execution_mode": "sequential",
+        "owner": "seed",
+        "tags": ["factual", "qa", "seed"],
+        "dataset_name": "General Knowledge QA",
+        "scorer_config": [
+            {"scorer_name": "Exact Match", "weight": 1.0, "pass_threshold": 1.0},
+        ],
+    },
+    {
+        "name": "Reasoning Accuracy v1",
+        "description": "Math and reasoning evaluation with exact match and rubric scoring.",
+        "execution_mode": "sequential",
+        "owner": "seed",
+        "tags": ["reasoning", "math", "seed"],
+        "dataset_name": "Reasoning & Math",
+        "scorer_config": [
+            {"scorer_name": "Exact Match", "weight": 0.6, "pass_threshold": 1.0},
+            {"scorer_name": "Rubric", "weight": 0.4, "pass_threshold": 3.0},
+        ],
+    },
+    {
+        "name": "Instruction Compliance v1",
+        "description": "Format adherence and safety evaluation.",
+        "execution_mode": "sequential",
+        "owner": "seed",
+        "tags": ["instruction", "format", "safety", "seed"],
+        "dataset_name": "Instruction Following",
+        "scorer_config": [
+            {"scorer_name": "Format Validator", "weight": 0.5, "pass_threshold": 1.0},
+            {"scorer_name": "Safety", "weight": 0.5, "pass_threshold": 1.0},
+        ],
+    },
+    {
+        "name": "Full Suite v1",
+        "description": "Broad accuracy evaluation with exact and fuzzy matching.",
+        "execution_mode": "parallel",
+        "owner": "seed",
+        "tags": ["full", "accuracy", "seed"],
+        "dataset_name": "General Knowledge QA",
+        "scorer_config": [
+            {"scorer_name": "Exact Match", "weight": 0.7, "pass_threshold": 1.0},
+            {"scorer_name": "Fuzzy Match", "weight": 0.3, "pass_threshold": 0.85},
+        ],
+    },
+]
+
+TARGET_SEEDS: list[dict] = [
+    {
+        "name": "GPT-4o (OpenAI API)",
+        "model_name": "gpt-4o",
+        "provider": "openai",
+        "model_family": "gpt",
+        "inference_params": {"temperature": 0.0, "max_tokens": 1024},
+        "notes": "Cloud API target. Requires OPENAI_API_KEY environment variable.",
+    },
+    {
+        "name": "Claude Sonnet (Anthropic API)",
+        "model_name": "claude-sonnet-4-20250514",
+        "provider": "anthropic",
+        "model_family": "claude",
+        "inference_params": {"temperature": 0.0, "max_tokens": 1024},
+        "notes": "Cloud API target. Requires ANTHROPIC_API_KEY environment variable.",
+    },
+    {
+        "name": "Llama 3.1 8B (Ollama)",
+        "model_name": "llama3.1:8b",
+        "provider": "ollama",
+        "model_family": "llama",
+        "runner_name": "ollama-default",
+        "machine_hostname": "mbp-m4-64",
+        "endpoint_url": "http://localhost:11434/v1/chat/completions",
+        "inference_params": {"temperature": 0.0, "num_predict": 1024},
+        "notes": "Local inference via Ollama on Apple Silicon.",
+    },
+    {
+        "name": "Llama 3.1 8B (LM Studio)",
+        "model_name": "llama-3.1-8b",
+        "provider": "lmstudio",
+        "model_family": "llama",
+        "runner_name": "lmstudio-default",
+        "machine_hostname": "mbp-m4-64",
+        "endpoint_url": "http://localhost:1234/v1/chat/completions",
+        "inference_params": {"temperature": 0.0, "max_tokens": 1024},
+        "notes": "Local inference via LM Studio on Apple Silicon.",
+    },
+    {
+        "name": "Phi-3 Mini (llama.cpp)",
+        "model_name": "phi-3-mini-4k",
+        "provider": "llamacpp",
+        "model_family": "phi",
+        "runner_name": "llamacpp-default",
+        "machine_hostname": "mac-mini-m4-24",
+        "endpoint_url": "http://localhost:8080/v1/chat/completions",
+        "inference_params": {"temperature": 0.0, "n_predict": 1024},
+        "notes": "Local inference via llama.cpp on Mac mini.",
+    },
+    {
+        "name": "Qwen2.5 7B (vLLM)",
+        "model_name": "qwen2.5-7b",
+        "provider": "vllm",
+        "model_family": "qwen",
+        "runner_name": "vllm-default",
+        "machine_hostname": "rtx4070-desktop",
+        "endpoint_url": "http://localhost:8000/v1/chat/completions",
+        "inference_params": {"temperature": 0.0, "max_tokens": 1024},
+        "notes": "Local inference via vLLM on NVIDIA RTX 4070.",
+    },
+]
+
+
+async def _resolve_scorer_version_id(session: AsyncSession, scorer_name: str) -> int | None:
+    """Look up the latest ScorerVersion id for a scorer by name."""
+    from sqlalchemy import select
+
+    result = await session.execute(
+        select(ScorerVersion.id)
+        .join(Scorer, ScorerVersion.scorer_id == Scorer.id)
+        .where(Scorer.name == scorer_name)
+        .order_by(ScorerVersion.version_number.desc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
+async def _resolve_dataset_version_id(session: AsyncSession, dataset_name: str) -> int | None:
+    """Look up the latest DatasetVersion id for a dataset by name."""
+    from sqlalchemy import select
+
+    result = await session.execute(
+        select(DatasetVersion.id)
+        .join(Dataset, DatasetVersion.dataset_id == Dataset.id)
+        .where(Dataset.name == dataset_name)
+        .order_by(DatasetVersion.version_number.desc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
+async def seed_evaluations(session: AsyncSession) -> list[EvaluationDefinition]:
+    """Seed 4 evaluation definitions with versions. Skips existing by name."""
+    from sqlalchemy import select
+
+    created = []
+    for data in EVALUATION_SEEDS:
+        existing = await session.execute(
+            select(EvaluationDefinition).where(EvaluationDefinition.name == data["name"])
+        )
+        if existing.scalar_one_or_none() is not None:
+            continue
+
+        dataset_version_id = await _resolve_dataset_version_id(session, data["dataset_name"])
+        if dataset_version_id is None:
+            continue
+
+        scorer_config = []
+        skip = False
+        for sc in data["scorer_config"]:
+            sv_id = await _resolve_scorer_version_id(session, sc["scorer_name"])
+            if sv_id is None:
+                skip = True
+                break
+            scorer_config.append(
+                {
+                    "scorer_version_id": sv_id,
+                    "weight": sc["weight"],
+                    "pass_threshold": sc["pass_threshold"],
+                }
+            )
+        if skip:
+            continue
+
+        eval_def = EvaluationDefinition(
+            name=data["name"],
+            description=data.get("description"),
+            execution_mode=data.get("execution_mode", "sequential"),
+            owner=data.get("owner"),
+            tags=json.dumps(data["tags"]) if data.get("tags") else None,
+        )
+        session.add(eval_def)
+        await session.flush()
+
+        eval_version = EvaluationVersion(
+            evaluation_id=eval_def.id,
+            version_number=1,
+            dataset_version_id=dataset_version_id,
+            scorer_config=json.dumps(scorer_config),
+            notes="Seed evaluation version.",
+        )
+        session.add(eval_version)
+        created.append(eval_def)
+    await session.flush()
+    return created
+
+
+async def seed_targets(session: AsyncSession) -> list[TargetConfiguration]:
+    """Seed 6 target configurations. Skips existing by name."""
+    from sqlalchemy import select
+
+    created = []
+    for data in TARGET_SEEDS:
+        existing = await session.execute(
+            select(TargetConfiguration).where(TargetConfiguration.name == data["name"])
+        )
+        if existing.scalar_one_or_none() is not None:
+            continue
+
+        runner_id = None
+        if data.get("runner_name"):
+            result = await session.execute(
+                select(RunnerProfile.id).where(RunnerProfile.name == data["runner_name"])
+            )
+            runner_id = result.scalar_one_or_none()
+
+        machine_id = None
+        if data.get("machine_hostname"):
+            result = await session.execute(
+                select(MachineProfile.id).where(MachineProfile.hostname == data["machine_hostname"])
+            )
+            machine_id = result.scalar_one_or_none()
+
+        target = TargetConfiguration(
+            name=data["name"],
+            model_name=data["model_name"],
+            provider=data["provider"],
+            model_family=data.get("model_family"),
+            endpoint_url=data.get("endpoint_url"),
+            runner_profile_id=runner_id,
+            machine_profile_id=machine_id,
+            inference_params=json.dumps(data["inference_params"]),
+            notes=data.get("notes"),
+        )
+        session.add(target)
+        created.append(target)
+    await session.flush()
+    return created
+
+
 async def seed_all(session: AsyncSession) -> dict[str, int]:
-    """Seed all eval pipeline entities. Returns counts of created records."""
+    """Seed all eval pipeline entities in dependency order. Returns counts."""
     runners = await seed_runners(session)
     machines = await seed_machines(session)
     scorers = await seed_scorers(session)
     datasets = await seed_datasets(session)
+    evaluations = await seed_evaluations(session)
+    targets = await seed_targets(session)
     return {
         "runners": len(runners),
         "machines": len(machines),
         "scorers": len(scorers),
         "datasets": len(datasets),
+        "evaluations": len(evaluations),
+        "targets": len(targets),
     }

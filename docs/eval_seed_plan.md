@@ -55,18 +55,18 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 2.1     | Open   |               |                  | Add `EVALUATION_SEEDS` list and `seed_evaluations(session)` to `seed.py` — 4 definitions with EvaluationVersions referencing dataset_version and scorer_version IDs |
-| 2.2     | Open   |               |                  | Add `TARGET_SEEDS` list and `seed_targets(session)` to `seed.py` — 6 targets, 4 linked to runner/machine profiles |
-| 2.3     | Open   |               |                  | Update `seed_all()` to call all 6 seed functions in order: runners → machines → scorers → datasets → evaluations → targets |
-| 2.4     | Open   |               |                  | Run `ruff check` and `ruff format --check` on `seed.py` |
-| 2.5     | Open   |               |                  | Run `pytest tests/` — full suite must pass |
-| 2.6     | Open   |               |                  | Stage all Phase 2 changes |
-| 2.7     | Open   |               |                  | Commit all Phase 2 changes |
+| 2.1     | Completed | 2026-03-29 05:10 PM | 2026-03-29 05:14 PM | Add `EVALUATION_SEEDS` list and `seed_evaluations(session)` to `seed.py` — 4 definitions with EvaluationVersions referencing dataset_version and scorer_version IDs |
+| 2.2     | Completed | 2026-03-29 05:10 PM | 2026-03-29 05:14 PM | Add `TARGET_SEEDS` list and `seed_targets(session)` to `seed.py` — 6 targets, 4 linked to runner/machine profiles |
+| 2.3     | Completed | 2026-03-29 05:14 PM | 2026-03-29 05:14 PM | Update `seed_all()` to call all 6 seed functions in order: runners → machines → scorers → datasets → evaluations → targets |
+| 2.4     | Completed | 2026-03-29 05:14 PM | 2026-03-29 05:15 PM | Run `ruff check` and `ruff format --check` on `seed.py` |
+| 2.5     | Completed | 2026-03-29 05:15 PM | 2026-03-29 05:16 PM | Run `pytest tests/` — 879 passed |
+| 2.6     | Completed | 2026-03-29 05:16 PM | 2026-03-29 05:16 PM | Stage all Phase 2 changes |
+| 2.7     | Completed | 2026-03-29 05:16 PM | 2026-03-29 05:16 PM | Commit all Phase 2 changes |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added `EVALUATION_SEEDS` (4 definitions), `TARGET_SEEDS` (6 configs), `seed_evaluations()`, `seed_targets()`, and helper resolvers. Updated `seed_all()` to orchestrate all 6 seed functions in dependency order. Updated test assertion.
+- **Changes hosted at:** `ai_benchmark/eval/services/seed.py`, `tests/test_eval/test_registry.py`
 - **Commit:** `Add evaluation and target seed data, wire seed_all orchestration`
 
 ## Phase 3: CLI Command & Launch Bug Fix
