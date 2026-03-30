@@ -508,6 +508,7 @@ MISTRAL_MODEL_DOCS_HTML = """
 
 
 def test_mistral_model_docs_extraction():
+    """DOM fallback works for model catalog with standard HTML."""
     collector = MistralCollector(_make_source("Mistral AI"))
     page = PageConfig(
         canonical_url="https://docs.mistral.ai/models",
@@ -517,6 +518,26 @@ def test_mistral_model_docs_extraction():
     assert len(items) >= 2
     assert all(item.item_type == "model_entry" for item in items)
     assert any("mistral" in item.title.lower() for item in items)
+
+
+def test_mistral_models_rsc_extraction():
+    """RSC payload extraction returns model entries from real models HTML."""
+    fixture = FIXTURES_DIR / "mistral_models.html"
+    if not fixture.exists():
+        pytest.skip("Mistral models fixture not available")
+    html = fixture.read_text(encoding="utf-8")
+    collector = MistralCollector(_make_source("Mistral AI"))
+    page = PageConfig(
+        canonical_url="https://docs.mistral.ai/models",
+        page_type="model catalog",
+    )
+    items = collector.extract_items(html, page)
+    assert len(items) >= 10
+    assert all(item.item_type == "model_entry" for item in items)
+    assert all(item.model_hint for item in items)
+    model_names = [i.title for i in items]
+    assert any("Mistral" in n for n in model_names)
+    assert any("Codestral" in n for n in model_names)
 
 
 def test_meta_model_docs_extraction():

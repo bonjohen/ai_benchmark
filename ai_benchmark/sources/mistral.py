@@ -295,6 +295,55 @@ class MistralCollector(SourceCollector):
         return items
 
     def _extract_model_docs(self, html: str) -> list[RawItem]:
+        payloads = extract_nextjs_rsc_payloads(html)
+        if not payloads:
+            return self._extract_model_docs_fallback(html)
+
+        items: list[RawItem] = []
+        # Each model has its own payload with an h3 heading and description text.
+        # Pattern: ["$","h3",null,{..."children":"Model Name"}]
+        h3_re = re.compile(r'\["\$","h3",null,\{[^}]*"children":"([^"]{3,100})"')
+        seen_names: set[str] = set()
+
+        for payload in payloads:
+            h3_match = h3_re.search(payload)
+            if not h3_match:
+                continue
+            model_name = h3_match.group(1).strip()
+            if not model_name or model_name in seen_names:
+                continue
+            # Skip navigation/footer headings
+            if model_name.isupper() or model_name in (
+                "Help Center",
+                "Cookbooks",
+                "AI Studio",
+                "Discord",
+            ):
+                continue
+            seen_names.add(model_name)
+
+            # Extract description text from the same payload
+            descriptions = []
+            for m in _RSC_TEXT_RE.finditer(payload):
+                text = m.group(1).strip()
+                if _is_content_text(text) and text != model_name:
+                    descriptions.append(text)
+
+            body = " ".join(descriptions) if descriptions else model_name
+            items.append(
+                RawItem(
+                    title=model_name,
+                    body=body,
+                    item_type="model_entry",
+                    model_hint=model_name,
+                )
+            )
+
+        return items or self._extract_model_docs_fallback(html)
+
+    @staticmethod
+    def _extract_model_docs_fallback(html: str) -> list[RawItem]:
+        """DOM-based fallback for when RSC payloads are absent."""
         soup = BeautifulSoup(html, "lxml")
         items: list[RawItem] = []
         for section in soup.select("tr, .model-card, section, h3"):
@@ -310,6 +359,7 @@ class MistralCollector(SourceCollector):
         return items
 
     def _extract_pricing(self, html: str) -> list[RawItem]:
+        # Try DOM-based table extraction first (works if page has <table> elements)
         soup = BeautifulSoup(html, "lxml")
         items: list[RawItem] = []
         for row in soup.select("tr"):
@@ -323,4 +373,5 @@ class MistralCollector(SourceCollector):
                         model_hint=cells[0] if cells[0] else None,
                     )
                 )
+        # Pricing is also captured via RSS — return whatever we found
         return items

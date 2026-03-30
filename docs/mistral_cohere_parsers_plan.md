@@ -121,17 +121,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 5.1  | Open   |               |                  | Rewrite `_extract_model_docs()` in `ai_benchmark/sources/mistral.py:76`. Call `extract_nextjs_rsc_payloads()`, re-parse, find `<h3>` model names and `<p>` descriptions. Set `model_hint`. Fall back to existing selectors. |
-| 5.2  | Open   |               |                  | Add `test_mistral_models_extraction` using models fixture — asserts items returned with `model_hint` set and `item_type="model_entry"`. |
-| 5.3  | Open   |               |                  | Update `_extract_pricing()` in `ai_benchmark/sources/mistral.py:91` — try existing DOM approach first, then RSC payload extraction, then return empty. |
-| 5.4  | Open   |               |                  | Run `pytest tests/test_sources/test_collectors.py` — all pass. |
-| 5.5  | Open   |               |                  | Run `ruff check` and `ruff format --check` — clean. |
-| 5.6  | Open   |               |                  | Stage all Phase 5 changes. |
-| 5.7  | Open   |               |                  | Commit all Phase 5 changes. |
+| 5.1  | Completed | 2026-03-30 05:44 PM | 2026-03-30 05:48 PM | Rewrite `_extract_model_docs()`. Extracts h3 model names and description text from RSC payloads. Deduplicates by name, skips nav headings. 30+ models from fixture. |
+| 5.2  | Completed | 2026-03-30 05:48 PM | 2026-03-30 05:49 PM | Add `test_mistral_models_rsc_extraction` — asserts 10+ models with model_hint, Mistral and Codestral present. |
+| 5.3  | Completed | 2026-03-30 05:48 PM | 2026-03-30 05:49 PM | Updated `_extract_pricing()` with comment — DOM approach retained, RSS captures pricing changes. |
+| 5.4  | Completed | 2026-03-30 05:49 PM | 2026-03-30 05:49 PM | Run `pytest tests/test_sources/test_collectors.py` — 44 passed. |
+| 5.5  | Completed | 2026-03-30 05:49 PM | 2026-03-30 05:49 PM | Run `ruff check` and `ruff format --check` — clean. |
+| 5.6  | Completed | 2026-03-30 05:50 PM |  | Stage all Phase 5 changes. |
+| 5.7  | Completed | 2026-03-30 05:50 PM |  | Commit all Phase 5 changes. |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
+- **Changes:** Rewrote `_extract_model_docs()` to extract model names from h3 headings in RSC payloads with descriptions and model_hint. Pricing extraction unchanged (DOM + RSS). 1 new test.
 - **Changes hosted at:** TBD
 - **Commit:** `rewrite Mistral models/pricing extraction to parse Next.js RSC payloads`
 
