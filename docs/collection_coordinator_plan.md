@@ -1,0 +1,125 @@
+# Collection Coordinator — Implementation Plan
+
+**Source document:** `docs/collection_coordinator_pdr.md`
+
+## Work Queue Instructions
+
+### State Transitions
+
+Open  ──>  Started  ──>  Completed
+              │
+              └──>  Blocked  ──>  Started  ──>  Completed
+
+- **Open**: Not yet begun.
+- **Started**: Actively in progress. Record the start datetime (PST).
+- **Completed**: Done and verified. Record the completion datetime (PST).
+- **Blocked**: Cannot proceed; note the blocker in the description.
+
+### Commit Protocol
+
+1. Work through all tasks in a phase.
+2. When every task reaches Completed, write the Phase Summary.
+3. Stage and commit all changes for the phase. Do not push.
+4. Proceed immediately to the next phase.
+
+## Technology Stack (Additive)
+
+| Concern | Choice |
+|---|---|
+| Task/result passing | `asyncio.Queue` (stdlib) |
+| Task identity | `uuid.uuid4().hex` (stdlib) |
+| Data carriers | `dataclasses` with `frozen=True` / `slots=True` |
+| Concurrency | `asyncio.create_task` worker pool (same process) |
+| HTTP concurrency | Existing `Fetcher` with `asyncio.Semaphore(max_concurrency)` |
+| Testing | `pytest` + `pytest-asyncio` (existing dev deps) |
+
+## Phase 1: Coordination Package Foundation
+
+**Goal:** The `ai_benchmark/coordination/` package exists with `FetchTask` and `CoordFetchResult` dataclasses fully defined and tested. No behavioral changes.
+**Depends on:** Nothing (first phase).
+
+| Task | Status | Started (PST) | Completed (PST) | Description |
+|------|--------|---------------|------------------|-------------|
+| 1.1 | Open | | | Create `ai_benchmark/coordination/__init__.py` — empty package init. |
+| 1.2 | Open | | | Create `ai_benchmark/coordination/types.py` — `FetchTask` (`frozen=True`, `slots=True`, 12 fields per PDR §3.1) and `CoordFetchResult` (`slots=True`, 18 fields per PDR §3.2). |
+| 1.3 | Open | | | Create `tests/test_coordination/__init__.py` — empty test package init. |
+| 1.4 | Open | | | Create `tests/test_coordination/test_types.py` — tests: `FetchTask` construction with all fields, frozen immutability raises `FrozenInstanceError`, `CoordFetchResult` construction, error variant (`fetch_error` set, `items=[]`), `has_custom_collect` flag variants. |
+| 1.5 | Open | | | Run `pytest tests/test_coordination/test_types.py -x -v` — all pass. Run `ruff check ai_benchmark/coordination/ tests/test_coordination/` and `ruff format --check` — clean. |
+| 1.6 | Open | | | Stage all Phase 1 changes. |
+| 1.7 | Open | | | Commit all Phase 1 changes. |
+
+### Phase 1 Summary
+
+- **Changes:** TBD
+- **Changes hosted at:** TBD
+- **Commit:** `Add coordination package with FetchTask and CoordFetchResult dataclasses`
+
+## Phase 2: Worker Logic
+
+**Goal:** `fetch_and_extract()` and `worker_loop()` exist and are tested with mocked Fetcher/collectors. Four collectors annotated with `_API_PAGE_TYPES`. No coordinator yet — workers are standalone and testable.
+**Depends on:** Phase 1 (types).
+
+| Task | Status | Started (PST) | Completed (PST) | Description |
+|------|--------|---------------|------------------|-------------|
+| 2.1 | Open | | | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `GitHubDiscoveryCollector` (`sources/community/github_discovery.py`) — `{"github"}`. |
+| 2.2 | Open | | | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `MetaCollector` (`sources/meta.py`) — `{"github"}`. |
+| 2.3 | Open | | | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `SemanticScholarCollector` (`sources/research/semantic_scholar.py`) — `{"api"}`. |
+| 2.4 | Open | | | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `HFForumsCollector` (`sources/community/hf_forums.py`) — `{"discourse json"}`. |
+| 2.5 | Open | | | Create `ai_benchmark/coordination/worker.py` — implement `fetch_and_extract(task, fetcher, settings) -> CoordFetchResult` with three paths: standard HTML (fetch → `extract_items()`), API collector (`_API_PAGE_TYPES` detection → `collect_page()`), and RSS backfill (`since_date` + RSS page → `collect_rss_backfill()` + normal fetch). Per PDR §5.2. |
+| 2.6 | Open | | | Implement `worker_loop(worker_id, task_queue, result_queue, fetcher, settings)` in `worker.py` — loop on queue get, `None` sentinel exits, try/except wraps `fetch_and_extract()`, error produces `CoordFetchResult` with `fetch_error`. Per PDR §5.1. |
+| 2.7 | Open | | | Create `tests/test_coordination/test_worker.py` — tests: standard HTML path (mocked fetch → `extract_items()` → items in result), API collector path (mock `_API_PAGE_TYPES` → `collect_page()` → `has_custom_collect=True`), fetch failure (`ok=False` → `fetch_error` set, `items=[]`), RSS backfill path, `worker_loop` exits on `None` sentinel, unhandled exception in `fetch_and_extract` → error result not worker death. Per PDR §7.1. |
+| 2.8 | Open | | | Run `pytest tests/test_coordination/ -x -v` — all pass. Run `ruff check` and `ruff format --check` on changed files — clean. |
+| 2.9 | Open | | | Stage all Phase 2 changes. |
+| 2.10 | Open | | | Commit all Phase 2 changes. |
+
+### Phase 2 Summary
+
+- **Changes:** TBD
+- **Changes hosted at:** TBD
+- **Commit:** `Add fetch_and_extract worker logic and _API_PAGE_TYPES annotations`
+
+## Phase 3: Coordinator Core
+
+**Goal:** `CollectionCoordinator` exists with `setup()`, `collect_all()`, `shutdown()`, queue mechanics, result processing, retry, and persistent health tracking — all tested in isolation with mocked workers and DB.
+**Depends on:** Phase 2 (worker logic).
+
+| Task | Status | Started (PST) | Completed (PST) | Description |
+|------|--------|---------------|------------------|-------------|
+| 3.1 | Open | | | Create `ai_benchmark/coordination/coordinator.py` — `CollectionCoordinator.__init__(settings)` storing `_settings`, `_engine`, `_session_factory`, `_fetcher`, `_worker_count` as `None`/unset. Per PDR §4.1–4.2. |
+| 3.2 | Open | | | Implement `setup()` — create async engine, session factory, and Fetcher from settings. Per PDR §4.3. |
+| 3.3 | Open | | | Implement `shutdown()` — close Fetcher, dispose engine. |
+| 3.4 | Open | | | Implement `_create_tasks(organizations, since_date)` — load catalog, filter orgs, open session, query/create `Source` and `Page` rows, build `FetchTask` per page, commit, return task list. Import `_item_in_date_range` from scheduler module. Per PDR §4.4 Step 1. |
+| 3.5 | Open | | | Implement `_process_result(result, session, stats)` — fetch error → retry or log with `Page.consecutive_failures` increment; snapshot comparison via `SnapshotManager` for standard collectors; quality filter; date filter for backfill; `process_items()` call; health state reset; commit. Per PDR §4.5. |
+| 3.6 | Open | | | Implement `collect_all(organizations, since_date)` — create tasks, init bounded queues (`maxsize=2*worker_count`), launch worker tasks, run producer (enqueue tasks + `None` sentinels) and consumer (`_process_result` per result, pending count tracking) concurrently via `asyncio.gather`, await workers, return stats dict. Per PDR §4.4 Steps 2–6, §4.6. |
+| 3.7 | Open | | | Implement retry in `_process_result` — on `fetch_error` with `attempt < retry_attempts - 1`, create new `FetchTask` with `attempt + 1` and new `task_id`, re-enqueue, increment pending count. Per PDR §4.7. |
+| 3.8 | Open | | | Update `ai_benchmark/coordination/__init__.py` — export `CollectionCoordinator`. |
+| 3.9 | Open | | | Create `tests/test_coordination/test_coordinator.py` — tests: `_process_result` success path (calls `compare_with_latest` then `process_items`, resets `consecutive_failures`), failure + retry (re-enqueues with `attempt+1`, increments failures), skip unchanged (`DiffResult(changed=False)` + no `since_date` → skips `process_items`), custom collector path (`has_custom_collect=True` → skips snapshot comparison), queue backpressure (`maxsize=2` → `put()` blocks when full), `collect_all` end-to-end with mocked workers. Per PDR §7.1. |
+| 3.10 | Open | | | Run `pytest tests/test_coordination/ -x -v` — all pass. Run `ruff check` and `ruff format --check` on changed files — clean. |
+| 3.11 | Open | | | Stage all Phase 3 changes. |
+| 3.12 | Open | | | Commit all Phase 3 changes. |
+
+### Phase 3 Summary
+
+- **Changes:** TBD
+- **Changes hosted at:** TBD
+- **Commit:** `Add CollectionCoordinator with queue mechanics, result processing, and retry`
+
+## Phase 4: CLI Integration
+
+**Goal:** The `collect` command uses `CollectionCoordinator`. `PipelineScheduler.collect_source()` delegates to a long-lived coordinator. All 22 sources can run concurrently without `OperationalError: database is locked`. Full test suite green.
+**Depends on:** Phase 3 (coordinator core).
+
+| Task | Status | Started (PST) | Completed (PST) | Description |
+|------|--------|---------------|------------------|-------------|
+| 4.1 | Open | | | Modify `ai_benchmark/cli.py` `collect` command (~lines 71–105) — replace `PipelineScheduler.collect_source()` with `CollectionCoordinator.collect_all()`. Instantiate coordinator, `setup()`, call `collect_all(organizations=[source] if source else None, since_date=since_date)`, `shutdown()`, echo stats. Per PDR §6.1. |
+| 4.2 | Open | | | Modify `ai_benchmark/scheduling/scheduler.py` `PipelineScheduler` — add `_coordinator: CollectionCoordinator` attribute. In `setup()`, create and setup coordinator. In `collect_source(organization, since_date)`, delegate to `_coordinator.collect_all(organizations=[organization], since_date=since_date)`. In `shutdown()`, call `_coordinator.shutdown()`. APScheduler and signal handling unchanged. Per PDR §6.2. |
+| 4.3 | Open | | | Add integration tests to `tests/test_coordination/test_coordinator.py` — `collect_all(["OpenAI"])` against test DB (mocked HTTP): tasks created, workers fetch, events in DB. `collect_all(None)` with 3+ sources: no `OperationalError`. Concurrent `collect_all()` calls via `asyncio.gather()`: no DB lock errors. Per PDR §7.2. |
+| 4.4 | Open | | | Run `pytest -x -v` (full suite) — all pass. Run `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — clean. |
+| 4.5 | Open | | | Stage all Phase 4 changes. |
+| 4.6 | Open | | | Commit all Phase 4 changes. |
+
+### Phase 4 Summary
+
+- **Changes:** TBD
+- **Changes hosted at:** TBD
+- **Commit:** `Wire CollectionCoordinator into collect command and PipelineScheduler`

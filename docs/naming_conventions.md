@@ -47,10 +47,10 @@ Canonical `hardware_class` values used in `MachineProfile`:
 | Hardware Class | Description |
 |---|---|
 | `dgx_spark` | NVIDIA DGX Spark 128 GB — primary high-capability environment |
-| `apple_silicon_pro` | Apple Silicon MacBook Pro M4 64 GB |
+| `apple_silicon_pro` | Apple Silicon MacBook Pro M4 64 GB (backlog) |
 | `apple_silicon_mini` | Apple Silicon Mac mini 24 GB |
 | `rtx_desktop` | RTX 4070 desktop workstation |
-| `intel_ai_laptop` | ASUS Vivobook S 15 — Intel Core Ultra 7 155H + NPU |
+| `intel_ai_laptop` | ASUS Vivobook S 15 — Intel Core Ultra 7 155H + NPU (backlog) |
 | `old_gpu_laptop` | GTX 1060 6 GB laptop (backlog) |
 | `edge_device` | Raspberry Pi + accelerator (backlog) |
 
