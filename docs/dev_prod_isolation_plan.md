@@ -158,18 +158,18 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 6.1 | Open | | | Pre-deploy: (a) check `schtasks /query /tn "AIBenchmarkCollect"` next-run time to avoid deploying during active collection, (b) verify no Python processes holding the production database, (c) confirm recent backup exists |
-| 6.2 | Open | | | Run `scripts\backup.ps1` to create a pre-migration backup |
-| 6.3 | Open | | | Run `scripts\install.ps1` from admin PowerShell — creates venv, builds/installs wheel, copies bin scripts, re-registers task, removes duplicate task |
-| 6.4 | Open | | | Post-deploy verify: (a) `& "C:\ai-benchmark\venv\Scripts\python.exe" -m ai_benchmark.cli check-config`, (b) `& "C:\ai-benchmark\venv\Scripts\python.exe" -m ai_benchmark.cli status` shows expected data, (c) `C:\ai-benchmark\bin\collect.bat` runs successfully |
-| 6.5 | Open | | | Isolation test: (a) add trivial comment to `C:\Projects\ai_benchmark\ai_benchmark\cli.py`, (b) import cli from venv Python — confirm change NOT visible, (c) revert trivial change |
-| 6.6 | Open | | | Stage all Phase 6 changes (if any) |
-| 6.7 | Open | | | Commit all Phase 6 changes |
+| 6.1 | Completed | 2026-03-30 11:06 AM | 2026-03-30 11:06 AM | Pre-deploy: AIBenchmarkCollect next run 3/31 5:00 AM. Backup from yesterday exists. Production DB is 40 MB. |
+| 6.2 | Completed | 2026-03-30 11:06 AM | 2026-03-30 11:07 AM | Ran `backup.ps1` — created backup (41076 KB), 2 retained. Fixed em dash encoding issue in backup.ps1. |
+| 6.3 | Completed | 2026-03-30 11:07 AM | 2026-03-30 11:10 AM | Created venv, built wheel, installed into venv (ai_benchmark-0.1.0 + 42 deps), copied bin scripts, removed stale "AI Benchmark Daily Collection" task. |
+| 6.4 | Completed | 2026-03-30 11:10 AM | 2026-03-30 11:11 AM | check-config: 22 sources, 86 pages OK. status: 2742+ events, 118 papers visible from venv with production DB. |
+| 6.5 | Completed | 2026-03-30 11:11 AM | 2026-03-30 11:13 AM | Isolation test PASSED: added marker to dev cli.py, confirmed NOT visible from venv when CWD=C:\ai-benchmark. Reverted marker. Note: CWD must be production dir for isolation (bin scripts handle this via `cd /d %INSTALL_DIR%`). |
+| 6.6 | Completed | 2026-03-30 11:13 AM | 2026-03-30 11:13 AM | Stage all Phase 6 changes |
+| 6.7 | Completed | 2026-03-30 11:13 AM | 2026-03-30 11:13 AM | Commit all Phase 6 changes |
 
 ### Phase 6 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Production venv created at `C:\ai-benchmark\venv` with wheel-based install. Stale "AI Benchmark Daily Collection" task removed. Fixed em dash encoding issue in `backup.ps1`. Isolation verified — dev code changes not visible from production venv. All 9 interactions from design document are now resolved.
+- **Changes hosted at:** `scripts/backup.ps1`, `docs/dev_prod_isolation_plan.md`
 - **Commit:** `Phase 6: Complete first production deploy with venv isolation`
 
 ---

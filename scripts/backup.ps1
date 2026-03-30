@@ -37,7 +37,7 @@ if (Test-Path $DbFile) {
     $sizeKB = [math]::Round($size / 1024, 1)
     Write-Host "  Backed up database ($sizeKB KB) -> $BackupFile"
 } else {
-    Write-Host "  No database found at $DbFile — skipping backup" -ForegroundColor Yellow
+    Write-Host "  No database found at $DbFile - skipping backup" -ForegroundColor Yellow
     exit 0
 }
 
@@ -54,4 +54,5 @@ if ($total -gt $RetainCount) {
     }
 }
 
-Write-Host "  Backups: $([math]::Min($total, $RetainCount)) retained (max $RetainCount)"
+$kept = [math]::Min($total, $RetainCount)
+Write-Host "  Backups: $kept retained (max $RetainCount)"
