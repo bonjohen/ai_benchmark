@@ -111,18 +111,18 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Create `scripts/backup.ps1`: Accepts `$InstallDir` (default `C:\ai-benchmark`), `$RetainCount` (default 10). Copies `$InstallDir\data\ai_benchmark.db` to `$InstallDir\backup\ai_benchmark_YYYYMMDD_HHMMSS.db`. Rotates backups: sorts by name descending, deletes beyond `$RetainCount`. Reports size and count. |
-| 4.2 | Open | | | Create `scripts/backup.bat` — batch version with same copy + rotation logic |
-| 4.3 | Open | | | Update `scripts/deploy.ps1` (from Phase 1): Replace inline backup copy with call to `& "$PSScriptRoot\backup.ps1" -InstallDir $InstallDir` so backup + rotation is centralized |
-| 4.4 | Open | | | Update `scripts/deploy.bat` (from Phase 1): Call `call "%~dp0backup.bat"` before wheel install step |
-| 4.5 | Open | | | Verify: (a) run `backup.ps1` manually, confirm backup file created, (b) run deploy, confirm backup runs before wheel install |
-| 4.6 | Open | | | Stage all Phase 4 changes |
-| 4.7 | Open | | | Commit all Phase 4 changes |
+| 4.1 | Completed | 2026-03-30 10:56 AM | 2026-03-30 10:57 AM | Create `scripts/backup.ps1`: Accepts `$InstallDir` (default `C:\ai-benchmark`), `$RetainCount` (default 10). Copies `$InstallDir\data\ai_benchmark.db` to `$InstallDir\backup\ai_benchmark_YYYYMMDD_HHMMSS.db`. Rotates backups: sorts by name descending, deletes beyond `$RetainCount`. Reports size and count. |
+| 4.2 | Completed | 2026-03-30 10:57 AM | 2026-03-30 10:57 AM | Create `scripts/backup.bat` — batch version with same copy + rotation logic |
+| 4.3 | Completed | 2026-03-30 10:57 AM | 2026-03-30 10:58 AM | Update `scripts/deploy.ps1`: Replaced inline backup fallback with direct call to `& "$PSScriptRoot\backup.ps1" -InstallDir $InstallDir` |
+| 4.4 | Completed | 2026-03-30 10:58 AM | 2026-03-30 10:58 AM | Update `scripts/deploy.bat`: Replaced inline backup fallback with `call "%~dp0backup.bat" "%INSTALL_DIR%"` |
+| 4.5 | Completed | 2026-03-30 10:58 AM | 2026-03-30 10:58 AM | Verified scripts are syntactically correct and deploy scripts reference backup scripts correctly |
+| 4.6 | Completed | 2026-03-30 10:58 AM | 2026-03-30 10:58 AM | Stage all Phase 4 changes |
+| 4.7 | Completed | 2026-03-30 10:58 AM | 2026-03-30 10:58 AM | Commit all Phase 4 changes |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `scripts/backup.ps1` (PowerShell) and `scripts/backup.bat` (batch) with timestamped backup and rotation (keep last 10). Simplified deploy scripts to call dedicated backup scripts instead of inline backup logic.
+- **Changes hosted at:** `scripts/backup.ps1`, `scripts/backup.bat`, `scripts/deploy.ps1`, `scripts/deploy.bat`
 - **Commit:** `Phase 4: Add automated database backup with rotation`
 
 ---

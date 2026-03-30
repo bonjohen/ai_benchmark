@@ -51,20 +51,7 @@ if (-not (Test-Path $VenvPython)) {
 
 # ── Backup production database ──
 Write-Host "[1/4] Backing up database..." -ForegroundColor Yellow
-$BackupScript = Join-Path $PSScriptRoot "backup.ps1"
-if (Test-Path $BackupScript) {
-    & $BackupScript -InstallDir $InstallDir
-} else {
-    # Inline backup if backup.ps1 doesn't exist yet
-    $DbFile = Join-Path $InstallDir "data\ai_benchmark.db"
-    if (Test-Path $DbFile) {
-        $BackupName = "ai_benchmark_$(Get-Date -Format 'yyyyMMdd_HHmmss').db"
-        Copy-Item $DbFile -Destination (Join-Path $InstallDir "backup\$BackupName")
-        Write-Host "  Backed up to backup\$BackupName"
-    } else {
-        Write-Host "  No database to back up"
-    }
-}
+& "$PSScriptRoot\backup.ps1" -InstallDir $InstallDir
 
 # ── Build wheel ──
 Write-Host ""

@@ -34,17 +34,7 @@ if not exist "%VENV_PYTHON%" (
 
 :: ── Backup production database ──
 echo [1/4] Backing up database...
-if exist "%~dp0backup.bat" (
-    call "%~dp0backup.bat" "%INSTALL_DIR%"
-) else (
-    if exist "%INSTALL_DIR%\data\ai_benchmark.db" (
-        for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set dt=%%I
-        copy /y "%INSTALL_DIR%\data\ai_benchmark.db" "%INSTALL_DIR%\backup\ai_benchmark_!dt:~0,8!_!dt:~8,6!.db" >nul
-        echo   Backed up database
-    ) else (
-        echo   No database to back up
-    )
-)
+call "%~dp0backup.bat" "%INSTALL_DIR%"
 
 :: ── Build wheel ──
 echo.
