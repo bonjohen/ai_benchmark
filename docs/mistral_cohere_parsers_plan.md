@@ -84,8 +84,8 @@ Open  ──>  Started  ──>  Completed
 | 3.4  | Completed | 2026-03-30 05:28 PM | 2026-03-30 05:30 PM | Add `test_mistral_fallback_on_empty_rsc` — DOM-based fallback works on plain HTML. |
 | 3.5  | Completed | 2026-03-30 05:30 PM | 2026-03-30 05:30 PM | Run `pytest tests/test_sources/test_collectors.py` — 41 passed. |
 | 3.6  | Completed | 2026-03-30 05:30 PM | 2026-03-30 05:31 PM | Run `ruff check` and `ruff format --check` — clean. |
-| 3.7  | Started | 2026-03-30 05:31 PM |                  | Stage all Phase 3 changes. |
-| 3.8  | Open   |               |                  | Commit all Phase 3 changes. |
+| 3.7  | Completed | 2026-03-30 05:31 PM | 2026-03-30 05:31 PM | Stage all Phase 3 changes. |
+| 3.8  | Completed | 2026-03-30 05:31 PM | 2026-03-30 05:31 PM | Commit all Phase 3 changes. |
 
 ### Phase 3 Summary
 
@@ -100,17 +100,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 4.1  | Open   |               |                  | Rewrite `_extract_news()` in `ai_benchmark/sources/mistral.py:57`. Call `extract_nextjs_rsc_payloads()`, re-parse, find `<a href="/news/...">` links and adjacent text. Resolve relative URLs to `https://mistral.ai/news/[slug]`. Fall back to existing selectors if no RSC payloads. |
-| 4.2  | Open   |               |                  | Add `test_mistral_news_extraction` using news fixture — asserts items returned with titles and `item_type="news_post"`. |
-| 4.3  | Open   |               |                  | Add `test_mistral_news_url_resolution` — asserts extracted URLs are absolute `https://mistral.ai/news/...` paths. |
-| 4.4  | Open   |               |                  | Run `pytest tests/test_sources/test_collectors.py` — all pass. |
-| 4.5  | Open   |               |                  | Run `ruff check` and `ruff format --check` — clean. |
-| 4.6  | Open   |               |                  | Stage all Phase 4 changes. |
-| 4.7  | Open   |               |                  | Commit all Phase 4 changes. |
+| 4.1  | Completed | 2026-03-30 05:36 PM | 2026-03-30 05:40 PM | Rewrite `_extract_news()` to parse `"posts":[...]` JSON array from RSC payloads. Extracts slug, title, date (ISO), category, description. Resolves URLs to `https://mistral.ai/news/[slug]`. 64 posts extracted from fixture. |
+| 4.2  | Completed | 2026-03-30 05:40 PM | 2026-03-30 05:41 PM | Add `test_mistral_news_extraction` — asserts 10+ items, all news_post type, Mistral in titles. |
+| 4.3  | Completed | 2026-03-30 05:40 PM | 2026-03-30 05:41 PM | Add `test_mistral_news_url_resolution` — all URLs start with `https://mistral.ai/news/`. |
+| 4.4  | Completed | 2026-03-30 05:41 PM | 2026-03-30 05:41 PM | Run `pytest tests/test_sources/test_collectors.py` — 43 passed. |
+| 4.5  | Completed | 2026-03-30 05:41 PM | 2026-03-30 05:41 PM | Run `ruff check` and `ruff format --check` — clean. |
+| 4.6  | Completed | 2026-03-30 05:42 PM |  | Stage all Phase 4 changes. |
+| 4.7  | Completed | 2026-03-30 05:42 PM |  | Commit all Phase 4 changes. |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
+- **Changes:** Rewrote `MistralCollector._extract_news()` to parse structured JSON posts array from RSC payloads. Extracts 64 news posts with title, slug, date, category, and description. Added `_parse_json_array()` helper. 2 new tests.
 - **Changes hosted at:** TBD
 - **Commit:** `rewrite Mistral news extraction to parse Next.js RSC payloads`
 

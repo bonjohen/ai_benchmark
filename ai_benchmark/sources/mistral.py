@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from typing import TYPE_CHECKING
 
@@ -210,6 +211,71 @@ class MistralCollector(SourceCollector):
         return items
 
     def _extract_news(self, html: str) -> list[RawItem]:
+        payloads = extract_nextjs_rsc_payloads(html)
+        if not payloads:
+            return self._extract_news_fallback(html)
+
+        # RSC payloads contain a "posts":[...] JSON array with structured data
+        items: list[RawItem] = []
+        for payload in payloads:
+            posts_match = re.search(r'"posts":\[', payload)
+            if not posts_match:
+                continue
+            posts = self._parse_json_array(payload, posts_match.start() + 8)
+            if not posts:
+                continue
+            for post in posts:
+                if not isinstance(post, dict):
+                    continue
+                slug = post.get("slug", "")
+                title = post.get("title", "").strip()
+                if not title or not slug:
+                    continue
+                date_raw = post.get("date", "")
+                date_text = date_raw[:10] if date_raw else None
+                description = post.get("description") or ""
+                category = ""
+                cat = post.get("category")
+                if isinstance(cat, dict):
+                    category = cat.get("name", "")
+                body_parts = [title]
+                if description:
+                    body_parts.append(description)
+                if category:
+                    body_parts.append(f"[{category}]")
+                items.append(
+                    RawItem(
+                        title=title,
+                        url=f"https://mistral.ai/news/{slug}",
+                        date_text=date_text,
+                        body=" — ".join(body_parts),
+                        item_type="news_post",
+                    )
+                )
+            break  # Only need the first posts array
+        return items or self._extract_news_fallback(html)
+
+    @staticmethod
+    def _parse_json_array(payload: str, start: int) -> list[dict] | None:
+        """Parse a JSON array starting at the given position in a payload."""
+        depth = 0
+        pos = start
+        for pos in range(start, len(payload)):
+            if payload[pos] == "[":
+                depth += 1
+            elif payload[pos] == "]":
+                depth -= 1
+                if depth == 0:
+                    break
+        array_str = payload[start : pos + 1]
+        try:
+            return json.loads(array_str)
+        except (json.JSONDecodeError, ValueError):
+            return None
+
+    @staticmethod
+    def _extract_news_fallback(html: str) -> list[RawItem]:
+        """DOM-based fallback for when RSC payloads are absent."""
         soup = BeautifulSoup(html, "lxml")
         items: list[RawItem] = []
         for article in soup.select("article, a[href*='/news/'], .post-card"):

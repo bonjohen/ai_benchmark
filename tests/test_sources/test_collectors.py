@@ -334,6 +334,39 @@ def test_mistral_fallback_on_empty_rsc():
     assert items[0].item_type == "model_release"
 
 
+def test_mistral_news_extraction():
+    """RSC payload extraction returns news posts from real news HTML."""
+    fixture = FIXTURES_DIR / "mistral_news.html"
+    if not fixture.exists():
+        pytest.skip("Mistral news fixture not available")
+    html = fixture.read_text(encoding="utf-8")
+    collector = MistralCollector(_make_source("Mistral AI"))
+    page = PageConfig(
+        canonical_url="https://mistral.ai/news/",
+        page_type="news",
+    )
+    items = collector.extract_items(html, page)
+    assert len(items) >= 10
+    assert all(item.item_type == "news_post" for item in items)
+    assert any("Mistral" in item.title for item in items)
+
+
+def test_mistral_news_url_resolution():
+    """News post URLs are resolved to absolute https://mistral.ai/news/... paths."""
+    fixture = FIXTURES_DIR / "mistral_news.html"
+    if not fixture.exists():
+        pytest.skip("Mistral news fixture not available")
+    html = fixture.read_text(encoding="utf-8")
+    collector = MistralCollector(_make_source("Mistral AI"))
+    page = PageConfig(
+        canonical_url="https://mistral.ai/news/",
+        page_type="news",
+    )
+    items = collector.extract_items(html, page)
+    for item in items:
+        assert item.url.startswith("https://mistral.ai/news/"), f"Bad URL: {item.url}"
+
+
 # ─── LMArena collector tests ───
 
 LMARENA_SUBPAGE_HTML = """
