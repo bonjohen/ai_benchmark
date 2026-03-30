@@ -241,6 +241,57 @@ def test_determine_relationship_conflicts_with():
     assert determine_relationship(event_a, event_b) == "conflicts_with"
 
 
+@pytest.mark.asyncio
+async def test_build_cross_references_skips_secondary_benchmark(db_session):
+    """Secondary benchmark_result events skip cross-ref queries for performance."""
+    event_a = _make_event(
+        db_session,
+        model_slug="gpt-5",
+        source_type="leaderboard",
+        event_type="benchmark_result",
+        title="GPT-5 Elo 1300",
+        canonical_path="/leaderboard/text",
+    )
+    _make_event(
+        db_session,
+        model_slug="gpt-5",
+        source_type="leaderboard",
+        event_type="benchmark_result",
+        title="GPT-5 Elo 1300 code",
+        canonical_path="/leaderboard/code",
+    )
+    await db_session.flush()
+
+    xrefs = await build_cross_references(db_session, event_a, classification="secondary")
+    assert xrefs == []
+
+
+@pytest.mark.asyncio
+async def test_build_cross_references_non_benchmark_still_runs(db_session):
+    """Non-benchmark events with secondary classification still get cross-references."""
+    event_a = _make_event(
+        db_session,
+        model_slug="gpt-5",
+        source_type="news",
+        event_type="model_release",
+        title="GPT-5 launch coverage",
+        canonical_path="/reuters/gpt5",
+    )
+    event_b = _make_event(
+        db_session,
+        model_slug="gpt-5",
+        source_type="newsroom",
+        event_type="model_release",
+        title="GPT-5 launched",
+        canonical_path="/openai/gpt5",
+    )
+    await db_session.flush()
+
+    xrefs = await build_cross_references(db_session, event_a, classification="secondary")
+    assert len(xrefs) >= 1
+    assert any(x.record_b_id == event_b.id for x in xrefs)
+
+
 def test_determine_relationship_confirms_same_model_different_source():
     """confirms when same model from different source types, no numerical conflict."""
     event_a = EventRecord(

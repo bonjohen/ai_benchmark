@@ -118,21 +118,21 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Implement `batch_find_duplicates(session, normalized_titles, organization)` in `ai_benchmark/processing/deduplicator.py` — single `SELECT ... WHERE normalized_title IN (...)` query returning dict of `{normalized_title: EventRecord}` |
-| 4.2 | Open | | | Refactor `process_items()` in `ai_benchmark/processing/pipeline.py:164-187` — pre-compute normalized titles, call `batch_find_duplicates()`, use result set for fast dedup lookups in the item loop |
-| 4.3 | Open | | | Add batch flush logic in `process_items()` — flush every 100 items instead of per-item, with a final flush after the loop |
-| 4.4 | Open | | | Add early return for same-source secondary benchmark entries in `ai_benchmark/processing/cross_reference.py` `build_cross_references()` — skip cross-ref queries when event_type is benchmark_result and classification is secondary |
-| 4.5 | Open | | | Update tests in `tests/test_deduplicator.py` — add test for `batch_find_duplicates()` with multiple titles, empty input, partial matches |
-| 4.6 | Open | | | Update tests in `tests/test_pipeline.py` — verify `process_items()` still creates events and claims correctly with batch dedup; verify dedup still works (duplicate items produce claims, not new events) |
-| 4.7 | Open | | | Update tests in `tests/test_cross_reference.py` — verify early return for secondary benchmark entries; verify non-benchmark events still get cross-references |
-| 4.8 | Open | | | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
-| 4.9 | Open | | | Stage all Phase 4 changes |
-| 4.10 | Open | | | Commit all Phase 4 changes |
+| 4.1 | Completed | 2026-03-30 09:46 AM | 2026-03-30 09:47 AM | Implement `batch_find_duplicates(session, normalized_titles, organization)` in `ai_benchmark/processing/deduplicator.py` — single `SELECT ... WHERE normalized_title IN (...)` query returning dict of `{normalized_title: EventRecord}` |
+| 4.2 | Completed | 2026-03-30 09:47 AM | 2026-03-30 09:49 AM | Refactor `process_items()` in `ai_benchmark/processing/pipeline.py:164-187` — pre-compute normalized titles, call `batch_find_duplicates()`, use result set for fast dedup lookups in the item loop |
+| 4.3 | Completed | 2026-03-30 09:49 AM | 2026-03-30 09:50 AM | Add batch flush logic in `process_items()` — flush every 100 items instead of per-item, with a final flush after the loop |
+| 4.4 | Completed | 2026-03-30 09:50 AM | 2026-03-30 09:51 AM | Add early return for same-source secondary benchmark entries in `ai_benchmark/processing/cross_reference.py` `build_cross_references()` — skip cross-ref queries when event_type is benchmark_result and classification is secondary |
+| 4.5 | Completed | 2026-03-30 09:51 AM | 2026-03-30 09:53 AM | Update tests in `tests/test_deduplicator.py` — add test for `batch_find_duplicates()` with multiple titles, empty input, partial matches |
+| 4.6 | Completed | 2026-03-30 09:53 AM | 2026-03-30 09:54 AM | Update tests in `tests/test_pipeline.py` — verify `process_items()` still creates events and claims correctly with batch dedup; verify dedup still works (duplicate items produce claims, not new events) |
+| 4.7 | Completed | 2026-03-30 09:54 AM | 2026-03-30 09:55 AM | Update tests in `tests/test_cross_reference.py` — verify early return for secondary benchmark entries; verify non-benchmark events still get cross-references |
+| 4.8 | Completed | 2026-03-30 09:55 AM | 2026-03-30 09:56 AM | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
+| 4.9 | Completed | 2026-03-30 09:56 AM | 2026-03-30 09:56 AM | Stage all Phase 4 changes |
+| 4.10 | Completed | 2026-03-30 09:56 AM | 2026-03-30 09:56 AM | Commit all Phase 4 changes |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added `batch_find_duplicates()` for single SELECT IN batch dedup lookup. Refactored `process_items()` to pre-compute normalized titles, use batch dedup pre-check, and flush every 100 items. Added early return in `build_cross_references()` for secondary benchmark_result events. Added 6 new tests for batch dedup (multiple titles, empty input, partial matches), pipeline batch dedup correctness, and cross-ref skip/non-skip.
+- **Changes hosted at:** `ai_benchmark/processing/deduplicator.py`, `ai_benchmark/processing/pipeline.py`, `ai_benchmark/processing/cross_reference.py`, `tests/test_deduplicator.py`, `tests/test_pipeline.py`, `tests/test_cross_reference.py`
 - **Commit:** `Phase 4: Batch dedup and flush optimizations for LMArena processing performance`
 
 ---

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from ..collection.snapshot import SnapshotManager
 from ..models.events import EventRecord
 from .cross_reference import build_cross_references
-from .deduplicator import is_duplicate
+from .deduplicator import batch_find_duplicates, is_duplicate
 from .discovery_queue import check_and_enqueue
 from .normalizer import (
     classify_event_type,
@@ -48,6 +48,7 @@ async def process_item(
     organization: str,
     source_type: str,
     classification: str,
+    _known_dupes: dict[str, EventRecord] | None = None,
 ) -> EventRecord | None:
     """Run the full processing pipeline on a single raw item.
 
@@ -78,16 +79,18 @@ async def process_item(
     if model_slug:
         await check_and_enqueue(session, model_slug, organization)
 
-    # 2. Dedup
-    existing = await is_duplicate(
-        session,
-        normalized_title=norm_title,
-        organization=organization,
-        source_type=source_type,
-        canonical_path=item.url,
-        published_date=published_date,
-        model_slug=model_slug,
-    )
+    # 2. Dedup — use batch pre-check if available, fall back to full check
+    existing = _known_dupes.get(norm_title) if _known_dupes else None
+    if existing is None:
+        existing = await is_duplicate(
+            session,
+            normalized_title=norm_title,
+            organization=organization,
+            source_type=source_type,
+            canonical_path=item.url,
+            published_date=published_date,
+            model_slug=model_slug,
+        )
     if existing:
         # Still create a claim for the existing event (multiple sources corroborate)
         confidence_tier = confidence_tier_for_classification(
@@ -156,7 +159,7 @@ async def process_item(
     await update_confirmation_status(session, event)
 
     # 6. Cross-reference
-    await build_cross_references(session, event)
+    await build_cross_references(session, event, classification=classification)
 
     return event
 
@@ -170,8 +173,18 @@ async def process_items(
     source_type: str,
     classification: str,
 ) -> list[EventRecord]:
-    """Run the full processing pipeline on a batch of raw items."""
+    """Run the full processing pipeline on a batch of raw items.
+
+    Uses batch dedup pre-check to reduce individual DB queries for large batches.
+    Flushes every 100 items instead of per-item for better throughput.
+    """
+    # Pre-compute normalized titles for batch dedup lookup
+    non_research = [i for i in items if i.item_type != "candidate_paper"]
+    norm_titles = [normalize_title(i.title) for i in non_research]
+    known_dupes = await batch_find_duplicates(session, norm_titles, organization)
+
     created: list[EventRecord] = []
+    flush_count = 0
     for item in items:
         event = await process_item(
             session,
@@ -181,7 +194,14 @@ async def process_items(
             organization,
             source_type,
             classification,
+            _known_dupes=known_dupes,
         )
         if event:
             created.append(event)
+        flush_count += 1
+        if flush_count >= 100:
+            await session.flush()
+            flush_count = 0
+    if flush_count > 0:
+        await session.flush()
     return created

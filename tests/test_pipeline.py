@@ -220,3 +220,50 @@ async def test_process_item_discovery_classification(db_session):
     result = await db_session.execute(select(ClaimRecord).where(ClaimRecord.event_id == event.id))
     claims = list(result.scalars().all())
     assert claims[0].confidence_tier == "low_discovery"
+
+
+@pytest.mark.asyncio
+async def test_process_items_batch_dedup_still_works(db_session):
+    """Batch dedup optimization doesn't break dedup — duplicates produce claims, not new events."""
+    item = RawItem(
+        title="Anthropic Launches Claude 4 Opus",
+        url="/a",
+        body="Claude 4 Opus released",
+        item_type="model_release",
+    )
+    # First pass creates the event
+    created = await process_items(
+        db_session,
+        [item],
+        source_id=1,
+        page_id=None,
+        organization="Anthropic",
+        source_type="newsroom",
+        classification="primary",
+    )
+    assert len(created) == 1
+
+    # Second pass with same item — should be deduplicated
+    dup_item = RawItem(
+        title="Anthropic Launches Claude 4 Opus",
+        url="/b",
+        body="Claude 4 Opus is here",
+        item_type="model_release",
+    )
+    created2 = await process_items(
+        db_session,
+        [dup_item],
+        source_id=1,
+        page_id=None,
+        organization="Anthropic",
+        source_type="changelog",
+        classification="primary",
+    )
+    assert len(created2) == 0
+
+    # But a claim was added to the original event
+    result = await db_session.execute(
+        select(ClaimRecord).where(ClaimRecord.event_id == created[0].id)
+    )
+    claims = list(result.scalars().all())
+    assert len(claims) == 2

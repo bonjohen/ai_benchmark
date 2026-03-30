@@ -8,6 +8,7 @@ import pytest
 
 from ai_benchmark.models.events import EventRecord
 from ai_benchmark.processing.deduplicator import (
+    batch_find_duplicates,
     find_exact_duplicate,
     find_model_duplicate,
     find_near_duplicates,
@@ -127,3 +128,42 @@ async def test_is_duplicate_returns_none_for_new(db_session):
         db_session, "brand new event", "NewOrg", "blog", "/blog/new", None, None
     )
     assert result is None
+
+
+# ─── Batch Dedup ───
+
+
+@pytest.mark.asyncio
+async def test_batch_find_duplicates_multiple_titles(db_session):
+    _make_event(db_session, normalized_title="gpt-5 released", canonical_path="/a")
+    _make_event(db_session, normalized_title="claude 4 launched", canonical_path="/b")
+    await db_session.flush()
+
+    found = await batch_find_duplicates(
+        db_session,
+        ["gpt-5 released", "claude 4 launched", "brand new thing"],
+        "OpenAI",
+    )
+    assert "gpt-5 released" in found
+    assert "claude 4 launched" in found
+    assert "brand new thing" not in found
+
+
+@pytest.mark.asyncio
+async def test_batch_find_duplicates_empty_input(db_session):
+    found = await batch_find_duplicates(db_session, [], "OpenAI")
+    assert found == {}
+
+
+@pytest.mark.asyncio
+async def test_batch_find_duplicates_partial_matches(db_session):
+    _make_event(db_session, normalized_title="existing event", canonical_path="/x")
+    await db_session.flush()
+
+    found = await batch_find_duplicates(
+        db_session,
+        ["existing event", "nonexistent event"],
+        "OpenAI",
+    )
+    assert len(found) == 1
+    assert "existing event" in found

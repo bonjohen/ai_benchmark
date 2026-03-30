@@ -86,6 +86,30 @@ async def find_near_duplicates(
     ]
 
 
+async def batch_find_duplicates(
+    session: AsyncSession,
+    normalized_titles: list[str],
+    organization: str,
+) -> dict[str, EventRecord]:
+    """Find existing events matching any of the given normalized titles for an org.
+
+    Returns a dict mapping normalized_title to the first matching EventRecord.
+    Single SELECT ... WHERE IN query for batch dedup lookups.
+    """
+    if not normalized_titles:
+        return {}
+    stmt = select(EventRecord).where(
+        EventRecord.normalized_title.in_(normalized_titles),
+        EventRecord.organization == organization,
+    )
+    result = await session.execute(stmt)
+    found: dict[str, EventRecord] = {}
+    for event in result.scalars().all():
+        if event.normalized_title not in found:
+            found[event.normalized_title] = event
+    return found
+
+
 async def is_duplicate(
     session: AsyncSession,
     normalized_title: str,

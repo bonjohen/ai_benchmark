@@ -228,8 +228,16 @@ async def find_related_by_arxiv_id(
 async def build_cross_references(
     session: AsyncSession,
     event: EventRecord,
+    classification: str | None = None,
 ) -> list[CrossReference]:
-    """Build all cross-references for a given event."""
+    """Build all cross-references for a given event.
+
+    Skips cross-ref queries for secondary benchmark_result events from the same
+    source (e.g. LMArena leaderboard rows) since they are self-corroborating.
+    """
+    if classification == "secondary" and event.event_type == "benchmark_result":
+        return []
+
     created: list[CrossReference] = []
 
     # Strategy 1: same model within time window
