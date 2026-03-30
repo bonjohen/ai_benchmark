@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import structlog
 from bs4 import BeautifulSoup
@@ -42,8 +42,10 @@ class HFForumsCollector(SourceCollector):
     Discovery-only source: ingests only minimal metadata (title, author,
     timestamp, tags, outbound links). Full content is not stored.
     Filters out support/help threads.
+
     """
 
+    _API_PAGE_TYPES: ClassVar[set[str]] = {"discourse json"}
     CONFIDENCE_TIER = "low_discovery"
 
     async def collect_page(

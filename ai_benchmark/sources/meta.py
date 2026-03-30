@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from bs4 import BeautifulSoup
 
@@ -49,6 +49,8 @@ class GitHubOrgClient(APIClient):
 
 class MetaCollector(SourceCollector):
     """Collector for Meta's open-source AI and Llama GitHub org."""
+
+    _API_PAGE_TYPES: ClassVar[set[str]] = {"github"}
 
     def __init__(self, source_config, github_token: str | None = None):
         super().__init__(source_config)

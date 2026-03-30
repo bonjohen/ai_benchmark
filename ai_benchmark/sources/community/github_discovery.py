@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from ...collection.api_client import APIClient
 from ..base import RawItem, SourceCollector
@@ -67,6 +67,8 @@ class GitHubDiscoveryCollector(SourceCollector):
     Tracks new repos, releases, README changes, and tags. Discovery-only
     source used to surface signals, not as authoritative confirmation.
     """
+
+    _API_PAGE_TYPES: ClassVar[set[str]] = {"github"}
 
     CONFIDENCE_TIER = "low_discovery"
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import structlog
 
@@ -34,6 +34,8 @@ class SemanticScholarCollector(SourceCollector):
     Wraps SemanticScholarClient to produce RawItem objects with
     item_type='candidate_paper' for the triage pipeline.
     """
+
+    _API_PAGE_TYPES: ClassVar[set[str]] = {"api"}
 
     def __init__(self, source_config: SourceConfig, api_key: str | None = None):
         super().__init__(source_config)

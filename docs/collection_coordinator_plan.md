@@ -45,14 +45,14 @@ Open  ──>  Started  ──>  Completed
 | 1.3 | Completed | 2026-03-30 08:37 PM | 2026-03-30 08:37 PM | Create `tests/test_coordination/__init__.py` — empty test package init. |
 | 1.4 | Completed | 2026-03-30 08:39 PM | 2026-03-30 08:41 PM | Create `tests/test_coordination/test_types.py` — tests: `FetchTask` construction with all fields, frozen immutability raises `FrozenInstanceError`, `CoordFetchResult` construction, error variant (`fetch_error` set, `items=[]`), `has_custom_collect` flag variants. |
 | 1.5 | Completed | 2026-03-30 08:41 PM | 2026-03-30 08:42 PM | Run `pytest tests/test_coordination/test_types.py -x -v` — 9 passed. Run `ruff check ai_benchmark/coordination/ tests/test_coordination/` and `ruff format --check` — clean. |
-| 1.6 | Open | | | Stage all Phase 1 changes. |
-| 1.7 | Open | | | Commit all Phase 1 changes. |
+| 1.6 | Completed | 2026-03-30 08:43 PM | 2026-03-30 08:43 PM | Stage all Phase 1 changes. |
+| 1.7 | Completed | 2026-03-30 08:43 PM | 2026-03-30 08:44 PM | Commit all Phase 1 changes. |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
-- **Commit:** `Add coordination package with FetchTask and CoordFetchResult dataclasses`
+- **Changes:** Created `ai_benchmark/coordination/` package with `__init__.py` and `types.py` (FetchTask frozen dataclass, CoordFetchResult dataclass). Created `tests/test_coordination/` with `test_types.py` (9 tests). All pass, lint clean.
+- **Changes hosted at:** `ai_benchmark/coordination/types.py`, `tests/test_coordination/test_types.py`
+- **Commit:** `Add coordination package with FetchTask and CoordFetchResult dataclasses` (8605f0d)
 
 ## Phase 2: Worker Logic
 
@@ -61,21 +61,21 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `GitHubDiscoveryCollector` (`sources/community/github_discovery.py`) — `{"github"}`. |
-| 2.2 | Open | | | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `MetaCollector` (`sources/meta.py`) — `{"github"}`. |
-| 2.3 | Open | | | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `SemanticScholarCollector` (`sources/research/semantic_scholar.py`) — `{"api"}`. |
-| 2.4 | Open | | | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `HFForumsCollector` (`sources/community/hf_forums.py`) — `{"discourse json"}`. |
-| 2.5 | Open | | | Create `ai_benchmark/coordination/worker.py` — implement `fetch_and_extract(task, fetcher, settings) -> CoordFetchResult` with three paths: standard HTML (fetch → `extract_items()`), API collector (`_API_PAGE_TYPES` detection → `collect_page()`), and RSS backfill (`since_date` + RSS page → `collect_rss_backfill()` + normal fetch). Per PDR §5.2. |
-| 2.6 | Open | | | Implement `worker_loop(worker_id, task_queue, result_queue, fetcher, settings)` in `worker.py` — loop on queue get, `None` sentinel exits, try/except wraps `fetch_and_extract()`, error produces `CoordFetchResult` with `fetch_error`. Per PDR §5.1. |
-| 2.7 | Open | | | Create `tests/test_coordination/test_worker.py` — tests: standard HTML path (mocked fetch → `extract_items()` → items in result), API collector path (mock `_API_PAGE_TYPES` → `collect_page()` → `has_custom_collect=True`), fetch failure (`ok=False` → `fetch_error` set, `items=[]`), RSS backfill path, `worker_loop` exits on `None` sentinel, unhandled exception in `fetch_and_extract` → error result not worker death. Per PDR §7.1. |
-| 2.8 | Open | | | Run `pytest tests/test_coordination/ -x -v` — all pass. Run `ruff check` and `ruff format --check` on changed files — clean. |
+| 2.1 | Completed | 2026-03-30 08:48 PM | 2026-03-30 08:48 PM | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `GitHubDiscoveryCollector` (`sources/community/github_discovery.py`) — `{"github"}`. |
+| 2.2 | Completed | 2026-03-30 08:48 PM | 2026-03-30 08:48 PM | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `MetaCollector` (`sources/meta.py`) — `{"github"}`. |
+| 2.3 | Completed | 2026-03-30 08:48 PM | 2026-03-30 08:49 PM | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `SemanticScholarCollector` (`sources/research/semantic_scholar.py`) — `{"api"}`. |
+| 2.4 | Completed | 2026-03-30 08:49 PM | 2026-03-30 08:49 PM | Add `_API_PAGE_TYPES: ClassVar[set[str]]` to `HFForumsCollector` (`sources/community/hf_forums.py`) — `{"discourse json"}`. |
+| 2.5 | Completed | 2026-03-30 08:50 PM | 2026-03-30 08:55 PM | Create `ai_benchmark/coordination/worker.py` — implement `fetch_and_extract(task, fetcher, settings) -> CoordFetchResult` with three paths: standard HTML (fetch → `extract_items()`), API collector (`_API_PAGE_TYPES` detection → `collect_page()`), and RSS backfill (`since_date` + RSS page → `collect_rss_backfill()` + normal fetch). Per PDR §5.2. |
+| 2.6 | Completed | 2026-03-30 08:50 PM | 2026-03-30 08:55 PM | Implement `worker_loop(worker_id, task_queue, result_queue, fetcher, settings)` in `worker.py` — loop on queue get, `None` sentinel exits, try/except wraps `fetch_and_extract()`, error produces `CoordFetchResult` with `fetch_error`. Per PDR §5.1. |
+| 2.7 | Completed | 2026-03-30 08:55 PM | 2026-03-30 08:58 PM | Create `tests/test_coordination/test_worker.py` — 7 tests: standard HTML success, fetch failure, API collector path, RSS backfill, worker_loop exits on sentinel, processes task then exits, exception produces error result. Per PDR §7.1. |
+| 2.8 | Completed | 2026-03-30 08:58 PM | 2026-03-30 09:00 PM | Run `pytest tests/test_coordination/ -x -v` — 16 passed. Run `ruff check` and `ruff format --check` on changed files — clean. |
 | 2.9 | Open | | | Stage all Phase 2 changes. |
 | 2.10 | Open | | | Commit all Phase 2 changes. |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added `_API_PAGE_TYPES` ClassVar to 4 API collectors (GitHubDiscovery, Meta, SemanticScholar, HFForums). Created `coordination/worker.py` with `fetch_and_extract()` (3 paths: HTML, API, RSS backfill) and `worker_loop()` (queue consumer with error handling). 7 new worker tests. Total coordination tests: 16 passed.
+- **Changes hosted at:** `ai_benchmark/coordination/worker.py`, `tests/test_coordination/test_worker.py`, 4 collector files
 - **Commit:** `Add fetch_and_extract worker logic and _API_PAGE_TYPES annotations`
 
 ## Phase 3: Coordinator Core

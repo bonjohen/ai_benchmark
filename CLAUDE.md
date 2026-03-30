@@ -411,7 +411,7 @@ Open  ──>  Started  ──>  Completed
 - **Commit:** `[Phase commit message]`
 ```
 
-Task numbering is sequential across all phases (does not restart per phase). Each phase ends with explicit stage and commit tasks. Started and Completed are PST datetimes (e.g., `2026-03-28 06:26 PM`).
+Task numbering is sequential within a phases (restart each phase). Each phase ends with explicit stage and commit tasks. Started and Completed are PST datetimes (e.g., `2026-03-28 06:26 PM`).
 
 ### Stage 4: Execute Each Phase
 
@@ -435,6 +435,7 @@ When autonomous execution is instructed, don't wait for approval after ExitPlanM
 - Do not push unless explicitly asked
 
 ## Documentation
+Documents are processed and moved into the archive folder.  This list goes out of sync as I move files into teh archive fodler.
 
 Active docs in `docs/`:
 - Naming conventions: `docs/naming_conventions.md`
