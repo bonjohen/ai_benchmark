@@ -85,23 +85,23 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Create `ai_benchmark/coordination/coordinator.py` — `CollectionCoordinator.__init__(settings)` storing `_settings`, `_engine`, `_session_factory`, `_fetcher`, `_worker_count` as `None`/unset. Per PDR §4.1–4.2. |
-| 3.2 | Open | | | Implement `setup()` — create async engine, session factory, and Fetcher from settings. Per PDR §4.3. |
-| 3.3 | Open | | | Implement `shutdown()` — close Fetcher, dispose engine. |
-| 3.4 | Open | | | Implement `_create_tasks(organizations, since_date)` — load catalog, filter orgs, open session, query/create `Source` and `Page` rows, build `FetchTask` per page, commit, return task list. Import `_item_in_date_range` from scheduler module. Per PDR §4.4 Step 1. |
-| 3.5 | Open | | | Implement `_process_result(result, session, stats)` — fetch error → retry or log with `Page.consecutive_failures` increment; snapshot comparison via `SnapshotManager` for standard collectors; quality filter; date filter for backfill; `process_items()` call; health state reset; commit. Per PDR §4.5. |
-| 3.6 | Open | | | Implement `collect_all(organizations, since_date)` — create tasks, init bounded queues (`maxsize=2*worker_count`), launch worker tasks, run producer (enqueue tasks + `None` sentinels) and consumer (`_process_result` per result, pending count tracking) concurrently via `asyncio.gather`, await workers, return stats dict. Per PDR §4.4 Steps 2–6, §4.6. |
-| 3.7 | Open | | | Implement retry in `_process_result` — on `fetch_error` with `attempt < retry_attempts - 1`, create new `FetchTask` with `attempt + 1` and new `task_id`, re-enqueue, increment pending count. Per PDR §4.7. |
-| 3.8 | Open | | | Update `ai_benchmark/coordination/__init__.py` — export `CollectionCoordinator`. |
-| 3.9 | Open | | | Create `tests/test_coordination/test_coordinator.py` — tests: `_process_result` success path (calls `compare_with_latest` then `process_items`, resets `consecutive_failures`), failure + retry (re-enqueues with `attempt+1`, increments failures), skip unchanged (`DiffResult(changed=False)` + no `since_date` → skips `process_items`), custom collector path (`has_custom_collect=True` → skips snapshot comparison), queue backpressure (`maxsize=2` → `put()` blocks when full), `collect_all` end-to-end with mocked workers. Per PDR §7.1. |
-| 3.10 | Open | | | Run `pytest tests/test_coordination/ -x -v` — all pass. Run `ruff check` and `ruff format --check` on changed files — clean. |
-| 3.11 | Open | | | Stage all Phase 3 changes. |
-| 3.12 | Open | | | Commit all Phase 3 changes. |
+| 3.1 | Completed | 2026-03-30 09:05 PM | 2026-03-30 09:10 PM | Create `ai_benchmark/coordination/coordinator.py` — `CollectionCoordinator.__init__(settings)` storing `_settings`, `_engine`, `_session_factory`, `_fetcher`, `_worker_count` as `None`/unset. Per PDR §4.1–4.2. |
+| 3.2 | Completed | 2026-03-30 09:05 PM | 2026-03-30 09:10 PM | Implement `setup()` — create async engine, session factory, and Fetcher from settings. Per PDR §4.3. |
+| 3.3 | Completed | 2026-03-30 09:05 PM | 2026-03-30 09:10 PM | Implement `shutdown()` — close Fetcher, dispose engine. |
+| 3.4 | Completed | 2026-03-30 09:05 PM | 2026-03-30 09:10 PM | Implement `_create_tasks(organizations, since_date)` — load catalog, filter orgs, open session, query/create `Source` and `Page` rows, build `FetchTask` per page, commit, return task list. Import `_item_in_date_range` from scheduler module. Per PDR §4.4 Step 1. |
+| 3.5 | Completed | 2026-03-30 09:05 PM | 2026-03-30 09:10 PM | Implement `_process_result(result, stats)` — fetch error → retry or log with `Page.consecutive_failures` increment; snapshot comparison via `SnapshotManager` for standard collectors; quality filter; date filter for backfill; `process_items()` call; health state reset; commit. Per PDR §4.5. |
+| 3.6 | Completed | 2026-03-30 09:05 PM | 2026-03-30 09:20 PM | Implement `collect_all(organizations, since_date)` — create tasks, init bounded queues (`maxsize=2*worker_count`), launch worker tasks, producer enqueues initial tasks, consumer loop with `_process_result` per result and pending count tracking, sentinels sent after all work (including retries) completes, await workers, return stats dict. Fixed sentinel timing bug: sentinels must be sent after consumer loop, not by producer, to avoid worker exit before retries. Per PDR §4.4 Steps 2–6, §4.6. |
+| 3.7 | Completed | 2026-03-30 09:05 PM | 2026-03-30 09:10 PM | Implement retry in `_process_result` — on `fetch_error` with `attempt < retry_attempts - 1`, create new `FetchTask` with `attempt + 1` and new `task_id`, re-enqueue, increment pending count. Per PDR §4.7. |
+| 3.8 | Completed | 2026-03-30 09:20 PM | 2026-03-30 09:20 PM | Update `ai_benchmark/coordination/__init__.py` — export `CollectionCoordinator`. |
+| 3.9 | Completed | 2026-03-30 09:20 PM | 2026-03-30 09:25 PM | Create `tests/test_coordination/test_coordinator.py` — 10 tests: success path (snapshot + process_items + health reset), custom collector (skips snapshot), failure + retry (increments failures, re-enqueues), no retry on last attempt, unchanged skips processing, date filter on backfill, collect_all end-to-end, empty tasks, retry integration, queue backpressure. Per PDR §7.1. |
+| 3.10 | Completed | 2026-03-30 09:25 PM | 2026-03-30 09:30 PM | Run `pytest tests/test_coordination/ -x -v` — 26 passed in 0.34s. Run `ruff check` and `ruff format --check` on changed files — clean. |
+| 3.11 | Completed | 2026-03-30 09:30 PM | 2026-03-30 09:30 PM | Stage all Phase 3 changes. |
+| 3.12 | Completed | 2026-03-30 09:30 PM | 2026-03-30 09:30 PM | Commit all Phase 3 changes. |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `ai_benchmark/coordination/coordinator.py` with full `CollectionCoordinator` class: `setup()`, `shutdown()`, `collect_all()`, `_create_tasks()`, `_process_result()`, `_handle_failure()`, `_update_health()`. Fixed sentinel timing bug in `collect_all()` — sentinels sent after consumer loop completes (including retries), not by producer. Updated `__init__.py` to export `CollectionCoordinator`. Created `test_coordinator.py` with 10 tests covering success, failure+retry, unchanged skip, custom collector, date filter, end-to-end queue mechanics, and backpressure. Total coordination tests: 26 passed.
+- **Changes hosted at:** `ai_benchmark/coordination/coordinator.py`, `ai_benchmark/coordination/__init__.py`, `tests/test_coordination/test_coordinator.py`
 - **Commit:** `Add CollectionCoordinator with queue mechanics, result processing, and retry`
 
 ## Phase 4: CLI Integration
