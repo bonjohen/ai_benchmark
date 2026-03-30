@@ -13,6 +13,7 @@ from ai_benchmark.processing.normalizer import (
     validate_model_slug,
 )
 from ai_benchmark.sources.anthropic import AnthropicCollector
+from ai_benchmark.sources.benchmarks.lmarena import LMArenaCollector
 from ai_benchmark.sources.google import GoogleCollector
 from ai_benchmark.sources.mistral import MistralCollector
 from ai_benchmark.sources.openai import OpenAICollector
@@ -233,6 +234,128 @@ def test_mistral_changelog_labels():
     api_items = [i for i in items if i.item_type == "api_update"]
     assert len(model_items) >= 1
     assert len(api_items) >= 1
+
+
+# ─── LMArena collector tests ───
+
+LMARENA_SUBPAGE_HTML = """
+<html><body><table>
+<tr><th>Rank</th><th>Spread</th><th>Model</th><th>Score</th>
+    <th>Votes</th><th>Price</th><th>Context</th></tr>
+<tr>
+  <td>1</td><td>14</td>
+  <td><div><div><svg><title>Anthropic</title></svg></div>
+    <div><div><a href="/m/claude-opus-4-6-thinking">
+      <span class="max-w-full truncate">claude-opus-4-6-thinking</span>
+    </a></div><span>Anthropic · Proprietary</span></div></div></td>
+  <td><span class="text-sm">1504</span><span>±6</span></td>
+  <td>12,730</td><td>$5/$25</td><td>1M</td>
+</tr>
+<tr>
+  <td>2</td><td>12</td>
+  <td><div><div><svg><title>Google</title></svg></div>
+    <div><div><a href="/m/gemini-3-pro">
+      <span class="max-w-full truncate">gemini-3-pro</span>
+    </a></div><span>Google · Proprietary</span></div></div></td>
+  <td><span class="text-sm">1486</span><span>±4</span></td>
+  <td>45,200</td><td>$1.25/$10</td><td>1M</td>
+</tr>
+</table></body></html>
+"""
+
+LMARENA_MAINPAGE_HTML = """
+<html><body>
+<table>
+<tr><th>Rank</th><th>Model</th><th>Score</th><th>Votes</th></tr>
+<tr>
+  <td>1</td>
+  <td><div><div><a href="/m/claude-opus-4-6">
+    <span class="max-w-full truncate">claude-opus-4-6</span>
+  </a></div><span>Anthropic · Proprietary</span></div></td>
+  <td><span>1500</span><span>±6</span></td>
+  <td>10,000</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><div><div><a href="/m/gpt-5.4">
+    <span class="max-w-full truncate">gpt-5.4</span>
+  </a></div><span>OpenAI · Proprietary</span></div></td>
+  <td><span>1450</span><span>±5</span></td>
+  <td>8,500</td>
+</tr>
+</table>
+</body></html>
+"""
+
+
+def test_lmarena_subpage_extraction():
+    """7-column sub-page: model at col 2, score at col 3."""
+    collector = LMArenaCollector(_make_source("LMArena"))
+    page = PageConfig(
+        canonical_url="https://arena.ai/leaderboard/text",
+        page_type="leaderboard",
+    )
+    entries = collector.extract_leaderboard(LMARENA_SUBPAGE_HTML, page)
+    assert len(entries) == 2
+
+    assert entries[0].model == "claude-opus-4-6-thinking"
+    assert entries[0].score == "1504"
+    assert entries[0].rank == 1
+    assert entries[0].variant == "arena_elo_text"
+    assert entries[0].metadata.get("organization") == "Anthropic"
+
+    assert entries[1].model == "gemini-3-pro"
+    assert entries[1].score == "1486"
+    assert entries[1].rank == 2
+
+
+def test_lmarena_mainpage_extraction():
+    """4-column main page: model at col 1, score at col 2."""
+    collector = LMArenaCollector(_make_source("LMArena"))
+    page = PageConfig(
+        canonical_url="https://arena.ai/leaderboard/",
+        page_type="leaderboard",
+    )
+    entries = collector.extract_leaderboard(LMARENA_MAINPAGE_HTML, page)
+    assert len(entries) == 2
+
+    assert entries[0].model == "claude-opus-4-6"
+    assert entries[0].score == "1500"
+    assert entries[0].rank == 1
+    assert entries[0].variant == "arena_elo"
+
+    assert entries[1].model == "gpt-5.4"
+    assert entries[1].score == "1450"
+    assert entries[1].rank == 2
+
+
+def test_lmarena_variant_derivation():
+    """Different page URLs produce distinct variants."""
+    collector = LMArenaCollector(_make_source("LMArena"))
+    for suffix, expected in [
+        ("text", "arena_elo_text"),
+        ("code", "arena_elo_code"),
+        ("vision", "arena_elo_vision"),
+    ]:
+        page = PageConfig(
+            canonical_url=f"https://arena.ai/leaderboard/{suffix}",
+            page_type="leaderboard",
+        )
+        entries = collector.extract_leaderboard(LMARENA_SUBPAGE_HTML, page)
+        assert entries[0].variant == expected
+
+
+def test_lmarena_items_have_correct_titles():
+    """extract_items() produces clean titles with model name and Elo score."""
+    collector = LMArenaCollector(_make_source("LMArena"))
+    page = PageConfig(
+        canonical_url="https://arena.ai/leaderboard/text",
+        page_type="leaderboard",
+    )
+    items = collector.extract_items(LMARENA_SUBPAGE_HTML, page)
+    assert len(items) == 2
+    assert items[0].title == "LMArena: claude-opus-4-6-thinking = 1504"
+    assert items[0].model_hint == "claude-opus-4-6-thinking"
 
 
 # ─── Registry tests ───

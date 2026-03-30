@@ -22,6 +22,35 @@ LEADERBOARD_HTML = """
 </body></html>
 """
 
+LMARENA_LEADERBOARD_HTML = """
+<html><body>
+<table>
+<tr><th>Rank</th><th>Model</th><th>Score</th><th>Votes</th></tr>
+<tr>
+  <td>1</td>
+  <td><div><a href="/m/gpt-5"><span>GPT-5</span></a>
+    <span>OpenAI · Proprietary</span></div></td>
+  <td><span>1504</span><span>±6</span></td>
+  <td>12,000</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><div><a href="/m/claude-4"><span>Claude 4</span></a>
+    <span>Anthropic · Proprietary</span></div></td>
+  <td><span>1486</span><span>±4</span></td>
+  <td>10,500</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><div><a href="/m/gemini-2.5"><span>Gemini 2.5</span></a>
+    <span>Google · Proprietary</span></div></td>
+  <td><span>1450</span><span>±5</span></td>
+  <td>9,000</td>
+</tr>
+</table>
+</body></html>
+"""
+
 GAIA_ORG_HTML = """
 <html><body>
 <a href="/datasets/gaia-results">GAIA Results Dataset</a>
@@ -98,9 +127,10 @@ def test_artificial_analysis_methodology_extraction():
 def test_lmarena_leaderboard():
     collector = LMArenaCollector(_make_benchmark_source("LMArena"))
     page = PageConfig(canonical_url="https://example.com/leaderboard", page_type="leaderboard")
-    entries = collector.extract_leaderboard(LEADERBOARD_HTML, page)
+    entries = collector.extract_leaderboard(LMARENA_LEADERBOARD_HTML, page)
     assert len(entries) == 3
     assert entries[1].model == "Claude 4"
+    assert entries[1].score == "1486"
     assert entries[1].variant == "arena_elo"
 
 
@@ -196,7 +226,7 @@ def test_terminal_bench_leaderboard():
 
 
 def test_benchmark_base_extract_items_converts_entries():
-    collector = LMArenaCollector(_make_benchmark_source("LMArena"))
+    collector = LiveBenchCollector(_make_benchmark_source("LiveBench"))
     page = PageConfig(canonical_url="https://example.com/leaderboard", page_type="leaderboard")
     items = collector.extract_items(LEADERBOARD_HTML, page)
     assert len(items) == 3
