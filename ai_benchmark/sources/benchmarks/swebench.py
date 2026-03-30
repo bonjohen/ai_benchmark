@@ -32,22 +32,28 @@ class SWEBenchCollector(BenchmarkCollector):
                 return variant
         return "unknown"
 
+    # Variants where rows represent languages/repos, not AI models
+    _NON_MODEL_VARIANTS = {"multilingual"}
+
     def extract_leaderboard(self, html: str, page: PageConfig) -> list[LeaderboardEntry]:
         variant = self._detect_variant(page)
+        is_non_model = variant in self._NON_MODEL_VARIANTS
         soup = BeautifulSoup(html, "lxml")
         entries: list[LeaderboardEntry] = []
         for row in soup.select("tr"):
             cells = [td.get_text(strip=True) for td in row.select("td")]
             if len(cells) >= 2:
+                subject = cells[0]
                 entries.append(
                     LeaderboardEntry(
-                        model=cells[0],
+                        model=None if is_non_model else subject,
                         score=cells[1],
                         rank=len(entries) + 1,
                         variant=variant,
                         conditions=(
                             f"SWE-bench {variant}; contamination risk noted for public subsets"
                         ),
+                        metadata={"benchmark_subject": subject} if is_non_model else {},
                     )
                 )
         return entries

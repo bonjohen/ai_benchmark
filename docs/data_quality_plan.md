@@ -56,17 +56,17 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 2.1     | Open   |               |                  | Modify `SWEBenchCollector.extract_leaderboard()` in `ai_benchmark/sources/benchmarks/swebench.py` to set `model=None` for multilingual variant, store subject in metadata |
-| 2.2     | Open   |               |                  | Update `BenchmarkCollector.extract_items()` in `ai_benchmark/sources/benchmarks/__init__.py` to handle `entry.model=None` gracefully |
-| 2.3     | Open   |               |                  | Run `ruff check` and `ruff format --check` on modified files |
-| 2.4     | Open   |               |                  | Run `pytest tests/` — full suite must pass |
-| 2.5     | Open   |               |                  | Stage all Phase 2 changes |
-| 2.6     | Open   |               |                  | Commit all Phase 2 changes |
+| 2.1     | Completed | 2026-03-29 05:44 PM | 2026-03-29 05:46 PM | Modify `SWEBenchCollector.extract_leaderboard()` in `swebench.py` — set `model=None` for multilingual variant, store subject in metadata |
+| 2.2     | Completed | 2026-03-29 05:46 PM | 2026-03-29 05:47 PM | Update `BenchmarkCollector.extract_items()` in `__init__.py` — use `benchmark_subject` for title when model is None |
+| 2.3     | Completed | 2026-03-29 05:47 PM | 2026-03-29 05:47 PM | Run `ruff check` and `ruff format --check` — clean |
+| 2.4     | Completed | 2026-03-29 05:47 PM | 2026-03-29 05:48 PM | Run `pytest tests/` — 886 passed |
+| 2.5     | Completed | 2026-03-29 05:48 PM | 2026-03-29 05:48 PM | Stage all Phase 2 changes |
+| 2.6     | Completed | 2026-03-29 05:48 PM | 2026-03-29 05:48 PM | Commit all Phase 2 changes |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** SWE-bench multilingual variant now sets `model=None` on LeaderboardEntry, storing the language/repo name as `benchmark_subject` in metadata. BenchmarkCollector uses `benchmark_subject` for the title when model is None, and passes `model_hint=None`.
+- **Changes hosted at:** `ai_benchmark/sources/benchmarks/swebench.py`, `ai_benchmark/sources/benchmarks/__init__.py`
 - **Commit:** `Fix SWE-bench multilingual to not treat languages as models`
 
 ## Phase 3: Data Cleanup
