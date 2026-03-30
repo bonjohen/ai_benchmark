@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from datetime import date as date_type
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
@@ -72,6 +73,7 @@ class ArxivCollector(SourceCollector):
                     title=title,
                     url=arxiv_url,
                     body=authors,
+                    date_text=date_type.today().isoformat(),
                     item_type="candidate_paper",
                     metadata={"arxiv_id": arxiv_id, "authors": authors, "source": "arxiv"},
                 )

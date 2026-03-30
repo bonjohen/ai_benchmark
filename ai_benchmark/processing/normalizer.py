@@ -509,7 +509,12 @@ def extract_version(text: str) -> str | None:
 
 def extract_date(text: str) -> str | None:
     """Extract and normalize the first date found in text to YYYY-MM-DD."""
-    # Try ISO format first
+    # ISO 8601 with time component: 2026-03-29T15:00:00Z
+    match = re.search(r"(\d{4}-\d{2}-\d{2})T", text)
+    if match:
+        return match.group(1)
+
+    # Standard ISO date
     match = re.search(r"\b(\d{4}-\d{2}-\d{2})\b", text)
     if match:
         return match.group(1)

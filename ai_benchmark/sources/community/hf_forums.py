@@ -6,9 +6,12 @@ import json
 import re
 from typing import TYPE_CHECKING
 
+import structlog
 from bs4 import BeautifulSoup
 
 from ..base import RawItem, SourceCollector
+
+logger = structlog.get_logger()
 
 if TYPE_CHECKING:
     from datetime import date
@@ -55,6 +58,12 @@ class HFForumsCollector(SourceCollector):
         if "discourse json" in page.page_type:
             result = await fetcher.fetch(page.canonical_url)
             if not result.ok:
+                logger.warning(
+                    "discourse_fetch_failed",
+                    url=page.canonical_url,
+                    status=result.status_code,
+                    error=result.error,
+                )
                 return [], None
             return self._extract_discourse_json(result.body_text), None
         return await super().collect_page(

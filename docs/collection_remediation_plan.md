@@ -42,21 +42,21 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 1.1 | Open | | | Expand `dateless_page_types` in `ai_benchmark/processing/quality_filter.py:67` to add `"papers index"`, `"trending papers"`, `"recent submissions"`, `"forum index"`, `"discourse json"`, `"leaderboard docs"` |
-| 1.2 | Open | | | Add `candidate_paper` item-type exemption in `quality_filter.py:68` — if all items have `item_type == "candidate_paper"`, skip date check regardless of page type |
-| 1.3 | Open | | | Fix `extract_date()` in `ai_benchmark/processing/normalizer.py:510-531` — add ISO 8601 `T` separator pattern `(\d{4}-\d{2}-\d{2})T` before the existing `\b(\d{4}-\d{2}-\d{2})\b` regex |
-| 1.4 | Open | | | Set `date_text=date.today().isoformat()` on all `RawItem` objects in `ai_benchmark/sources/research/arxiv.py:70-78` for defense-in-depth |
-| 1.5 | Open | | | Add structured logging for JSON fetch failures in `ai_benchmark/sources/community/hf_forums.py:57-58` — log URL, status code, and error when `result.ok` is False |
-| 1.6 | Open | | | Update tests in `tests/test_quality_filter.py` — add cases for new page types in `dateless_page_types`, `candidate_paper` exemption, and verify existing trivial-change + short-title filters unchanged |
-| 1.7 | Open | | | Add `extract_date` tests in `tests/test_pipeline.py` or new `tests/test_normalizer.py` — verify ISO 8601 with T (`"2026-03-29T15:00:00.000Z"` → `"2026-03-29"`), plain ISO (`"2026-03-29"` → `"2026-03-29"`), existing formats preserved |
-| 1.8 | Open | | | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
-| 1.9 | Open | | | Stage all Phase 1 changes |
-| 1.10 | Open | | | Commit all Phase 1 changes |
+| 1.1 | Completed | 2026-03-30 09:10 AM | 2026-03-30 09:11 AM | Expand `dateless_page_types` in `ai_benchmark/processing/quality_filter.py:67` to add `"papers index"`, `"trending papers"`, `"recent submissions"`, `"forum index"`, `"discourse json"`, `"leaderboard docs"` |
+| 1.2 | Completed | 2026-03-30 09:11 AM | 2026-03-30 09:11 AM | Add `candidate_paper` item-type exemption in `quality_filter.py:68` — if all items have `item_type == "candidate_paper"`, skip date check regardless of page type |
+| 1.3 | Completed | 2026-03-30 09:12 AM | 2026-03-30 09:12 AM | Fix `extract_date()` in `ai_benchmark/processing/normalizer.py:510-531` — add ISO 8601 `T` separator pattern `(\d{4}-\d{2}-\d{2})T` before the existing `\b(\d{4}-\d{2}-\d{2})\b` regex |
+| 1.4 | Completed | 2026-03-30 09:13 AM | 2026-03-30 09:13 AM | Set `date_text=date.today().isoformat()` on all `RawItem` objects in `ai_benchmark/sources/research/arxiv.py:70-78` for defense-in-depth |
+| 1.5 | Completed | 2026-03-30 09:14 AM | 2026-03-30 09:14 AM | Add structured logging for JSON fetch failures in `ai_benchmark/sources/community/hf_forums.py:57-58` — log URL, status code, and error when `result.ok` is False |
+| 1.6 | Completed | 2026-03-30 09:15 AM | 2026-03-30 09:17 AM | Update tests in `tests/test_quality_filter.py` — add cases for new page types in `dateless_page_types`, `candidate_paper` exemption, and verify existing trivial-change + short-title filters unchanged |
+| 1.7 | Completed | 2026-03-30 09:17 AM | 2026-03-30 09:18 AM | Add `extract_date` tests in new `tests/test_normalizer.py` — verify ISO 8601 with T (`"2026-03-29T15:00:00.000Z"` → `"2026-03-29"`), plain ISO (`"2026-03-29"` → `"2026-03-29"`), existing formats preserved |
+| 1.8 | Completed | 2026-03-30 09:19 AM | 2026-03-30 09:20 AM | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — 916 passed, lint clean |
+| 1.9 | Completed | 2026-03-30 09:20 AM | 2026-03-30 09:20 AM | Stage all Phase 1 changes |
+| 1.10 | Completed | 2026-03-30 09:20 AM | 2026-03-30 09:20 AM | Commit all Phase 1 changes |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Expanded `dateless_page_types` with 6 new page types, added `candidate_paper` item-type exemption in quality_filter.py. Fixed `extract_date()` to handle ISO 8601 timestamps with T separator. Set `date_text` on arXiv RawItems. Added HF Forums JSON fetch failure logging. Added 11 quality filter tests and 12 normalizer tests.
+- **Changes hosted at:** `ai_benchmark/processing/quality_filter.py`, `ai_benchmark/processing/normalizer.py`, `ai_benchmark/sources/research/arxiv.py`, `ai_benchmark/sources/community/hf_forums.py`, `tests/test_quality_filter.py`, `tests/test_normalizer.py`
 - **Commit:** `Phase 1: Fix quality filter false positives and ISO 8601 date parsing`
 
 ---

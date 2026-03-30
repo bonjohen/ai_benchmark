@@ -62,10 +62,25 @@ def is_low_value_page(
         return True
 
     # No recent dates — skip on cold start (no prior snapshot) and for page types
-    # that inherently don't contain dates (leaderboards, model catalogs, pricing)
+    # that inherently don't contain dates (leaderboards, model catalogs, pricing,
+    # research paper listings, forum indexes, documentation indexes)
     is_cold_start = diff and diff.change_ratio is not None and diff.change_ratio >= 1.0
-    dateless_page_types = {"leaderboard", "model catalog", "pricing", "methodology"}
-    skip_date_check = is_cold_start or (page.page_type in dateless_page_types)
+    dateless_page_types = {
+        "leaderboard",
+        "model catalog",
+        "pricing",
+        "methodology",
+        "papers index",
+        "trending papers",
+        "recent submissions",
+        "forum index",
+        "discourse json",
+        "leaderboard docs",
+    }
+    all_candidate_papers = items and all(i.item_type == "candidate_paper" for i in items)
+    skip_date_check = (
+        is_cold_start or (page.page_type in dateless_page_types) or all_candidate_papers
+    )
     if not skip_date_check and not has_recent_date(items, max_age_days=max_age_days):
         logger.debug("low_value_stale_dates", page=page.canonical_url)
         return True
