@@ -42,36 +42,33 @@ def extract_title(text: str, max_length: int = 500) -> str:
     return truncated
 
 
-# Regex to find self.__next_f.push([...]) calls in Next.js RSC streaming HTML.
-# The array argument typically contains [type_int, "payload_string"].
-_RSC_PUSH_RE = re.compile(r'self\.__next_f\.push\(\[([^\]]*"[^\]]*)\]\)', re.DOTALL)
+# Regex to find self.__next_f.push([INT,"..."]) calls in Next.js RSC streaming HTML.
+# Captures the string content between quotes, properly handling escaped characters.
+# The (?:[^"\\]|\\.)* alternation matches either a non-quote/non-backslash char
+# or an escape sequence (\", \\, \n, \uXXXX, etc.), ensuring we find the true
+# closing quote rather than stopping at escaped quotes inside the payload.
+_RSC_PUSH_RE = re.compile(
+    r'self\.__next_f\.push\(\[\d+,"((?:[^"\\]|\\.)*)"\]\)',
+    re.DOTALL,
+)
 
 
 def extract_nextjs_rsc_payloads(html: str) -> list[str]:
     """Extract text content from Next.js React Server Component streaming payloads.
 
-    Finds all ``self.__next_f.push([...])`` calls in ``<script>`` tags and
-    returns the decoded string payloads. These contain serialized React
+    Finds all ``self.__next_f.push([INT, "..."])`` calls in ``<script>`` tags
+    and returns the decoded string payloads. These contain serialized React
     component trees with embedded text content (titles, dates, descriptions,
     URLs).
     """
     payloads: list[str] = []
     for match in _RSC_PUSH_RE.finditer(html):
-        inner = match.group(1)
-        # Find the first quoted string in the array (skip the type integer)
-        quote_start = inner.find('"')
-        if quote_start == -1:
-            continue
-        # Extract the quoted string portion and decode JSON escapes
-        json_str = inner[quote_start:]
+        raw = match.group(1)
+        # Decode JSON escape sequences (\", \\, \n, \uXXXX, etc.)
         try:
-            decoded = json.loads(json_str)
+            decoded = json.loads(f'"{raw}"')
         except (json.JSONDecodeError, ValueError):
-            # Fall back to raw content between quotes if JSON decode fails
-            if json_str.startswith('"') and json_str.endswith('"'):
-                decoded = json_str[1:-1]
-            else:
-                continue
+            decoded = raw
         if isinstance(decoded, str) and decoded.strip():
             payloads.append(decoded)
     return payloads

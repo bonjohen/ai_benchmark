@@ -41,8 +41,8 @@ Open  ──>  Started  ──>  Completed
 | 1.2  | Completed | 2026-03-30 05:07 PM | 2026-03-30 05:09 PM | Add `test_extract_nextjs_rsc_payloads_basic`, `_empty`, `_escaped` tests to `tests/test_sources/test_collectors.py`. Use inline HTML strings (not fixtures yet). |
 | 1.3  | Completed | 2026-03-30 05:09 PM | 2026-03-30 05:09 PM | Run `pytest tests/test_sources/test_collectors.py` — all pass (38 passed). |
 | 1.4  | Completed | 2026-03-30 05:09 PM | 2026-03-30 05:09 PM | Run `ruff check` and `ruff format --check` — clean. |
-| 1.5  | Started | 2026-03-30 05:10 PM |                  | Stage all Phase 1 changes. |
-| 1.6  | Open   |               |                  | Commit all Phase 1 changes. |
+| 1.5  | Completed | 2026-03-30 05:10 PM | 2026-03-30 05:10 PM | Stage all Phase 1 changes. |
+| 1.6  | Completed | 2026-03-30 05:10 PM | 2026-03-30 05:10 PM | Commit all Phase 1 changes. |
 
 ### Phase 1 Summary
 
@@ -57,19 +57,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 2.1  | Open   |               |                  | Create `tests/test_sources/fixtures/` directory. |
-| 2.2  | Open   |               |                  | Fetch `https://docs.mistral.ai/getting-started/changelog` and save to `tests/test_sources/fixtures/mistral_changelog.html`. |
-| 2.3  | Open   |               |                  | Fetch `https://mistral.ai/news/` and save to `tests/test_sources/fixtures/mistral_news.html`. |
-| 2.4  | Open   |               |                  | Fetch `https://docs.mistral.ai/models` and save to `tests/test_sources/fixtures/mistral_models.html`. |
-| 2.5  | Open   |               |                  | Verify each fixture contains `self.__next_f.push` calls (sanity check that RSC payloads are present). |
-| 2.6  | Open   |               |                  | Stage all Phase 2 changes. |
+| 2.1  | Completed | 2026-03-30 05:11 PM | 2026-03-30 05:11 PM | Create `tests/test_sources/fixtures/` directory. |
+| 2.2  | Completed | 2026-03-30 05:12 PM | 2026-03-30 05:12 PM | Fetch `https://docs.mistral.ai/getting-started/changelog` and save to `tests/test_sources/fixtures/mistral_changelog.html`. |
+| 2.3  | Completed | 2026-03-30 05:12 PM | 2026-03-30 05:12 PM | Fetch `https://mistral.ai/news/` and save to `tests/test_sources/fixtures/mistral_news.html`. |
+| 2.4  | Completed | 2026-03-30 05:12 PM | 2026-03-30 05:12 PM | Fetch `https://docs.mistral.ai/models` and save to `tests/test_sources/fixtures/mistral_models.html`. |
+| 2.5  | Completed | 2026-03-30 05:13 PM | 2026-03-30 05:14 PM | Verify each fixture contains `self.__next_f.push` calls (129, 45, 105 respectively). Also improved RSC regex in base.py to handle nested brackets in payloads. |
+| 2.6  | Started | 2026-03-30 05:15 PM |                  | Stage all Phase 2 changes. |
 | 2.7  | Open   |               |                  | Commit all Phase 2 changes. |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `tests/test_sources/fixtures/` with 3 HTML fixtures (743KB, 204KB, 642KB). Fixed RSC regex in `base.py` to properly handle escaped quotes and nested brackets — matches all 129/45/105 payloads in real fixtures vs ~2 with original regex.
 - **Changes hosted at:** TBD
-- **Commit:** `add Mistral HTML fixtures for RSC payload extraction tests`
+- **Commit:** `add Mistral HTML fixtures, fix RSC regex for nested bracket payloads`
 
 ## Phase 3: Mistral Changelog Extraction
 
