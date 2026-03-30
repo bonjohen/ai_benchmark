@@ -51,6 +51,57 @@ ai-benchmark analyze verification [--org OpenAI] [--model slug]
 ai-benchmark analyze correlations [--min-overlap 5]
 ```
 
+## Deployment
+
+Production runs at `C:\ai-benchmark` with its own venv (`C:\ai-benchmark\venv`). Dev uses an editable install (`pip install -e ".[dev]"`) in the project directory. The two are isolated — dev code changes do not affect production until explicitly deployed.
+
+```powershell
+# First-time install (creates venv, builds wheel, installs, registers scheduled task)
+scripts\install.ps1                    # PowerShell (admin)
+scripts\install.bat                    # or batch equivalent
+
+# Deploy new code (backup DB, build wheel, install into venv, copy bin scripts)
+scripts\deploy.ps1                     # PowerShell
+scripts\deploy.bat                     # or batch equivalent
+
+# Manual database backup with rotation (keep last 10)
+scripts\backup.ps1                     # PowerShell
+scripts\backup.bat                     # or batch equivalent
+```
+
+Production layout:
+- `C:\ai-benchmark\venv\` — Python venv with wheel-installed package
+- `C:\ai-benchmark\config\.env` — production config (API keys, absolute DB path)
+- `C:\ai-benchmark\data\ai_benchmark.db` — production database
+- `C:\ai-benchmark\bin\` — batch scripts using venv Python
+- `C:\ai-benchmark\backup\` — timestamped database backups
+
+## Configuration
+
+Settings are loaded via `PipelineSettings` (Pydantic) with `AI_BENCH_` env prefix:
+
+### Dev .env
+
+Copy `scripts/env.dev.template` to `.env` in the project root. This sets an explicit absolute database path so dev never accidentally writes to a CWD-relative database. The `.env` file is gitignored. Both `PipelineSettings` and `EvalSettings` load from `.env` with `extra="ignore"` so they can share one file.
+
+If `AI_BENCH_DATABASE_URL` is not set (no `.env`, no env var), settings will warn at startup about the relative default path.
+
+### Environment Variables
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `AI_BENCH_DATABASE_URL` | `sqlite+aiosqlite:///ai_benchmark.db` | Database connection |
+| `AI_BENCH_LOG_LEVEL` | `INFO` | Logging level |
+| `AI_BENCH_LOG_FORMAT` | `json` | `json` or `console` output |
+| `AI_BENCH_GITHUB_TOKEN` | — | GitHub API access (Meta, GitHub discovery) |
+| `AI_BENCH_SEMANTIC_SCHOLAR_API_KEY` | — | Semantic Scholar enrichment |
+| `AI_BENCH_PROXY_URL` | — | HTTP proxy for fetcher |
+| `AI_BENCH_REQUEST_TIMEOUT` | `30` | HTTP request timeout (seconds) |
+| `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent requests |
+| `AI_BENCH_RETRY_ATTEMPTS` | `3` | Fetch retry count |
+
+Also supports `.env` file in project root.
+
 ## Core Domain Concepts
 
 - **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector); 86 monitored pages (including Google News RSS feeds and API endpoints)
@@ -244,24 +295,6 @@ Three strategies in `processing/cross_reference.py` → `build_cross_references(
 3. **arXiv ID** — shared arXiv ID in title or `raw_content` → `cites`
 
 Relationship types: `confirms`, `supplements`, `conflicts_with`, `cites`. Conflict detection uses >10% numerical disagreement between claims.
-
-## Configuration
-
-Settings are loaded via `PipelineSettings` (Pydantic) with `AI_BENCH_` env prefix:
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `AI_BENCH_DATABASE_URL` | `sqlite+aiosqlite:///ai_benchmark.db` | Database connection |
-| `AI_BENCH_LOG_LEVEL` | `INFO` | Logging level |
-| `AI_BENCH_LOG_FORMAT` | `json` | `json` or `console` output |
-| `AI_BENCH_GITHUB_TOKEN` | — | GitHub API access (Meta, GitHub discovery) |
-| `AI_BENCH_SEMANTIC_SCHOLAR_API_KEY` | — | Semantic Scholar enrichment |
-| `AI_BENCH_PROXY_URL` | — | HTTP proxy for fetcher |
-| `AI_BENCH_REQUEST_TIMEOUT` | `30` | HTTP request timeout (seconds) |
-| `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent requests |
-| `AI_BENCH_RETRY_ATTEMPTS` | `3` | Fetch retry count |
-
-Also supports `.env` file in project root.
 
 ## Key Design Constraints
 

@@ -134,19 +134,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Update `scripts/env.template`: Add header comments explaining production architecture (venv at `C:\ai-benchmark\venv`, wheel-based install, separate from dev editable install) |
-| 5.2 | Open | | | Update `CLAUDE.md`: Add "Deployment" subsection under "Build and Test" documenting: (a) first-time install: `scripts\install.ps1`, (b) deploy new code: `scripts\deploy.ps1`, (c) manual backup: `scripts\backup.ps1`, (d) production layout now includes `venv\`. Document that `pip install -e ".[dev]"` is dev-only. |
-| 5.3 | Open | | | Update `CLAUDE.md` "Configuration" section: Document dev `.env` file, `env.dev.template`, and database safety guard (warning on relative path default) |
-| 5.4 | Open | | | Add header comments with usage/parameters to `scripts/deploy.ps1` and `scripts/deploy.bat` (matching `install.ps1` style) |
-| 5.5 | Open | | | Audit all scripts for path consistency: Verify every script uses `%INSTALL_DIR%\venv\Scripts\python.exe` (batch) or `$InstallDir\venv\Scripts\python.exe` (PS). Only `install.ps1`/`install.bat` should reference `C:\Python314\python.exe` (for venv creation). |
-| 5.6 | Open | | | Run `pytest` and `ruff check ai_benchmark/ tests/` and `ruff format --check ai_benchmark/ tests/` — fix any failures |
-| 5.7 | Open | | | Stage all Phase 5 changes |
-| 5.8 | Open | | | Commit all Phase 5 changes |
+| 5.1 | Completed | 2026-03-30 10:59 AM | 2026-03-30 10:59 AM | Update `scripts/env.template`: Add header comments explaining production architecture (venv at `C:\ai-benchmark\venv`, wheel-based install, separate from dev editable install) |
+| 5.2 | Completed | 2026-03-30 10:59 AM | 2026-03-30 11:01 AM | Update `CLAUDE.md`: Added "Deployment" section with install/deploy/backup commands and production layout. Document that `pip install -e ".[dev]"` is dev-only. |
+| 5.3 | Completed | 2026-03-30 11:01 AM | 2026-03-30 11:02 AM | Update `CLAUDE.md` "Configuration" section: Documented dev `.env` file, `env.dev.template`, and database safety guard. Consolidated duplicate Configuration section. |
+| 5.4 | Completed | 2026-03-30 11:02 AM | 2026-03-30 11:02 AM | Verified `scripts/deploy.ps1` and `scripts/deploy.bat` already have proper header comments (created with headers in Phase 1) |
+| 5.5 | Completed | 2026-03-30 11:02 AM | 2026-03-30 11:03 AM | Audited all scripts: All bin scripts use venv Python. Only install/deploy scripts reference `C:\Python314\python.exe` for venv creation/wheel building. No inconsistencies. |
+| 5.6 | Completed | 2026-03-30 11:03 AM | 2026-03-30 11:04 AM | Run `pytest` (938 passed) and `ruff check` and `ruff format --check` — all green |
+| 5.7 | Completed | 2026-03-30 11:04 AM | 2026-03-30 11:04 AM | Stage all Phase 5 changes |
+| 5.8 | Completed | 2026-03-30 11:04 AM | 2026-03-30 11:04 AM | Commit all Phase 5 changes |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Updated `scripts/env.template` with production architecture header comments. Added "Deployment" and "Configuration" sections to `CLAUDE.md` documenting install/deploy/backup workflow, production layout, dev `.env` usage, and database safety guard. Removed duplicate Configuration section from later in the file.
+- **Changes hosted at:** `scripts/env.template`, `CLAUDE.md`
 - **Commit:** `Phase 5: Update documentation and templates for venv-based deployment`
 
 ---
