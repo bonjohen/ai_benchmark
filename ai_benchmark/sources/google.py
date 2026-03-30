@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
-from .base import RawItem, SourceCollector
+from .base import RawItem, SourceCollector, extract_title
 
 if TYPE_CHECKING:
     from ..config.settings import PageConfig
@@ -36,7 +36,7 @@ class GoogleCollector(SourceCollector):
             if text and len(text) > 10:
                 items.append(
                     RawItem(
-                        title=text[:200],
+                        title=extract_title(text),
                         body=text,
                         item_type="changelog_entry",
                     )
@@ -83,7 +83,7 @@ class GoogleCollector(SourceCollector):
             if text and len(text) > 5:
                 items.append(
                     RawItem(
-                        title=text[:200],
+                        title=extract_title(text),
                         body=text,
                         item_type="model_entry",
                     )

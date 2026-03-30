@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
-from .base import RawItem, SourceCollector
+from .base import RawItem, SourceCollector, extract_title
 
 if TYPE_CHECKING:
     from ..config.settings import PageConfig
@@ -45,7 +45,7 @@ class MistralCollector(SourceCollector):
                     item_type = "api_update"
                 items.append(
                     RawItem(
-                        title=text[:200],
+                        title=extract_title(text),
                         body=text,
                         item_type=item_type,
                     )

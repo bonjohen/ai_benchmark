@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
-from ..base import RawItem
+from ..base import RawItem, extract_title
 from . import BenchmarkCollector, LeaderboardEntry
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ class ArtificialAnalysisCollector(BenchmarkCollector):
             if text and len(text) > 20:
                 items.append(
                     RawItem(
-                        title=text[:200],
+                        title=extract_title(text),
                         body=text,
                         item_type="methodology_description",
                     )

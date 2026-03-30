@@ -21,6 +21,25 @@ if TYPE_CHECKING:
 
 logger = structlog.get_logger()
 
+# Sentence-ending punctuation for title extraction
+_SENTENCE_END_RE = re.compile(r"[.!?]\s")
+
+
+def extract_title(text: str, max_length: int = 500) -> str:
+    """Extract a title from raw text: first sentence or up to max_length chars."""
+    if len(text) <= max_length:
+        return text
+    # Try to break at the first sentence boundary
+    match = _SENTENCE_END_RE.search(text, 20)
+    if match and match.end() <= max_length:
+        return text[: match.end()].strip()
+    # Fall back to breaking at a word boundary near max_length
+    truncated = text[:max_length]
+    last_space = truncated.rfind(" ")
+    if last_space > max_length // 2:
+        return truncated[:last_space]
+    return truncated
+
 
 @dataclass
 class RawItem:
