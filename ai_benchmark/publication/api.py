@@ -135,7 +135,126 @@ async def export_edition(
     raise HTTPException(status_code=400, detail=f"Unsupported format: {format}")
 
 
+# --- Editorial endpoints ---
+
+
+@router.post("/{date}/freeze")
+async def freeze_edition_endpoint(
+    date: str,
+    actor: str = Query("api", description="Actor performing the action"),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Freeze an edition (no further changes allowed)."""
+    from .services.editorial import freeze_edition
+
+    edition = await _get_edition_by_date_or_404(session, date)
+    try:
+        result = await freeze_edition(session, edition.id, actor)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e)) from e
+    await session.commit()
+    return {"edition_id": result.id, "status": result.status, "frozen_at": str(result.frozen_at)}
+
+
+@router.post("/{date}/regenerate")
+async def regenerate_edition_endpoint(
+    date: str,
+    actor: str = Query("api", description="Actor performing the action"),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Regenerate a draft edition."""
+    from .config import PublicationSettings
+    from .services.editorial import regenerate_edition
+
+    edition = await _get_edition_by_date_or_404(session, date)
+    settings = PublicationSettings()
+    try:
+        await regenerate_edition(session, edition.id, actor, settings)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e)) from e
+    await session.commit()
+    return {"status": "regenerated", "publication_date": date}
+
+
+@router.post("/{date}/entries/{entry_id}/pin")
+async def pin_entry_endpoint(
+    date: str,
+    entry_id: int,
+    actor: str = Query("api", description="Actor performing the action"),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Pin an entry."""
+    from .services.editorial import pin_entry
+
+    try:
+        entry = await pin_entry(session, entry_id, actor)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    await session.commit()
+    return {"entry_id": entry.id, "is_pinned": entry.is_pinned}
+
+
+@router.post("/{date}/entries/{entry_id}/suppress")
+async def suppress_entry_endpoint(
+    date: str,
+    entry_id: int,
+    actor: str = Query("api", description="Actor performing the action"),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Suppress an entry."""
+    from .services.editorial import suppress_entry
+
+    try:
+        entry = await suppress_entry(session, entry_id, actor)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    await session.commit()
+    return {"entry_id": entry.id, "is_suppressed": entry.is_suppressed, "status": entry.status}
+
+
+@router.post("/{date}/entries/{entry_id}/override")
+async def override_entry_endpoint(
+    date: str,
+    entry_id: int,
+    actor: str = Query("api", description="Actor performing the action"),
+    title: str | None = Query(None),
+    summary: str | None = Query(None),
+    rank: int | None = Query(None),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Override entry fields."""
+    from .services.editorial import override_entry
+
+    try:
+        entry = await override_entry(
+            session, entry_id, actor=actor, title=title, summary=summary, rank=rank
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    await session.commit()
+    return {
+        "entry_id": entry.id,
+        "title_final": entry.title_final,
+        "summary_final": entry.summary_final,
+        "is_overridden": entry.is_overridden,
+    }
+
+
 # --- Internal helpers ---
+
+
+async def _get_edition_by_date_or_404(session: AsyncSession, date: str):
+    """Get the edition ORM object for a date, or raise 404."""
+    from sqlalchemy import select as sa_select
+
+    from .models import PublicationEdition
+
+    stmt = sa_select(PublicationEdition).where(PublicationEdition.publication_date == date)
+    result = await session.execute(stmt)
+    edition = result.scalar_one_or_none()
+    if edition is None:
+        raise HTTPException(status_code=404, detail=f"No edition found for {date}")
+    return edition
 
 
 async def _load_latest_edition(session: AsyncSession):

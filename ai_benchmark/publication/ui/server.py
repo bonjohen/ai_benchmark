@@ -84,6 +84,63 @@ async def detail_page(
     )
 
 
+@router.get("/admin", response_class=HTMLResponse)
+async def admin_page(
+    request: Request,
+    session: AsyncSession = Depends(get_session),  # noqa: B008
+):
+    """Editorial control page for the latest edition."""
+    from sqlalchemy import select
+
+    from ..models import (
+        PublicationAuditLog,
+        PublicationEdition,
+        PublicationEntry,
+        PublicationSection,
+    )
+
+    # Load latest edition
+    stmt = select(PublicationEdition).order_by(PublicationEdition.publication_date.desc()).limit(1)
+    result = await session.execute(stmt)
+    edition = result.scalar_one_or_none()
+
+    entries = []
+    audit_logs = []
+    if edition:
+        # Load entries with section info
+        ent_stmt = (
+            select(PublicationEntry, PublicationSection.section_key)
+            .join(PublicationSection, PublicationEntry.section_id == PublicationSection.id)
+            .where(PublicationEntry.edition_id == edition.id)
+            .order_by(PublicationSection.rank, PublicationEntry.rank)
+        )
+        ent_result = await session.execute(ent_stmt)
+        for entry, section_key in ent_result.all():
+            entry.section_key = section_key  # type: ignore[attr-defined]
+            entries.append(entry)
+
+        # Load audit logs
+        log_stmt = (
+            select(PublicationAuditLog)
+            .where(PublicationAuditLog.edition_id == edition.id)
+            .order_by(PublicationAuditLog.created_at.desc())
+            .limit(50)
+        )
+        log_result = await session.execute(log_stmt)
+        audit_logs = log_result.scalars().all()
+
+    return templates.TemplateResponse(
+        "admin.html",
+        {
+            "request": request,
+            "edition": edition,
+            "entries": entries,
+            "audit_logs": audit_logs,
+            "active_page": "admin",
+        },
+    )
+
+
 def mount_publication_ui(app):
     """Mount publication templates and static files on the FastAPI app."""
     app.mount(
