@@ -275,6 +275,7 @@ Settings are loaded via Pydantic with the `AI_BENCH_` env prefix. Also reads `.e
 | `AI_BENCH_REQUEST_TIMEOUT` | `30` | HTTP timeout in seconds |
 | `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent fetch requests |
 | `AI_BENCH_RETRY_ATTEMPTS` | `3` | Retry count with exponential backoff |
+| `AI_BENCH_ENV_FILE` | `.env` | Explicit path to `.env` file (set by bin scripts for instance isolation) |
 
 Source catalog: `ai_benchmark/config/sources.toml` (22 sources, 86 pages)
 Schedule config: `ai_benchmark/config/schedules.toml` (24 cron entries)
@@ -428,24 +429,32 @@ JSON/CSV/HTML/Markdown. Sectioned navigation, runner/run-group pages, global sea
 16 services, 28 templates. Runner/machine registry with compatibility rules and
 seed data for 7 target machines.
 
+### Deployment
+
+Production and development instances are managed by the unified installer (`scripts\ai-bench-installer.bat`). Each instance is isolated with its own directory, venv, config, and database. The installer tracks instances in a JSON registry at `%LOCALAPPDATA%\ai-benchmark\instances.json`.
+
+```powershell
+ai-bench-installer.bat install -Path C:\ai-benchmark              # New production instance
+ai-bench-installer.bat upgrade -Name prod                         # Upgrade with backup + rollback
+ai-bench-installer.bat backup -Name prod                          # Database backup with rotation
+ai-bench-installer.bat dev-setup                                  # Dev editable install + registry
+ai-bench-installer.bat list                                       # Show all instances
+ai-bench-installer.bat status -Name prod                          # Detailed instance status
+ai-bench-installer.bat uninstall -Name staging                    # Remove instance
+ai-bench-installer.bat serve-compare -Instances prod,dev          # Side-by-side eval servers
+ai-bench-installer.bat compare -Instances prod,dev                # Database row-count diff
+```
+
+All subcommands support `-DryRun` to preview without changes.
+
 ### Design Documents
 
 - Naming conventions: `docs/naming_conventions.md`
-- Eval automation examples: `docs/eval_automation_examples.md`
-- Archived plans and design docs: `docs/archive/` (eval pipeline, runner comparison, gap remediation, etc.)
+- Archived plans and design docs: `docs/archive/` (eval pipeline, runner comparison, unified installer, data presentation, etc.)
 
 ## Implementation Plans
 
-### Active
-
-- **Collection coordinator:** 4 phases — centralized coordinator replacing concurrent `collect_source()` calls to eliminate SQLite write contention (`docs/collection_coordinator_plan.md`)
-- **Unified installer:** 6 phases — instance-aware installation, multi-instance support, in-place upgrades with rollback, unified CLI entry point (`docs/unified_installer_plan.md`)
-- **Mistral/Cohere parser fixes:** 6 phases — RSC payload extraction for Mistral Next.js pages, Cohere RSS-only designation (`docs/mistral_cohere_parsers_plan.md`)
-- **Data presentation layer:** 6 phases complete — spotlight, evolution, capability, landscape, research pipeline, verification, correlation (`docs/data_presentation_1_plan.md`)
-
-### Archived (complete)
-
-All completed plans in `docs/archive/`:
+All completed plans archived in `docs/archive/`:
 
 - **Source pipeline:** 7 phases complete
 - **Eval pipeline:** 9 phases (E1–E9) complete
@@ -455,12 +464,14 @@ All completed plans in `docs/archive/`:
 - **Runner comparison:** 14 phases complete
 - **Code review remediation:** 4 phases complete (49 tasks)
 - **Analysis pipeline:** 6 phases complete — model lifecycle, benchmark trends, competitive intel, research pulse, anomaly detection, digest + API
+- **Unified installer:** 6 phases complete — instance-aware installation, multi-instance support, in-place upgrades with rollback, unified CLI entry point
+- **Data presentation layer:** 6 phases complete — spotlight, evolution, capability, landscape, research pipeline, verification, correlation
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"      # Install with dev + test dependencies
-pytest                       # Run all tests (938 tests, 0 failures)
+pytest                       # Run all tests (974 tests, 0 failures)
 pytest tests/test_config.py  # Single test file
 pytest -x -v                 # Verbose, stop on first failure
 ruff check .                 # Lint

@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install -e ".[dev]"          # Install with dev dependencies
 pip install -e ".[dev,research]" # Include research extras (S2, PDF)
-pytest                           # Run all tests (938 pass, 0 failures)
+pytest                           # Run all tests (974 pass, 0 failures)
 pytest tests/test_config.py      # Single file
 pytest -x -v                     # Verbose, stop on first failure
 ai-benchmark init-db             # Create database
@@ -112,6 +112,8 @@ If `AI_BENCH_DATABASE_URL` is not set (no `.env`, no env var), settings will war
 | `AI_BENCH_REQUEST_TIMEOUT` | `30` | HTTP request timeout (seconds) |
 | `AI_BENCH_MAX_CONCURRENCY` | `5` | Max concurrent requests |
 | `AI_BENCH_RETRY_ATTEMPTS` | `3` | Fetch retry count |
+
+| `AI_BENCH_ENV_FILE` | `.env` | Explicit path to `.env` file (set by bin scripts for instance isolation) |
 
 Also supports `.env` file in project root.
 
@@ -448,19 +450,11 @@ When autonomous execution is instructed, don't wait for approval after ExitPlanM
 - Do not push unless explicitly asked
 
 ## Documentation
-Documents are processed and moved into the archive folder.  This list goes out of sync as I move files into teh archive fodler.
 
 Active docs in `docs/`:
 - Naming conventions: `docs/naming_conventions.md`
-- Eval automation examples: `docs/eval_automation_examples.md`
-- Mistral/Cohere parser fixes: `docs/mistral_cohere_parsers_design.md`, `docs/mistral_cohere_parsers_pdr.md`, `docs/mistral_cohere_parsers_plan.md`
-- Data presentation layer: `docs/data_presentation_design.md`, `docs/data_presentation_pdr.md`, `docs/data_presentation_1_plan.md`
-- Collection coordinator: `docs/collection_coordinator_design.md`, `docs/collection_coordinator_pdr.md`, `docs/collection_coordinator_plan.md`
-- Unified installer: `docs/unified_installer_design.md`, `docs/unified_installer_plan.md`
-- Backfill collection fixes: `docs/plan_fix_backfill_collection_issues.md`
 
 Archived plans and design docs in `docs/archive/`:
-- Source requirements: `docs/archive/core_requirements.md`
-- All implementation plans (core, eval, gap remediation, PEP8, runner comparison, code review)
-- All design docs (eval pipeline design/PDR, runner comparison PRD/design)
+- All completed implementation plans (core, eval, gap remediation, PEP8, runner comparison, code review, unified installer, data presentation, collection coordinator, mistral/cohere parsers, backfill fixes)
+- All design docs (eval pipeline, runner comparison, unified installer, data presentation, collection coordinator, mistral/cohere parsers)
 - Gap analyses and release notes
