@@ -1444,6 +1444,73 @@ async def analysis_verification(
     )
 
 
+@router.get("/analysis/benchmarks", response_class=HTMLResponse)
+async def analysis_benchmarks(
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+):
+    """Benchmark variants list."""
+    from ...analysis.services.benchmark_trends import list_benchmarks
+
+    benchmarks = await list_benchmarks(session)
+
+    return templates.TemplateResponse(
+        request,
+        "analysis/benchmarks.html",
+        {
+            "benchmarks": [_benchmark_summary_to_dict(b) for b in benchmarks],
+        },
+    )
+
+
+@router.get("/analysis/benchmarks/{name:path}", response_class=HTMLResponse)
+async def analysis_benchmark_detail(
+    request: Request,
+    name: str,
+    session: AsyncSession = Depends(get_session),
+):
+    """Benchmark leaderboard detail page."""
+    from ...analysis.services.benchmark_trends import get_benchmark_leaderboard
+
+    leaderboard = await get_benchmark_leaderboard(session, name)
+
+    return templates.TemplateResponse(
+        request,
+        "analysis/benchmark_detail.html",
+        {
+            "benchmark_name": name,
+            "leaderboard": _leaderboard_to_dict(leaderboard) if leaderboard else None,
+        },
+    )
+
+
+def _benchmark_summary_to_dict(b) -> dict:
+    return {
+        "benchmark_name": b.benchmark_name,
+        "entry_count": b.entry_count,
+        "latest_date": b.latest_date,
+        "top_model": b.top_model,
+        "top_score": b.top_score,
+    }
+
+
+def _leaderboard_to_dict(lb) -> dict:
+    return {
+        "benchmark_name": lb.benchmark_name,
+        "as_of": lb.as_of,
+        "entries": [
+            {
+                "model_slug": e.model_slug,
+                "score": e.score,
+                "date": e.date,
+                "source_name": e.source_name,
+                "benchmark_variant": e.benchmark_variant,
+            }
+            for e in lb.entries
+        ],
+    }
+
+
 def _model_summary_to_dict(m) -> dict:
     return {
         "model_slug": m.model_slug,

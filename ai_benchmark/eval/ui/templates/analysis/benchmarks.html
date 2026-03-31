@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% set active_page = "intel_benchmarks" %}
+{% block title %}Benchmarks{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Benchmarks</h1>
+    <a href="/eval/analysis" class="btn btn-outline btn-sm">Back to Overview</a>
+</div>
+
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ benchmarks|length }}</div>
+        <div class="stat-label">Benchmarks Tracked</div>
+    </div>
+</div>
+
+{% if benchmarks %}
+<div class="card">
+    <div class="card-header">Benchmark Variants</div>
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Tracked benchmark variants with entry counts</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Benchmark</th>
+                    <th data-sort="number">Entries</th>
+                    <th data-sort="string">Latest Date</th>
+                    <th data-sort="string">Current Leader</th>
+                    <th data-sort="number">Top Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in benchmarks %}
+                <tr>
+                    <td><a href="/eval/analysis/benchmarks/{{ b.benchmark_name }}">{{ b.benchmark_name }}</a></td>
+                    <td>{{ b.entry_count }}</td>
+                    <td>{{ b.latest_date or "—" }}</td>
+                    <td>
+                        {% if b.top_model %}
+                        <a href="/eval/analysis/models/{{ b.top_model }}">{{ b.top_model | prettify_slug }}</a>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>{{ b.top_score if b.top_score is not none else "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p class="text-muted text-center">No benchmarks found.</p>
+</div>
+{% endif %}
+{% endblock %}
