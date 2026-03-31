@@ -28,6 +28,7 @@ async def db_engine():
         trace,
     )
     from ai_benchmark.models import discovery, events, research, sources  # noqa: F401
+    from ai_benchmark.publication import models as publication_models  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -60,6 +61,7 @@ async def db_engine_fk():
         trace,
     )
     from ai_benchmark.models import discovery, events, research, sources  # noqa: F401
+    from ai_benchmark.publication import models as publication_models  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

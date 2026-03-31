@@ -45,19 +45,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 1.1 | Open | | | Create `ai_benchmark/publication/__init__.py` with module docstring and version constant. |
-| 1.2 | Open | | | Create `ai_benchmark/publication/models.py` — four ORM tables: `PublicationEdition` (id, publication_date, window_start, window_end, generated_at, published_at, frozen_at, status, generation_version, summary_text, top_headlines_json, metadata_json), `PublicationSection` (id, edition_id FK, section_key, title, rank, item_count, generated_summary), `PublicationEntry` (id, edition_id FK, section_id FK, rank, entry_type, title_generated, title_final, summary_generated, summary_final, why_it_matters_generated, why_it_matters_final, status, score, score_explanation_json, event_id nullable, paper_id nullable, benchmark_name, org_slug, model_slug, verification_status, confidence_summary, source_count, is_pinned, is_suppressed, is_overridden, related_entry_ids_json, created_at, updated_at), `PublicationAuditLog` (id, edition_id FK, entry_id FK nullable, action_type, actor, before_state_json, after_state_json, created_at). All inherit from `Base` in `models/base.py`. |
-| 1.3 | Open | | | Create `ai_benchmark/publication/config.py` — `PublicationSettings(BaseSettings)` with `AI_BENCH_PUB_` env prefix, fields: cutoff_hour (int, default 6), timezone (str, default "US/Pacific"), max_items_per_section (int, default 10), min_score_threshold (float, default 0.1), include_low_confidence (bool, default False), auto_freeze_delay_hours (int, default 12), export_path (str, nullable), archive_retention_days (int, default 90), html_mode (str, default "dynamic"). Load from same `.env` file with `extra="ignore"`. |
-| 1.4 | Open | | | Create `ai_benchmark/publication/types.py` — dataclasses: `CandidateItem` (event_id, paper_id, title, organization, model_slug, benchmark_name, event_type, verification_status, confidence_tier, source_count, cross_ref_count, observed_at, raw_content, analysis_signals dict), `ScoredCandidate` (candidate CandidateItem, score float, score_breakdown dict, section_key str), `EditionResult` (edition_id, publication_date, sections list[SectionResult], summary str, stats dict), `SectionResult` (section_key, title, entries list[EntryResult], summary str), `EntryResult` (entry_id, rank, title, summary, why_it_matters, entry_type, organization, model_slug, benchmark_name, verification_status, confidence_summary, source_count, score, event_id, paper_id, source_links list). |
-| 1.5 | Open | | | Create `alembic/versions/009_publication_pipeline.py` — migration creating `publication_editions`, `publication_sections`, `publication_entries`, `publication_audit_log` tables with indexes on `publication_editions.publication_date` (unique), `publication_entries.edition_id`, `publication_entries.event_id`, `publication_entries.model_slug`, and `publication_audit_log.edition_id`. |
-| 1.6 | Open | | | Create `tests/test_publication_models.py` — tests for model instantiation, relationship navigation (edition → sections → entries), audit log creation, and config loading with default and overridden values. |
-| 1.7 | Open | | | Run `pytest tests/test_publication_models.py` and `ruff check ai_benchmark/publication/ tests/test_publication_models.py` and `ruff format --check ai_benchmark/publication/ tests/test_publication_models.py` — fix until green. |
+| 1.1 | Completed | 2026-03-30 12:00 PM | 2026-03-30 12:01 PM | Create `ai_benchmark/publication/__init__.py` with module docstring and version constant. |
+| 1.2 | Completed | 2026-03-30 12:01 PM | 2026-03-30 12:05 PM | Create `ai_benchmark/publication/models.py` — four ORM tables: `PublicationEdition`, `PublicationSection`, `PublicationEntry`, `PublicationAuditLog`. All inherit from `Base` in `models/base.py`. |
+| 1.3 | Completed | 2026-03-30 12:01 PM | 2026-03-30 12:03 PM | Create `ai_benchmark/publication/config.py` — `PublicationSettings(BaseSettings)` with `AI_BENCH_PUB_` env prefix. |
+| 1.4 | Completed | 2026-03-30 12:01 PM | 2026-03-30 12:03 PM | Create `ai_benchmark/publication/types.py` — dataclasses: `CandidateItem`, `ScoredCandidate`, `EntryResult`, `SectionResult`, `EditionResult`. |
+| 1.5 | Completed | 2026-03-30 12:01 PM | 2026-03-30 12:04 PM | Create `alembic/versions/009_publication_pipeline.py` — migration creating four publication tables with indexes. |
+| 1.6 | Completed | 2026-03-30 12:05 PM | 2026-03-30 12:08 PM | Create `tests/test_publication_models.py` — 12 tests covering model CRUD, relationships, cascade delete, config defaults/overrides, and dataclass creation. Updated `tests/conftest.py` to register publication models. |
+| 1.7 | Completed | 2026-03-30 12:08 PM | 2026-03-30 12:12 PM | All 12 tests pass. Ruff check and format clean. |
 | 1.8 | Open | | | Stage all Phase 1 changes. |
 | 1.9 | Open | | | Commit all Phase 1 changes. |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `ai_benchmark/publication/` package with `__init__.py`, `models.py` (4 ORM tables), `config.py` (PublicationSettings), `types.py` (5 dataclasses). Added `alembic/versions/009_publication_pipeline.py` migration. Created `tests/test_publication_models.py` (12 tests). Updated `tests/conftest.py` to register publication models in both engine fixtures.
 - **Changes hosted at:** TBD
 - **Commit:** `Add publication data model, config, types, and migration`
 
