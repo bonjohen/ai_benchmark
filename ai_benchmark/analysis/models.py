@@ -1,11 +1,11 @@
-"""Analysis pipeline ORM models: snapshots and insights."""
+"""Analysis pipeline ORM models: snapshots, insights, and model registry."""
 
 from __future__ import annotations
 
 from datetime import datetime  # noqa: TC003
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..models.base import Base
 
@@ -43,3 +43,45 @@ class AnalysisInsight(Base):
     snapshot_id: Mapped[int | None] = mapped_column(
         ForeignKey("analysis_snapshots.id"), nullable=True
     )
+
+
+class ModelEntity(Base):
+    """Curated model identity in the model registry."""
+
+    __tablename__ = "model_entities"
+    __table_args__ = (UniqueConstraint("canonical_slug", name="uq_model_canonical_slug"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    canonical_slug: Mapped[str] = mapped_column(String(200))
+    display_name: Mapped[str] = mapped_column(String(300))
+    publisher: Mapped[str] = mapped_column(String(200))
+    model_family: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="active")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parameter_count: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    release_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now()
+    )
+
+    slugs: Mapped[list[ModelEntitySlug]] = relationship(
+        back_populates="entity", cascade="all, delete-orphan"
+    )
+
+
+class ModelEntitySlug(Base):
+    """Maps a raw event model_slug to a curated ModelEntity."""
+
+    __tablename__ = "model_entity_slugs"
+    __table_args__ = (
+        Index("ix_model_entity_slugs_event_slug", "event_slug"),
+        UniqueConstraint("event_slug", "source_org", name="uq_slug_source"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    entity_id: Mapped[int] = mapped_column(ForeignKey("model_entities.id"))
+    event_slug: Mapped[str] = mapped_column(String(200))
+    source_org: Mapped[str] = mapped_column(String(200))
+
+    entity: Mapped[ModelEntity] = relationship(back_populates="slugs")

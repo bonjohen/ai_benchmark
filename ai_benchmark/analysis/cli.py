@@ -904,6 +904,35 @@ def analyze_research_pipeline(
     asyncio.run(_run())
 
 
+@analyze_group.command("seed-models")
+@click.pass_context
+def seed_models(ctx: click.Context) -> None:
+    """Seed the model registry from existing event data."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from .services.model_registry import seed_model_entities
+
+            stats = await seed_model_entities(session)
+            await session.commit()
+
+            click.echo("Model registry seeded:")
+            click.echo(f"  Entities created: {stats['entities_created']}")
+            click.echo(f"  Slugs mapped: {stats['slugs_mapped']}")
+            click.echo(f"  Publisher-sourced: {stats['publisher_sourced']}")
+            click.echo(f"  Aggregator-sourced: {stats['aggregator_sourced']}")
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
 def _digest_to_text(report) -> str:
     """Simple text rendering of a DigestReport."""
     lines = [
