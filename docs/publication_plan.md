@@ -141,26 +141,20 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Create `ai_benchmark/publication/cli.py` — Click subgroup `publish` with commands: `generate` (--date, --force), `list` (--limit, --status), `export` (--date, --format markdown\|json, --output), `status` (--date), `freeze` (--date). Each command creates engine + session, calls service, outputs result. Follow pattern from `analysis/cli.py`. |
-| 5.2 | Open | | | Register `publish` CLI group in `ai_benchmark/cli.py` — import and `cli.add_command(publish_group)`. |
-| 5.3 | Open | | | Create `ai_benchmark/publication/ui/__init__.py`. |
-| 5.4 | Open | | | Create `ai_benchmark/publication/ui/server.py` — `mount_publication_ui(app)` function. Configure Jinja2Templates pointing at `publication/ui/templates/`. Register routes: `GET /publication/` (latest edition landing page), `GET /publication/archive` (edition list), `GET /publication/{date}` (edition detail), `GET /publication/{date}#{section}` (anchor navigation). Mount static files from `publication/ui/static/`. |
-| 5.5 | Open | | | Create `ai_benchmark/publication/ui/templates/base.html` — publication layout template with header, nav (Latest, Archive), main content block, footer. Reuse CSS variables and conventions from `eval/ui/templates/`. |
-| 5.6 | Open | | | Create `ai_benchmark/publication/ui/templates/latest.html` — daily landing page: edition date, summary, sections with anchor links, entries with headline/summary/verification badge/confidence indicator/source count. Expandable entry detail showing why_it_matters and supporting evidence links. |
-| 5.7 | Open | | | Create `ai_benchmark/publication/ui/templates/archive.html` — paginated list of prior editions with date, status, item count, and link to detail page. |
-| 5.8 | Open | | | Create `ai_benchmark/publication/ui/templates/detail.html` — full edition view with section navigation sidebar, entry cards, verification state badges, confidence tier indicators, and source link sets. |
-| 5.9 | Open | | | Create `ai_benchmark/publication/ui/static/css/publication.css` — styles for edition layout, section cards, entry cards, verification badges (confirmed/unconfirmed/conflicted), confidence indicators, expandable detail panels. |
-| 5.10 | Open | | | Create `ai_benchmark/publication/ui/static/js/publication.js` — entry detail expansion toggle, section anchor scroll, auto-refresh for latest page. |
-| 5.11 | Open | | | Mount publication UI in `ai_benchmark/eval/api/app.py` — call `mount_publication_ui(app)` alongside existing `mount_ui(app)`. |
-| 5.12 | Open | | | Create `tests/test_publication_cli.py` — test CLI commands with Click test runner: generate produces edition, list shows editions, export writes file, freeze updates status. |
-| 5.13 | Open | | | Create `tests/test_publication_ui.py` — test UI routes return 200 with expected content: latest page, archive page, detail page, static file serving. |
-| 5.14 | Open | | | Run full `pytest` and ruff checks — fix until green. |
-| 5.15 | Open | | | Stage all Phase 5 changes. |
-| 5.16 | Open | | | Commit all Phase 5 changes. |
+| 5.1 | Completed | 2026-03-30 01:20 PM | 2026-03-30 01:28 PM | Create `ai_benchmark/publication/cli.py` — 5 Click commands: generate, list, export, status, freeze. |
+| 5.2 | Completed | 2026-03-30 01:28 PM | 2026-03-30 01:29 PM | Register `publish` CLI group in `ai_benchmark/cli.py`. |
+| 5.3-5.4 | Completed | 2026-03-30 01:29 PM | 2026-03-30 01:35 PM | Create `publication/ui/__init__.py` and `server.py` with mount_publication_ui and 3 routes. |
+| 5.5-5.8 | Completed | 2026-03-30 01:29 PM | 2026-03-30 01:35 PM | Create 4 Jinja2 templates: base.html, latest.html, archive.html, detail.html. |
+| 5.9-5.10 | Completed | 2026-03-30 01:29 PM | 2026-03-30 01:35 PM | Create publication.css (nav, cards, badges, tables) and publication.js (entry detail toggle). |
+| 5.11 | Completed | 2026-03-30 01:35 PM | 2026-03-30 01:36 PM | Mount publication UI in eval app via mount_publication_ui(app). |
+| 5.12-5.13 | Completed | 2026-03-30 01:36 PM | 2026-03-30 01:45 PM | Create tests: 6 CLI tests + 6 UI tests = 12 total. |
+| 5.14 | Completed | 2026-03-30 01:45 PM | 2026-03-30 01:50 PM | All 12 tests pass. Ruff check and format clean. |
+| 5.15 | Completed | 2026-03-30 01:50 PM | 2026-03-30 01:51 PM | Stage all Phase 5 changes. |
+| 5.16 | Completed | 2026-03-30 01:51 PM | 2026-03-30 01:51 PM | Commit all Phase 5 changes. |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `publication/cli.py` (5 Click commands), `publication/ui/` with `server.py` (3 routes), 4 Jinja2 templates, CSS, and JS. Registered CLI group and UI mount in main app. Created 12 tests.
 - **Changes hosted at:** TBD
 - **Commit:** `Add publication CLI commands and server-rendered web UI`
 
@@ -173,19 +167,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 6.1 | Open | | | Add publication job registration to `ai_benchmark/scheduling/scheduler.py` — new method `add_publication_job(cron, settings)` that adds an APScheduler CronTrigger job calling `generate_edition()`. Job runs after collection and analysis jobs by scheduling at cutoff_hour + offset. Record start/end time, success/failure, and edition metadata. Publication failures must not block the base collection pipeline (catch and log). |
-| 6.2 | Open | | | Add `[publication]` section to `ai_benchmark/config/schedules.toml` with default cron `"0 7 * * *"` (daily at 7 AM, after typical 6 AM analysis window). |
-| 6.3 | Open | | | Add publication health tracking to `SourceHealthTracker` or create `PublicationHealthTracker` in `ai_benchmark/scheduling/scheduler.py` — record publication job success/failure, last_generated_at, last_error, consecutive_failures. Expose via `get_publication_status() -> dict`. |
-| 6.4 | Open | | | Create `ai_benchmark/publication/services/export.py` — `async def export_static(edition: EditionResult, export_path: str, formats: list[str])`. Write markdown and/or JSON files to configured export_path with date-stamped filenames. Called by scheduler job when `export_path` is configured. |
-| 6.5 | Open | | | Add late-update regeneration logic to `ai_benchmark/publication/services/edition.py` — `async def check_regeneration_eligible(session, publication_date, settings) -> bool`. Check if high-confidence items arrived after edition generation but before auto_freeze_delay_hours. If eligible and edition is not frozen, flag edition status as "regeneration_available". |
-| 6.6 | Open | | | Create `tests/test_publication_scheduler.py` — test job registration, publication health tracking, static export file creation, regeneration eligibility detection. |
-| 6.7 | Open | | | Run full `pytest` and ruff checks — fix until green. |
-| 6.8 | Open | | | Stage all Phase 6 changes. |
-| 6.9 | Open | | | Commit all Phase 6 changes. |
+| 6.1 | Completed | 2026-03-30 01:55 PM | 2026-03-30 02:02 PM | Create `ai_benchmark/publication/scheduler.py` — `run_publication_job()` and `add_publication_job()` with APScheduler CronTrigger. Failures caught and logged, never block collection. |
+| 6.2 | Completed | 2026-03-30 02:02 PM | 2026-03-30 02:03 PM | Add Publication schedule entry to `config/schedules.toml` with cron `"0 7 * * *"`. |
+| 6.3 | Completed | 2026-03-30 01:55 PM | 2026-03-30 02:00 PM | Create `PublicationHealthTracker` in `publication/scheduler.py` — tracks success/failure, consecutive failures, total runs. |
+| 6.4 | Completed | 2026-03-30 01:55 PM | 2026-03-30 01:58 PM | Create `publication/services/export.py` — `export_static()` writes date-stamped markdown/JSON files. |
+| 6.5 | Completed | 2026-03-30 02:03 PM | 2026-03-30 02:08 PM | Add `check_regeneration_eligible()` to `edition.py` — checks for high-confidence events after generation within freeze window, sets status to "regeneration_available". |
+| 6.6 | Completed | 2026-03-30 02:08 PM | 2026-03-30 02:15 PM | Create `tests/test_publication_scheduler.py` — 10 tests covering health tracker, static export, and regeneration eligibility. |
+| 6.7 | Completed | 2026-03-30 02:15 PM | 2026-03-30 02:18 PM | All 10 tests pass. Ruff check and format clean. |
+| 6.8 | Completed | 2026-03-30 02:18 PM | 2026-03-30 02:19 PM | Stage all Phase 6 changes. |
+| 6.9 | Completed | 2026-03-30 02:19 PM | 2026-03-30 02:19 PM | Commit all Phase 6 changes. |
 
 ### Phase 6 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `publication/scheduler.py` (PublicationHealthTracker, run_publication_job, add_publication_job), `publication/services/export.py` (static file export), added `check_regeneration_eligible()` to edition.py. Added Publication entry to schedules.toml. Created 10 tests.
 - **Changes hosted at:** TBD
 - **Commit:** `Add scheduler integration, publication health tracking, and static export`
 

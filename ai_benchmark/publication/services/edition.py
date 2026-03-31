@@ -6,7 +6,7 @@ import json
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from ..models import PublicationEdition, PublicationEntry, PublicationSection
 from ..services.assembly import assemble_candidates
@@ -184,6 +184,58 @@ async def _get_existing_edition(
     stmt = select(PublicationEdition).where(PublicationEdition.publication_date == publication_date)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
+
+async def check_regeneration_eligible(
+    session: AsyncSession,
+    publication_date: str,
+    settings: PublicationSettings,
+) -> bool:
+    """Check if high-confidence items arrived after edition generation but before freeze.
+
+    Returns True if the edition exists, is not frozen, and new high-confidence
+    events have been observed since the edition was generated.
+    """
+    from ...models.events import ClaimRecord, EventRecord
+
+    edition = await _get_existing_edition(session, publication_date)
+    if edition is None:
+        return False
+    if edition.status == "frozen":
+        return False
+
+    generated_at = edition.generated_at
+    if generated_at is None:
+        return False
+
+    # Normalize tz-naive timestamps from SQLite
+    if generated_at.tzinfo is None:
+        generated_at = generated_at.replace(tzinfo=UTC)
+
+    # Check auto-freeze window
+    freeze_cutoff = generated_at + timedelta(hours=settings.auto_freeze_delay_hours)
+    now = datetime.now(UTC)
+    if now > freeze_cutoff:
+        return False
+
+    # Look for high-confidence events since generation
+    window_start, window_end = _compute_window(publication_date, settings)
+    stmt = (
+        select(func.count(EventRecord.id))
+        .join(ClaimRecord, ClaimRecord.event_id == EventRecord.id)
+        .where(EventRecord.observed_at >= generated_at)
+        .where(EventRecord.observed_at <= window_end)
+        .where(ClaimRecord.confidence_tier.in_(["official_self_report", "benchmark_owner_report"]))
+    )
+    result = await session.execute(stmt)
+    new_count = result.scalar_one()
+
+    if new_count > 0:
+        edition.status = "regeneration_available"
+        await session.flush()
+        return True
+
+    return False
 
 
 def _compute_window(

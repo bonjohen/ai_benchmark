@@ -113,6 +113,12 @@ organization = "PathProber"
 cron = "0 3 * * 0"
 max_concurrent = 1
 
+# Daily publication — after collection and analysis jobs complete
+[[schedules]]
+organization = "Publication"
+cron = "0 7 * * *"
+max_concurrent = 1
+
 # Community — daily
 [[schedules]]
 organization = "Hugging Face Forums"
