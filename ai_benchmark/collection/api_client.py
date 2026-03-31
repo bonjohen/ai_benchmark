@@ -53,7 +53,7 @@ class APIClient:
             for attempt in range(max_retries):
                 response = await client.get(url, headers=headers, params=params)
                 if response.status_code == 429:
-                    retry_after = int(response.headers.get("Retry-After", "5"))
+                    retry_after = int(response.headers.get("Retry-After", "30"))
                     logger.warning(
                         "api_rate_limited",
                         url=url,
