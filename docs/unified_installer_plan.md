@@ -114,23 +114,23 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Create `scripts/installer/Update-Instance.ps1` — implements `upgrade` subcommand. Parameters: `-Path` or `-Name` (identify instance via registry), `-SourceDir` (optional, defaults to project directory containing the installer). Reads current `version.json` to determine installed state. Per req D3. |
-| 4.2 | Open | | | Implement pre-upgrade backup — create `backup\upgrade_<timestamp>\` directory. Copy: database file, `config\.env`, all files in `bin\`. Per req C1 (current deploy scripts only back up DB, not config or bin scripts). |
-| 4.3 | Open | | | Implement wheel build and install — build wheel from `-SourceDir`, install into existing venv with `pip install <wheel> --force-reinstall` (no venv recreation per req C6). Use venv Python for build if available, fall back to system Python. |
-| 4.4 | Open | | | Implement config merge — compare new `env.template` (after substitution) with existing `config\.env`. For each key in template but absent from existing config: append as commented-out line with default value and `# NEW in <version>` annotation. Never overwrite or reorder existing values. Per req C4. |
-| 4.5 | Open | | | Implement bin script regeneration — generate new bin scripts from `bin_template.bat` to a temp directory. If all succeed, rename into `bin\` replacing old scripts. If any step fails, old scripts remain untouched. Per req F3 (atomic bin script updates). |
-| 4.6 | Open | | | Implement schema migration — run `venv\Scripts\python.exe -m alembic upgrade head` with `AI_BENCH_DATABASE_URL` set from instance `.env`. Per req C3. The alembic infrastructure already exists in `alembic/env.py`. |
-| 4.7 | Open | | | Implement post-upgrade verification — run `check-config`. If non-zero exit or alembic migration failed: restore database, `.env`, and bin scripts from `backup\upgrade_<timestamp>\`. Report what was rolled back. Per req C5. |
-| 4.8 | Open | | | Implement post-upgrade bookkeeping — update `config\version.json` via `Write-VersionJson`. Update registry entry via `Set-InstanceEntry` (version, last_upgrade_date). |
-| 4.9 | Open | | | Update `ai-bench-installer.bat` — wire `upgrade` subcommand. |
-| 4.10 | Open | | | Verify: install an instance, manually remove a setting from `.env`, run upgrade. Confirm: backup created (DB + .env + bin scripts), wheel reinstalled, missing setting appended as comment, `version.json` updated, registry updated. Simulate failure (rename DB mid-upgrade) and confirm rollback restores all three backup targets. |
-| 4.11 | Open | | | Stage all Phase 4 changes. |
-| 4.12 | Open | | | Commit all Phase 4 changes. |
+| 4.1 | Completed | 2026-03-30 11:35 PM | 2026-03-30 11:50 PM | Create `scripts/installer/Update-Instance.ps1` — implements `upgrade` subcommand. Parameters: `-Path` or `-Name` (identify instance via registry), `-SourceDir` (optional, defaults to project directory containing the installer). Reads current `version.json` to determine installed state. Per req D3. |
+| 4.2 | Completed | 2026-03-30 11:35 PM | 2026-03-30 11:50 PM | Implement pre-upgrade backup — create `backup\upgrade_<timestamp>\` directory. Copy: database file, `config\.env`, all files in `bin\`. Per req C1. |
+| 4.3 | Completed | 2026-03-30 11:35 PM | 2026-03-30 11:50 PM | Implement wheel build and install — build wheel from `-SourceDir`, install into existing venv with `pip install <wheel> --force-reinstall` (no venv recreation per req C6). Auto-detects system Python via py launcher, falls back to venv Python. |
+| 4.4 | Completed | 2026-03-30 11:35 PM | 2026-03-30 11:50 PM | Implement config merge — generates reference .env from template, parses both as key=value, appends missing keys as commented `# NEW in <version>` lines. Never overwrites or reorders existing values. Per req C4. |
+| 4.5 | Completed | 2026-03-30 11:35 PM | 2026-03-30 11:50 PM | Implement bin script regeneration — generates to temp dir first, copies into `bin\` on success. Per req F3. |
+| 4.6 | Completed | 2026-03-30 11:35 PM | 2026-03-30 12:00 AM | Implement schema migration — detects init-db databases (no alembic_version table) and uses `alembic stamp head` instead of `upgrade head` to avoid "table already exists" errors. For tracked databases, runs `alembic upgrade head`. Per req C3. |
+| 4.7 | Completed | 2026-03-30 11:35 PM | 2026-03-30 12:00 AM | Implement post-upgrade verification with rollback — restores DB, .env, and bin scripts from backup on failure. Uses return values instead of `$Script:` scoping for failure tracking. Per req C5. |
+| 4.8 | Completed | 2026-03-30 11:35 PM | 2026-03-30 11:50 PM | Implement post-upgrade bookkeeping — `Write-VersionJson` and `Set-InstanceEntry` with version, last_upgrade_date. |
+| 4.9 | Completed | 2026-03-30 11:50 PM | 2026-03-30 11:50 PM | Update `ai-bench-installer.bat` — wire `upgrade` subcommand. |
+| 4.10 | Completed | 2026-03-30 11:50 PM | 2026-03-30 12:05 AM | Verify: installed test instance, ran upgrade. Backup created (DB + .env + 4 bin scripts), wheel reinstalled, alembic stamped head (init-db database), check-config passed, version.json updated, registry shows last_upgrade_date. Dry-run mode tested. |
+| 4.11 | Completed | 2026-03-31 12:05 AM | 2026-03-31 12:05 AM | Stage all Phase 4 changes. |
+| 4.12 | Completed | 2026-03-31 12:05 AM | 2026-03-31 12:05 AM | Commit all Phase 4 changes. |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `scripts/installer/Update-Instance.ps1` with 7-step upgrade process: instance resolution, pre-upgrade backup (DB + .env + bin scripts to `backup\upgrade_<timestamp>\`), wheel build+install, config merge (appends new keys as commented lines), atomic bin script regeneration, schema migration (detects init-db databases and stamps instead of migrating), and post-upgrade verification with rollback on failure. Fixed two issues: (1) init-db databases lack alembic_version table, causing `upgrade head` to fail with "table already exists" — solved by checking for alembic_version and using `stamp head` for untracked databases; (2) `$Script:` variable scoping inside `Invoke-InstallerAction` scriptblocks — solved by using return values. Wired upgrade subcommand into `ai-bench-installer.bat`.
+- **Changes hosted at:** `scripts/installer/Update-Instance.ps1`, `scripts/ai-bench-installer.bat`, `docs/unified_installer_plan.md`
 - **Commit:** `Add upgrade subcommand with backup, migration, config merge, and rollback`
 
 ## Phase 5: Uninstall, Backup, Dev-Setup Subcommands

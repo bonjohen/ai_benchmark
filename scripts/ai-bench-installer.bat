@@ -61,8 +61,8 @@ if /i "%SUBCMD%"=="install" (
 )
 
 if /i "%SUBCMD%"=="upgrade" (
-    echo Subcommand 'upgrade' is not yet implemented. Coming in Phase 4.
-    exit /b 1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Update-Instance.ps1" !ARGS!
+    exit /b !ERRORLEVEL!
 )
 
 if /i "%SUBCMD%"=="uninstall" (
