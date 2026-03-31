@@ -41,7 +41,7 @@ _SLUG_PUBLISHER_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^mistral[-_]|^codestral[-_]|^pixtral[-_]|^ministral[-_]"), "Mistral AI"),
     (re.compile(r"^command[-_]|^c4ai[-_]|^aya[-_]"), "Cohere"),
     (re.compile(r"^deepseek[-_]"), "DeepSeek"),
-    (re.compile(r"^qwen[-_]"), "Alibaba"),
+    (re.compile(r"^qwen|^qwq"), "Alibaba"),
     (re.compile(r"^phi[-_]"), "Microsoft"),
     (re.compile(r"^amazon[-_]|^nova[-_]"), "Amazon"),
     (re.compile(r"^yi[-_]"), "01.AI"),
@@ -51,10 +51,72 @@ _SLUG_PUBLISHER_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^chatglm|^glm[-_]"), "Zhipu AI"),
     (re.compile(r"^vicuna[-_]"), "LMSYS"),
     (re.compile(r"^wizardlm"), "Microsoft"),
-    (re.compile(r"^nemotron"), "NVIDIA"),
+    (re.compile(r"^nemotron|^nvidia[-_]|^nvila"), "NVIDIA"),
     (re.compile(r"^reka[-_]"), "Reka"),
     (re.compile(r"^jamba[-_]"), "AI21 Labs"),
+    (re.compile(r"^ernie[-_]"), "Baidu"),
+    (re.compile(r"^hunyuan[-_]"), "Tencent"),
+    (re.compile(r"^granite[-_]|^ibm[-_]"), "IBM"),
+    (re.compile(r"^kimi[-_]"), "Moonshot AI"),
+    (re.compile(r"^minimax[-_]"), "MiniMax"),
+    (re.compile(r"^kling[-_]|^kat[-_]"), "Kuaishou"),
+    (re.compile(r"^step[-_]"), "StepFun"),
+    (re.compile(r"^sora[-_]"), "OpenAI"),
+    (re.compile(r"^veo[-_]"), "Google"),
+    (re.compile(r"^flux[-_]"), "Black Forest Labs"),
+    (re.compile(r"^runway[-_]"), "Runway"),
+    (re.compile(r"^seedream[-_]|^dola[-_]"), "ByteDance"),
+    (re.compile(r"^smollm|^zephyr[-_]"), "Hugging Face"),
+    (re.compile(r"^cogvlm"), "Zhipu AI"),
+    (re.compile(r"^rwkv[-_]"), "RWKV Foundation"),
+    (re.compile(r"^stablelm"), "Stability AI"),
+    (re.compile(r"^snowflake[-_]"), "Snowflake"),
+    (re.compile(r"^solar[-_]"), "Upstage"),
+    (re.compile(r"^starling[-_]|^athene[-_]"), "Nexusflow"),
+    (re.compile(r"^olmo[-_]|^tulu[-_]|^molmo[-_]"), "AI2"),
+    (re.compile(r"^mpt[-_]|^dolly[-_]"), "Databricks"),
+    (re.compile(r"^openchat[-_]"), "OpenChat"),
+    (re.compile(r"^openhermes[-_]|^nous[-_]"), "Nous Research"),
+    (re.compile(r"^dolphin[-_]"), "Eric Hartford"),
+    (re.compile(r"^stripedhyena"), "Together AI"),
+    (re.compile(r"^ppl[-_]|^sonar[-_]"), "Perplexity"),
+    (re.compile(r"^mercury"), "Inception Labs"),
+    (re.compile(r"^mimo[-_]"), "Xiaomi"),
+    (re.compile(r"^minicpm"), "OpenBMB"),
+    (re.compile(r"^llava[-_]"), "LLaVA Team"),
+    (re.compile(r"^internvl"), "Shanghai AI Lab"),
+    (re.compile(r"^mai[-_]"), "Microsoft"),
+    (re.compile(r"^ling[-_]|^ring[-_]"), "Ant Group"),
+    (re.compile(r"^wan\d"), "Alibaba"),
+    (re.compile(r"^devstral[-_]|^magistral[-_]|^mixtral[-_]"), "Mistral AI"),
+    (re.compile(r"^codellama[-_]"), "Meta"),
+    (re.compile(r"^vidu[-_]"), "Shengshu Technology"),
 ]
+
+# Direct slug-to-publisher for models that can't be pattern-matched.
+_SLUG_PUBLISHER_DIRECT: dict[str, str] = {
+    "alpaca-13b": "Stanford",
+    "diffbot-small-xl": "Diffbot",
+    "intellect-3": "Intellect",
+    "longcat-flash-chat": "Meituan",
+    "guanaco-33b": "University of Washington",
+    "koala-13b": "UC Berkeley",
+    "oasst-pythia-12b": "OpenAssistant",
+    "fastchat-t5-3b": "LMSYS",
+    "gpt4all-13b-snoozy": "Nomic AI",
+    "reve-v1.5": "Reve AI",
+    "trinity-large": "Arcee AI",
+    "llama2-70b-steerlm-chat": "NVIDIA",
+    "KAT-Coder-Pro-V1": "Kuaishou",
+    "RWKV-4-Raven-14B": "RWKV Foundation",
+    "Arctic": "Snowflake",
+    "INTELLECT-3": "Prime Intellect",
+    "K-EXAONE": "LG AI Research",
+    "LFM2.5-1.2B-Thinking": "Liquid AI",
+    "Motif-2-12.7B": "Motif AI",
+    "Nanbeige4.1-3B": "Nanbeige",
+    "Seed-OSS-36B-Instruct": "ByteDance",
+}
 
 
 def _prettify_slug(slug: str) -> str:
@@ -77,6 +139,9 @@ def _is_publisher(org: str) -> bool:
 
 def _infer_publisher_from_slug(slug: str) -> str | None:
     """Infer the model publisher from the slug name pattern."""
+    # Direct lookup first (handles irregular names)
+    if slug in _SLUG_PUBLISHER_DIRECT:
+        return _SLUG_PUBLISHER_DIRECT[slug]
     slug_lower = slug.lower()
     for pattern, publisher in _SLUG_PUBLISHER_PATTERNS:
         if pattern.search(slug_lower):
