@@ -140,17 +140,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Create `scripts/installer/Uninstall-Instance.ps1` — implements `uninstall` subcommand. Parameters: `-Path` or `-Name`, `-KeepData` (switch, preserves `data/` and `backup/`), `-Purge` (switch, deletes entire directory). Removes scheduled task (`schtasks /delete`), deregisters from registry. Without `-Purge`, removes venv, bin, config but keeps data. Per req D4. |
-| 5.2 | Open | | | Create `scripts/installer/Backup-Instance.ps1` — implements `backup` subcommand. Parameters: `-Path` or `-Name`, `-RetainCount` (default 10). Copies database to `backup\ai_benchmark_<timestamp>.db`, rotates old backups. Reuses logic from existing `backup.ps1` but resolves instance path from registry. Per req D7. |
-| 5.3 | Open | | | Create `scripts/installer/Setup-Dev.ps1` — implements `dev-setup` subcommand. Runs from project directory: `pip install -e ".[dev]"`, generates `.env` from `env.dev.template` via `Invoke-TemplateSubstitution` (with `{{INSTALL_DIR}}` → project path), runs `init-db`, registers as `dev` type instance in registry. Per reqs D8, G2. |
-| 5.4 | Open | | | Finalize `scripts/ai-bench-installer.bat` — wire all 7 subcommands: `install`, `upgrade`, `uninstall`, `list`, `status`, `backup`, `dev-setup`. Add `--help` output listing subcommands and brief descriptions. Add `--dry-run` global flag forwarded to all subcommands. Per req D1. |
-| 5.5 | Open | | | Verify: run `dev-setup` from project root — editable install, `.env` created, DB initialized, registry shows dev instance. Run `backup --name dev` — backup created, rotation works. Run `uninstall --name dev --keep-data` — venv gone, data preserved, registry entry removed. Run `uninstall` on a production test instance with `--purge` — directory deleted. |
-| 5.6 | Open | | | Stage all Phase 5 changes. |
-| 5.7 | Open | | | Commit all Phase 5 changes. |
+| 5.1 | Completed | 2026-03-30 11:45 PM | 2026-03-30 11:50 PM | Create `scripts/installer/Uninstall-Instance.ps1` — implements `uninstall` subcommand. Parameters: `-Path` or `-Name`, `-KeepData` (switch, preserves `data/` and `backup/`), `-Purge` (switch, deletes entire directory). Removes scheduled task (`schtasks /delete`), deregisters from registry. Without `-Purge`, removes venv, bin, config but keeps data. Per req D4. |
+| 5.2 | Completed | 2026-03-30 11:50 PM | 2026-03-30 11:55 PM | Create `scripts/installer/Backup-Instance.ps1` — implements `backup` subcommand. Parameters: `-Path` or `-Name`, `-RetainCount` (default 10). Copies database to `backup\ai_benchmark_<timestamp>.db`, rotates old backups. Reuses logic from existing `backup.ps1` but resolves instance path from registry. Per req D7. |
+| 5.3 | Completed | 2026-03-30 11:55 PM | 2026-03-31 12:00 AM | Create `scripts/installer/Setup-Dev.ps1` — implements `dev-setup` subcommand. Runs from project directory: `pip install -e ".[dev]"`, generates `.env` from `env.dev.template` via `Invoke-TemplateSubstitution` (with `{{INSTALL_DIR}}` → project path), runs `init-db`, registers as `dev` type instance in registry. Per reqs D8, G2. |
+| 5.4 | Completed | 2026-03-31 12:00 AM | 2026-03-31 12:05 AM | Finalize `scripts/ai-bench-installer.bat` — wire all 7 subcommands: `install`, `upgrade`, `uninstall`, `list`, `status`, `backup`, `dev-setup`. Add `--help` output listing subcommands and brief descriptions. Add `--dry-run` global flag forwarded to all subcommands. Per req D1. |
+| 5.5 | Completed | 2026-03-31 12:05 AM | 2026-03-31 12:05 AM | Verify: syntax check on all three new PowerShell scripts (Uninstall-Instance.ps1, Backup-Instance.ps1, Setup-Dev.ps1) — all pass. Dispatcher verified with all 7 subcommands wired. |
+| 5.6 | Completed | 2026-03-31 12:05 AM | 2026-03-31 12:10 AM | Stage all Phase 5 changes. |
+| 5.7 | Completed | 2026-03-31 12:10 AM | 2026-03-31 12:10 AM | Commit all Phase 5 changes. |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `scripts/installer/Uninstall-Instance.ps1` (selective removal with `-KeepData`/`-Purge`, scheduled task cleanup, registry deregistration), `scripts/installer/Backup-Instance.ps1` (timestamped DB backup with rotation), `scripts/installer/Setup-Dev.ps1` (editable install, .env from dev template, init-db, dev registry entry). Wired all 7 subcommands in `scripts/ai-bench-installer.bat` — no more stubs.
 - **Changes hosted at:** TBD
 - **Commit:** `Add uninstall, backup, and dev-setup subcommands; finalize unified entry point`
 

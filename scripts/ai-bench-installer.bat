@@ -66,8 +66,8 @@ if /i "%SUBCMD%"=="upgrade" (
 )
 
 if /i "%SUBCMD%"=="uninstall" (
-    echo Subcommand 'uninstall' is not yet implemented. Coming in Phase 5.
-    exit /b 1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Uninstall-Instance.ps1" !ARGS!
+    exit /b !ERRORLEVEL!
 )
 
 if /i "%SUBCMD%"=="list" (
@@ -81,13 +81,13 @@ if /i "%SUBCMD%"=="status" (
 )
 
 if /i "%SUBCMD%"=="backup" (
-    echo Subcommand 'backup' is not yet implemented. Coming in Phase 5.
-    exit /b 1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Backup-Instance.ps1" !ARGS!
+    exit /b !ERRORLEVEL!
 )
 
 if /i "%SUBCMD%"=="dev-setup" (
-    echo Subcommand 'dev-setup' is not yet implemented. Coming in Phase 5.
-    exit /b 1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Setup-Dev.ps1" !ARGS!
+    exit /b !ERRORLEVEL!
 )
 
 echo ERROR: Unknown subcommand '%SUBCMD%'
