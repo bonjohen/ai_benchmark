@@ -48,11 +48,7 @@ All 22 occurred in a single log (`collect_20260329_214734.log`), affecting every
 
 **Root cause:** SQLite has a single-writer lock. When the eval server holds a connection (e.g., serving a page request), a concurrent collection process that tries to write will get `OperationalError: database is locked` after the default 5-second timeout.
 
-**Solutions:**
-1. **Increase SQLite busy timeout** — set `connect_args={"timeout": 30}` on the async engine to wait longer for the lock.
-2. **WAL mode** — enable Write-Ahead Logging (`PRAGMA journal_mode=WAL`) which allows concurrent reads during writes.
-3. **Process guard** — the collect.bat script should check for an existing collection process before starting.
-4. **Migrate to PostgreSQL** — eliminates the single-writer limitation entirely (long-term).
+**Solution:** Enforce single-writer architecture. The collector is the only process that writes. Either stop the server during collection, or open the server's DB connection in read-only mode. See Fix 3 for implementation details.
 
 ### 3.3 Semantic Scholar Rate Limiting
 
@@ -108,20 +104,27 @@ In the coordinator's retry logic, check the HTTP status code from the fetch erro
 **Files:** `coordination/coordinator.py`
 **Effort:** Small
 
-### Fix 3: Enable SQLite WAL Mode (Critical — fixes DB locking)
+### Fix 3: Single Writer — Stop the Server During Collection (Critical — fixes DB locking)
 
-Add `PRAGMA journal_mode=WAL` to the engine connection event. WAL mode allows the eval server to read while the collector writes, eliminating the `database is locked` errors.
+SQLite supports exactly one writer at a time. The correct design is to ensure only one process writes to the database. The collector is the writer; the eval server should not be running during collection, or should open the database in read-only mode.
 
-```python
-@event.listens_for(engine.sync_engine, "connect")
-def _set_sqlite_wal(dbapi_conn, connection_record):
-    cursor = dbapi_conn.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")
-    cursor.execute("PRAGMA busy_timeout=30000")
-    cursor.close()
+**Options (in order of preference):**
+
+**Option A: Stop the server during collection.** Modify `collect.bat` to stop the eval server before collection and restart it afterward. This is the simplest and most correct approach.
+
+```batch
+:: Stop server before collection
+taskkill /f /fi "WINDOWTITLE eq AIBenchmark*serve*" 2>nul
+%PYTHON% -m ai_benchmark.cli collect >> "%LOGFILE%" 2>&1
+:: Restart server
+start "" %PYTHON% -m ai_benchmark.cli eval serve
 ```
 
-**Files:** `models/base.py` (create_engine function)
+**Option B: Read-only server mode.** Open the eval server's database connection with `?mode=ro` so it never acquires a write lock. The server only reads data; it does not need write access.
+
+**Option C: Process lock file.** The collector creates a lock file before starting. The `collect.bat` script checks for an existing lock and aborts if one is present, preventing two collectors from running simultaneously.
+
+**Files:** `scripts/installer/` (bin script templates), `collect.bat`
 **Effort:** Small
 
 ### Fix 4: Increase Semantic Scholar Inter-Query Delay (Medium)
@@ -142,7 +145,7 @@ Change `low_value_page_filtered` from `warning` to `debug` level since it's expe
 
 | # | Fix | Impact | Errors Eliminated |
 |---|---|---|---|
-| 3 | SQLite WAL mode | Critical | 22 DB locked errors |
+| 3 | Single writer (stop server during collection) | Critical | 22 DB locked errors |
 | 1 | Skip blocked pages | High | 65 access_forbidden |
 | 2 | Don't retry 403/404 | High | 58 fetch_failed retries |
 | 4 | S2 inter-query delay | Medium | 22 rate_limited |
@@ -152,7 +155,7 @@ After all fixes, a clean collection run should produce **0 warnings** for the kn
 
 ## 6. Acceptance Criteria
 
-1. After Fix 3: Two processes (server + collector) can run simultaneously without `database is locked`.
+1. After Fix 3: Collection runs with no `database is locked` errors because only the collector writes to the DB.
 2. After Fixes 1+2: Collection log for a full run contains 0 lines mentioning `access_forbidden` or `fetch_error` for the 6 known-blocked URLs.
 3. After Fix 4: Semantic Scholar queries complete without 429 errors when no API key is set.
 4. After Fix 5: `low_value_page_filtered` no longer appears at warning level in logs.
