@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip show:*)",
+      "Bash(flake8 ai_benchmark/ --statistics --count --max-line-length=120)",
+      "Bash(flake8 tests/ --statistics --count --max-line-length=120)",
+      "Bash(ruff check:*)",
+      "Bash(ruff format:*)",
+      "mcp__jcodemunch__index_folder"
+    ]
+  }
+}
