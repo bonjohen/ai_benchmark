@@ -94,16 +94,16 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Create `ai_benchmark/publication/services/render.py` — `async def render_edition_text(sections: dict[str, list[ScoredCandidate]], session) -> tuple[str, dict[str, str], dict[int, dict]]`. Generate edition summary text (top 3 headlines), per-section summary text, and per-entry text (headline, summary, why_it_matters) from candidate data and supporting claims. Return (edition_summary, section_summaries, entry_texts_by_candidate_index). Use event titles, claim text, benchmark scores, and org names — no LLM calls, deterministic template-based generation. |
-| 3.2 | Open | | | Create `ai_benchmark/publication/services/edition.py` — `async def generate_edition(session, *, publication_date, settings) -> EditionResult`. Orchestrate: compute window from cutoff_hour + timezone → assemble_candidates → score_candidates → assign_sections → render_edition_text → persist PublicationEdition, PublicationSections, PublicationEntries to DB. Set edition status to "draft". Return EditionResult. Handle idempotency: if edition for date exists and is not frozen, delete and regenerate; if frozen, raise error. |
-| 3.3 | Open | | | Create `tests/test_publication_edition.py` — end-to-end generation tests with seeded EventRecords, ClaimRecords, and EnrichedPapers: verify edition persisted with correct sections and entries, verify idempotent regeneration of draft editions, verify frozen edition rejection, verify empty-day produces edition with zero entries, verify entry text fields populated. |
-| 3.4 | Open | | | Run `pytest tests/test_publication_edition.py` and ruff checks — fix until green. |
-| 3.5 | Open | | | Stage all Phase 3 changes. |
-| 3.6 | Open | | | Commit all Phase 3 changes. |
+| 3.1 | Completed | 2026-03-30 12:35 PM | 2026-03-30 12:40 PM | Create `ai_benchmark/publication/services/render.py` — deterministic template-based text generation for edition summary, section summaries, and entry text (title, summary, why_it_matters). |
+| 3.2 | Completed | 2026-03-30 12:35 PM | 2026-03-30 12:42 PM | Create `ai_benchmark/publication/services/edition.py` — `generate_edition()` orchestrator with window computation, idempotent regeneration, frozen rejection, and full persistence. |
+| 3.3 | Completed | 2026-03-30 12:42 PM | 2026-03-30 12:48 PM | Create `tests/test_publication_edition.py` — 10 tests covering end-to-end generation, persistence, idempotency, frozen rejection, empty day, entry text, and render unit tests. |
+| 3.4 | Completed | 2026-03-30 12:48 PM | 2026-03-30 12:52 PM | All 10 tests pass. Ruff check and format clean. |
+| 3.5 | Completed | 2026-03-30 12:52 PM | 2026-03-30 12:53 PM | Stage all Phase 3 changes. |
+| 3.6 | Completed | 2026-03-30 12:53 PM | 2026-03-30 12:53 PM | Commit all Phase 3 changes. |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `render.py` (deterministic text generation for editions, sections, entries) and `edition.py` (orchestrator: window → assemble → score → section → render → persist). Created `tests/test_publication_edition.py` (10 tests).
 - **Changes hosted at:** TBD
 - **Commit:** `Add edition generation pipeline with text rendering and persistence`
 
