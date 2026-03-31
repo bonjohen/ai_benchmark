@@ -46,13 +46,15 @@ async def score_candidates(
     """Score candidates and return sorted list (highest score first).
 
     Scoring is deterministic: same input produces same output.
+    Supports weight overrides via ``settings.scoring_weight_overrides``.
     """
+    weights = _resolve_weights(settings)
     now = datetime.now(UTC)
     scored: list[ScoredCandidate] = []
 
     for candidate in candidates:
         breakdown = _compute_breakdown(candidate, now)
-        total = sum(_WEIGHTS[k] * breakdown[k] for k in _WEIGHTS)
+        total = sum(weights[k] * breakdown[k] for k in weights)
         scored.append(
             ScoredCandidate(
                 candidate=candidate,
@@ -131,3 +133,16 @@ def _score_anomaly(signals: dict) -> float:
         return 0.0
     severity = signals.get("max_severity", "")
     return {"critical": 1.0, "notable": 0.6, "info": 0.2}.get(severity, 0.0)
+
+
+def _resolve_weights(settings: PublicationSettings) -> dict[str, float]:
+    """Merge default weights with any overrides from settings."""
+    weights = dict(_WEIGHTS)
+    if settings.scoring_weight_overrides:
+        import json
+
+        overrides = json.loads(settings.scoring_weight_overrides)
+        for k, v in overrides.items():
+            if k in weights:
+                weights[k] = float(v)
+    return weights

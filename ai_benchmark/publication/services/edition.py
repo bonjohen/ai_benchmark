@@ -238,6 +238,61 @@ async def check_regeneration_eligible(
     return False
 
 
+async def compare_editions(
+    session: AsyncSession,
+    date_a: str,
+    date_b: str,
+) -> dict:
+    """Compare two editions and return a diff summary.
+
+    Returns dict with: new_entries, removed_entries, common_entries,
+    score_deltas, section_changes.
+    """
+    from ..api import _load_edition_by_date
+
+    edition_a = await _load_edition_by_date(session, date_a)
+    edition_b = await _load_edition_by_date(session, date_b)
+
+    if edition_a is None or edition_b is None:
+        return {"error": "One or both editions not found"}
+
+    # Build entry maps by event_id/paper_id
+    entries_a = {}
+    for sec in edition_a.sections:
+        for e in sec.entries:
+            key = f"ev:{e.event_id}" if e.event_id else f"paper:{e.paper_id}"
+            entries_a[key] = e
+
+    entries_b = {}
+    for sec in edition_b.sections:
+        for e in sec.entries:
+            key = f"ev:{e.event_id}" if e.event_id else f"paper:{e.paper_id}"
+            entries_b[key] = e
+
+    keys_a = set(entries_a.keys())
+    keys_b = set(entries_b.keys())
+
+    new_keys = keys_b - keys_a
+    removed_keys = keys_a - keys_b
+    common_keys = keys_a & keys_b
+
+    score_deltas = []
+    for k in common_keys:
+        ea, eb = entries_a[k], entries_b[k]
+        delta = round(eb.score - ea.score, 4)
+        if delta != 0:
+            score_deltas.append({"entry": eb.title, "delta": delta})
+
+    return {
+        "date_a": date_a,
+        "date_b": date_b,
+        "new_entries": [entries_b[k].title for k in new_keys],
+        "removed_entries": [entries_a[k].title for k in removed_keys],
+        "common_count": len(common_keys),
+        "score_deltas": sorted(score_deltas, key=lambda x: abs(x["delta"]), reverse=True),
+    }
+
+
 def _compute_window(
     publication_date: str, settings: PublicationSettings
 ) -> tuple[datetime, datetime]:

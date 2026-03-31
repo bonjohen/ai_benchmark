@@ -22,9 +22,14 @@ class PublicationSettings(BaseSettings):
     cutoff_hour: int = 6  # Hour of day (0-23) marking end of publication window
     timezone: str = "US/Pacific"
     max_items_per_section: int = 10
+    min_items_per_section: int = 0  # Promote from watchlist if below this
     min_score_threshold: float = 0.1
     include_low_confidence: bool = False
     auto_freeze_delay_hours: int = 12
     export_path: str | None = None
     archive_retention_days: int = 90
     html_mode: str = "dynamic"  # dynamic | static | both
+    max_org_pct_per_section: float = 0.5  # No single org dominates >50% of a section
+
+    # Scoring weight overrides (JSON string of factor→weight, e.g. '{"recency": 0.2}')
+    scoring_weight_overrides: str | None = None

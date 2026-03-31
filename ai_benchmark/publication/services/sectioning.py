@@ -56,6 +56,9 @@ async def assign_sections(
     max_per_section = settings.max_items_per_section
     min_score = settings.min_score_threshold
 
+    max_org_pct = settings.max_org_pct_per_section
+    min_per_section = settings.min_items_per_section
+
     sections: dict[str, list[ScoredCandidate]] = {key: [] for key, _ in SECTION_DEFS}
 
     for sc in scored:
@@ -74,8 +77,28 @@ async def assign_sections(
             sections["watchlist"].append(sc)
             continue
 
+        # Org diversity: don't let one org dominate a section
+        if max_org_pct < 1.0 and sc.candidate.organization and sections[target]:
+            org_count = sum(
+                1 for s in sections[target] if s.candidate.organization == sc.candidate.organization
+            )
+            if org_count / (len(sections[target]) + 1) > max_org_pct:
+                sc.section_key = "watchlist"
+                sections["watchlist"].append(sc)
+                continue
+
         sc.section_key = target
         sections[target].append(sc)
+
+    # Promote from watchlist if primary sections are thin
+    if min_per_section > 0:
+        for key, _ in SECTION_DEFS:
+            if key in ("top_summary", "watchlist"):
+                continue
+            while len(sections[key]) < min_per_section and sections["watchlist"]:
+                promoted = sections["watchlist"].pop(0)
+                promoted.section_key = key
+                sections[key].append(promoted)
 
     # Build top_summary from highest-scoring items across all sections (excluding watchlist)
     all_placed = []

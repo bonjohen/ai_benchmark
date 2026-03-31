@@ -6,7 +6,7 @@ import dataclasses
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -132,7 +132,28 @@ async def export_edition(
         content = edition_to_json(edition_result)
         return PlainTextResponse(content, media_type="application/json")
 
+    if format == "html":
+        from .formatters.html import edition_to_html
+
+        content = edition_to_html(edition_result)
+        return HTMLResponse(content)
+
     raise HTTPException(status_code=400, detail=f"Unsupported format: {format}")
+
+
+@router.get("/compare")
+async def compare_editions_endpoint(
+    date_a: str = Query(..., description="First edition date"),
+    date_b: str = Query(..., description="Second edition date"),
+    session: AsyncSession = _session,  # noqa: B008
+):
+    """Compare two editions and return a diff summary."""
+    from .services.edition import compare_editions
+
+    result = await compare_editions(session, date_a, date_b)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
 
 
 # --- Editorial endpoints ---
