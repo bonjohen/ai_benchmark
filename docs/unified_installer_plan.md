@@ -41,22 +41,22 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 1.1 | Open | | | Convert `scripts/env.template` — replace all `C:/ai-benchmark` with `{{INSTALL_DIR}}`, hardcoded port `8100` with `{{API_PORT}}`, add `{{INSTANCE_NAME}}` for log prefix comments. Add precedence documentation header per req E4. |
-| 1.2 | Open | | | Convert `scripts/env.dev.template` — replace `C:/Projects/ai_benchmark` with `{{INSTALL_DIR}}` for consistency with the substitution engine. |
-| 1.3 | Open | | | Create `scripts/bin/bin_template.bat` — single template with `{{INSTALL_DIR}}` and `{{CLI_COMMAND}}` placeholders, consolidating the 4 nearly-identical bin scripts (`collect.bat`, `run.bat`, `serve.bat`, `backfill.bat`). Log filename uses `{{LOG_PREFIX}}` for per-instance log names (req B5). Keep originals until Phase 6 cleanup. |
-| 1.4 | Open | | | Create `scripts/installer/module.psm1` — PowerShell module with shared functions: `Invoke-TemplateSubstitution` (reads template, replaces `{{KEY}}` tokens from a hashtable, writes output), `Write-InstallerLog` (appends timestamped entries to `logs\installer_<timestamp>.log` per req F6), `Test-Elevation` (checks admin privileges, suggests `runas` if needed per req F4). |
-| 1.5 | Open | | | Add pre-flight check functions to `module.psm1` — `Test-PythonVersion` (verifies >= 3.12), `Test-PipAvailable`, `Test-BuildModule`, `Test-DirectoryWritable`, `Test-PortAvailable` (checks registry for port collisions). Per req F1. |
-| 1.6 | Open | | | Add instance registry functions to `module.psm1` — `Get-InstanceRegistry` (reads/creates `%LOCALAPPDATA%\ai-benchmark\instances.json`), `Set-InstanceEntry` (adds/updates entry), `Remove-InstanceEntry`, `Test-InstanceExists` (prevents duplicate path installs), `Find-InstanceByName` (lookup by name). Registry schema per req B3: name, path, type, version, install_date, last_upgrade_date, api_port, task_name. |
-| 1.7 | Open | | | Add dry-run infrastructure to `module.psm1` — `$Script:DryRun` flag, `Invoke-InstallerAction` wrapper that logs the action description and either executes or prints "[DRY RUN] would: ..." per req F5. All subsequent subcommands use this wrapper for mutating operations. |
-| 1.8 | Open | | | Add version tracking functions to `module.psm1` — `Write-VersionJson` (writes `config\version.json` with package_version, install_timestamp, python_version, installer_version), `Read-VersionJson`. Per req C2. |
-| 1.9 | Open | | | Verify: run `Get-Module -ListAvailable` import test on `module.psm1`. Confirm `Invoke-TemplateSubstitution` correctly replaces tokens in env.template and bin_template.bat with sample values. |
-| 1.10 | Open | | | Stage all Phase 1 changes. |
-| 1.11 | Open | | | Commit all Phase 1 changes. |
+| 1.1 | Completed | 2026-03-30 10:10 PM | 2026-03-30 10:10 PM | Convert `scripts/env.template` — replace all `C:/ai-benchmark` with `{{INSTALL_DIR}}`, hardcoded port `8100` with `{{API_PORT}}`, add `{{INSTANCE_NAME}}` for log prefix comments. Add precedence documentation header per req E4. |
+| 1.2 | Completed | 2026-03-30 10:10 PM | 2026-03-30 10:10 PM | Convert `scripts/env.dev.template` — replace `C:/Projects/ai_benchmark` with `{{INSTALL_DIR}}` for consistency with the substitution engine. |
+| 1.3 | Completed | 2026-03-30 10:10 PM | 2026-03-30 10:15 PM | Create `scripts/bin/bin_template.bat` — single template with `{{INSTALL_DIR}}` and `{{CLI_COMMAND}}` placeholders, consolidating the 4 nearly-identical bin scripts (`collect.bat`, `run.bat`, `serve.bat`, `backfill.bat`). Log filename uses `{{LOG_PREFIX}}` for per-instance log names (req B5). Keep originals until Phase 6 cleanup. |
+| 1.4 | Completed | 2026-03-30 10:15 PM | 2026-03-30 10:25 PM | Create `scripts/installer/module.psm1` — PowerShell module with shared functions: `Invoke-TemplateSubstitution` (reads template, replaces `{{KEY}}` tokens from a hashtable, writes output), `Write-InstallerLog` (appends timestamped entries to `logs\installer_<timestamp>.log` per req F6), `Test-Elevation` (checks admin privileges, suggests `runas` if needed per req F4). |
+| 1.5 | Completed | 2026-03-30 10:15 PM | 2026-03-30 10:25 PM | Add pre-flight check functions to `module.psm1` — `Test-PythonVersion` (verifies >= 3.12), `Test-PipAvailable`, `Test-BuildModule`, `Test-DirectoryWritable`, `Test-PortAvailable` (checks registry for port collisions). Per req F1. |
+| 1.6 | Completed | 2026-03-30 10:15 PM | 2026-03-30 10:25 PM | Add instance registry functions to `module.psm1` — `Get-InstanceRegistry` (reads/creates `%LOCALAPPDATA%\ai-benchmark\instances.json`), `Set-InstanceEntry` (adds/updates entry), `Remove-InstanceEntry`, `Test-InstanceExists` (prevents duplicate path installs), `Find-InstanceByName` (lookup by name). Registry schema per req B3: name, path, type, version, install_date, last_upgrade_date, api_port, task_name. |
+| 1.7 | Completed | 2026-03-30 10:15 PM | 2026-03-30 10:25 PM | Add dry-run infrastructure to `module.psm1` — `$Script:DryRun` flag, `Invoke-InstallerAction` wrapper that logs the action description and either executes or prints "[DRY RUN] would: ..." per req F5. All subsequent subcommands use this wrapper for mutating operations. |
+| 1.8 | Completed | 2026-03-30 10:15 PM | 2026-03-30 10:25 PM | Add version tracking functions to `module.psm1` — `Write-VersionJson` (writes `config\version.json` with package_version, install_timestamp, python_version, installer_version), `Read-VersionJson`. Per req C2. |
+| 1.9 | Completed | 2026-03-30 10:25 PM | 2026-03-30 10:30 PM | Verify: run `Get-Module -ListAvailable` import test on `module.psm1`. Confirm `Invoke-TemplateSubstitution` correctly replaces tokens in env.template and bin_template.bat with sample values. |
+| 1.10 | Completed | 2026-03-30 10:30 PM | 2026-03-30 10:30 PM | Stage all Phase 1 changes. |
+| 1.11 | Completed | 2026-03-30 10:30 PM | 2026-03-30 10:30 PM | Commit all Phase 1 changes. |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Templatized `scripts/env.template` (6 `{{INSTALL_DIR}}`, 1 `{{API_PORT}}`, 1 `{{INSTANCE_NAME}}` with precedence documentation header), `scripts/env.dev.template` (2 `{{INSTALL_DIR}}`). Created `scripts/bin/bin_template.bat` (4 placeholders: INSTALL_DIR, CLI_COMMAND, LOG_PREFIX, SCRIPT_DESCRIPTION). Created `scripts/installer/module.psm1` with 18 exported functions across 5 groups (Core, Pre-flight, Registry, Dry-run, Version). All 3 templates verified via automated test script — no unreplaced placeholders. Ruff lint and format clean.
+- **Changes hosted at:** `scripts/env.template`, `scripts/env.dev.template`, `scripts/bin/bin_template.bat`, `scripts/installer/module.psm1`
 - **Commit:** `Add template placeholders and core installer PowerShell module`
 
 ## Phase 2: Install Subcommand
