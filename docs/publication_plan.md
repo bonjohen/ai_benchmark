@@ -52,8 +52,8 @@ Open  ──>  Started  ──>  Completed
 | 1.5 | Completed | 2026-03-30 12:01 PM | 2026-03-30 12:04 PM | Create `alembic/versions/009_publication_pipeline.py` — migration creating four publication tables with indexes. |
 | 1.6 | Completed | 2026-03-30 12:05 PM | 2026-03-30 12:08 PM | Create `tests/test_publication_models.py` — 12 tests covering model CRUD, relationships, cascade delete, config defaults/overrides, and dataclass creation. Updated `tests/conftest.py` to register publication models. |
 | 1.7 | Completed | 2026-03-30 12:08 PM | 2026-03-30 12:12 PM | All 12 tests pass. Ruff check and format clean. |
-| 1.8 | Open | | | Stage all Phase 1 changes. |
-| 1.9 | Open | | | Commit all Phase 1 changes. |
+| 1.8 | Completed | 2026-03-30 12:12 PM | 2026-03-30 12:13 PM | Stage all Phase 1 changes. |
+| 1.9 | Completed | 2026-03-30 12:13 PM | 2026-03-30 12:14 PM | Commit all Phase 1 changes. |
 
 ### Phase 1 Summary
 
@@ -70,18 +70,18 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Create `ai_benchmark/publication/services/__init__.py`. |
-| 2.2 | Open | | | Create `ai_benchmark/publication/services/assembly.py` — `async def assemble_candidates(session, *, window_start, window_end, settings) -> list[CandidateItem]`. Load eligible EventRecords, ClaimRecords, EnrichedPapers, and cached AnalysisInsights within the window. Apply eligibility rules per PDR §9.2: exclude conflicted events unless configured; require benchmark-owner claim for benchmark entries; require promoted status for research entries; require pricing verification path for pricing entries. Collapse duplicate candidate representations per event cluster using existing dedup keys. Attach cross-reference counts, benchmark deltas from `benchmark_trends`, and spotlight/anomaly signals from `AnalysisInsight`. |
-| 2.3 | Open | | | Create `ai_benchmark/publication/services/scoring.py` — `async def score_candidates(candidates: list[CandidateItem], settings) -> list[ScoredCandidate]`. Compute composite score from weighted factors: verification_status (0.25), confidence_tier (0.20), source_diversity/source_count (0.15), recency (0.10), cross_ref_density (0.10), novelty (0.10), benchmark_magnitude (0.05), anomaly_signal (0.05). Return deterministic ordering. Persist score_breakdown dict on each ScoredCandidate. Penalize low-signal churn and repeated follow-up noise. |
-| 2.4 | Open | | | Create `ai_benchmark/publication/services/sectioning.py` — `async def assign_sections(scored: list[ScoredCandidate], settings) -> dict[str, list[ScoredCandidate]]`. Map entry_type to section_key: benchmark results → "benchmark_movers", model/vendor announcements → "announcements", research → "research_pulse", news/secondary → "industry_news". Items below min_score_threshold or beyond max_items_per_section → "watchlist". Resolve ties by score descending then observed_at ascending. Return dict keyed by section_key. |
-| 2.5 | Open | | | Create `tests/test_publication_assembly.py` — tests for: eligibility filtering (conflicted excluded, benchmark-owner required, promoted-only research), duplicate collapse, scoring determinism and weight correctness, section assignment and overflow to watchlist, empty-window graceful handling. |
-| 2.6 | Open | | | Run `pytest tests/test_publication_assembly.py` and ruff checks — fix until green. |
-| 2.7 | Open | | | Stage all Phase 2 changes. |
-| 2.8 | Open | | | Commit all Phase 2 changes. |
+| 2.1 | Completed | 2026-03-30 12:15 PM | 2026-03-30 12:15 PM | Create `ai_benchmark/publication/services/__init__.py`. |
+| 2.2 | Completed | 2026-03-30 12:15 PM | 2026-03-30 12:22 PM | Create `ai_benchmark/publication/services/assembly.py` — eligibility filtering, dedup, cross-ref counting, analysis signal loading. |
+| 2.3 | Completed | 2026-03-30 12:15 PM | 2026-03-30 12:20 PM | Create `ai_benchmark/publication/services/scoring.py` — 8-factor weighted scoring with deterministic ordering. |
+| 2.4 | Completed | 2026-03-30 12:15 PM | 2026-03-30 12:20 PM | Create `ai_benchmark/publication/services/sectioning.py` — type-to-section mapping, overflow to watchlist, top_summary population. |
+| 2.5 | Completed | 2026-03-30 12:22 PM | 2026-03-30 12:28 PM | Create `tests/test_publication_assembly.py` — 16 tests covering eligibility, dedup, scoring determinism, sectioning, overflow, cross-refs. |
+| 2.6 | Completed | 2026-03-30 12:28 PM | 2026-03-30 12:32 PM | All 16 tests pass. Ruff check and format clean. |
+| 2.7 | Completed | 2026-03-30 12:32 PM | 2026-03-30 12:33 PM | Stage all Phase 2 changes. |
+| 2.8 | Completed | 2026-03-30 12:33 PM | 2026-03-30 12:33 PM | Commit all Phase 2 changes. |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `ai_benchmark/publication/services/` with `assembly.py` (candidate loading, eligibility rules, dedup, cross-ref counting), `scoring.py` (8-factor weighted composite scoring), and `sectioning.py` (type-to-section mapping with overflow). Created `tests/test_publication_assembly.py` (16 tests).
 - **Changes hosted at:** TBD
 - **Commit:** `Add candidate assembly, scoring, and sectioning services`
 
