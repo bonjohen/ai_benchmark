@@ -26,8 +26,12 @@ logger = structlog.get_logger()
 _SENTENCE_END_RE = re.compile(r"[.!?]\s")
 
 
-def extract_title(text: str, max_length: int = 500) -> str:
-    """Extract a title from raw text: first sentence or up to max_length chars."""
+def extract_title(text: str, max_length: int = 2000) -> str:
+    """Extract a title from raw text: first sentence or up to max_length chars.
+
+    Default max_length is 2000 to avoid truncating meaningful content.
+    Titles are stored in a Text column with no length constraint.
+    """
     if len(text) <= max_length:
         return text
     # Try to break at the first sentence boundary

@@ -1423,7 +1423,7 @@ async def analysis_model_detail(
             {
                 "benchmark": e.benchmark_variant,
                 "rank": rank,
-                "raw": raw[:100] if raw else "—",
+                "raw": raw if raw else "—",
                 "date": e.published_date or (str(e.observed_at)[:10] if e.observed_at else "—"),
                 "source": e.organization,
             }
@@ -1491,12 +1491,12 @@ async def verification_claims_for_model(
     rows = result.all()
     return [
         {
-            "claim_text": r[1][:200] if r[1] else "",
+            "claim_text": r[1] or "",
             "source_name": r[2],
             "confidence_tier": r[3],
             "confirmation_status": r[4],
             "observed_at": str(r[5])[:19] if r[5] else "",
-            "event_title": r[6][:100] if r[6] else "",
+            "event_title": r[6] or "",
             "event_type": r[7],
         }
         for r in rows
