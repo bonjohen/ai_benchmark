@@ -73,9 +73,10 @@ class SemanticScholarCollector(SourceCollector):
     async def collect_via_api(self, queries: list[str], limit: int = 5) -> list[RawItem]:
         """Search Semantic Scholar for papers matching queries."""
         items: list[RawItem] = []
+        delay = 3.0 if self.client.api_key else 30.0
         for i, query in enumerate(queries):
             if i > 0:
-                await asyncio.sleep(3.0)
+                await asyncio.sleep(delay)
             try:
                 results = await self.client.search_paper(query, limit=limit)
             except Exception:

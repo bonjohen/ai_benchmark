@@ -219,13 +219,18 @@ class CollectionCoordinator:
         )
 
         async with self._session_factory() as session:
-            # Fetch error → retry or record failure
+            # Fetch error → retry (transient) or record failure (permanent)
             if result.fetch_error:
                 await self._handle_failure(result, session, log)
                 await session.commit()
                 stats["tasks_failed"] += 1
 
-                if result.attempt < self._settings.retry_attempts - 1:
+                # Don't retry permanent failures (403 WAF, 404 not found)
+                _permanent = {403, 404}
+                if (
+                    result.fetch_status not in _permanent
+                    and result.attempt < self._settings.retry_attempts - 1
+                ):
                     retry = FetchTask(
                         task_id=uuid.uuid4().hex,
                         organization=result.organization,
@@ -271,7 +276,7 @@ class CollectionCoordinator:
                         css_selectors=result.css_selectors,
                     )
                     if is_low_value_page(diff, items, page_config):
-                        log.warning("low_value_page_filtered", count=len(items))
+                        log.debug("low_value_page_filtered", count=len(items))
                         await self._update_health(result, session, had_items=False)
                         await session.commit()
                         stats["tasks_completed"] += 1
