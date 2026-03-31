@@ -993,7 +993,7 @@ def backfill_types(ctx: click.Context) -> None:
                         scores_fixed += 1
 
             await session.commit()
-            click.echo(f"Types fixed: {types_fixed} events → benchmark_result")
+            click.echo(f"Types fixed: {types_fixed} events -> benchmark_result")
             click.echo(f"Elo scores backfilled: {scores_fixed} events")
 
         await engine.dispose()
@@ -1014,28 +1014,45 @@ def backfill_slugs(ctx: click.Context) -> None:
 
         session_factory = create_session_factory(engine)
         async with session_factory() as session:
-            from sqlalchemy import select
+            from sqlalchemy import text as sa_text
+            from sqlalchemy import update
 
             from ..models.events import EventRecord
             from ..processing.normalizer import extract_model_slug, validate_model_slug
 
-            stmt = select(EventRecord).where(EventRecord.model_slug.is_(None))
-            result = await session.execute(stmt)
-            events = result.scalars().all()
-            total = len(events)
+            # Load IDs, titles, and raw_content for NULL-slug events
+            raw_stmt = sa_text(
+                "SELECT id, title, raw_content FROM event_records WHERE model_slug IS NULL"
+            )
+            raw_result = await session.execute(raw_stmt)
+            rows = raw_result.all()
+            total = len(rows)
             updated = 0
+            skipped = 0
 
-            for ev in events:
-                text = f"{ev.title} {ev.raw_content or ''}"
-                raw_slug = extract_model_slug(text)
+            for row_id, title, raw_content in rows:
+                combined = f"{title} {raw_content or ''}"
+                raw_slug = extract_model_slug(combined)
                 if raw_slug:
                     slug = validate_model_slug(raw_slug)
                     if slug:
-                        ev.model_slug = slug
-                        updated += 1
+                        try:
+                            await session.execute(
+                                update(EventRecord)
+                                .where(EventRecord.id == row_id)
+                                .values(model_slug=slug)
+                            )
+                            await session.flush()
+                            updated += 1
+                        except Exception:
+                            await session.rollback()
+                            skipped += 1
 
             await session.commit()
-            click.echo(f"Backfill complete: {updated} of {total} NULL-slug events updated.")
+            click.echo(
+                f"Backfill complete: {updated} updated, "
+                f"{skipped} skipped (constraint), {total} total."
+            )
 
         await engine.dispose()
 
