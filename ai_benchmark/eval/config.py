@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import structlog
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
@@ -12,7 +14,7 @@ logger = structlog.get_logger(__name__)
 class EvalSettings(BaseSettings):
     model_config = {
         "env_prefix": "AI_BENCH_EVAL_",
-        "env_file": ".env",
+        "env_file": os.environ.get("AI_BENCH_ENV_FILE", ".env"),
         "env_file_encoding": "utf-8",
         "extra": "ignore",
     }

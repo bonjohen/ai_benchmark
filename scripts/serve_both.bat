@@ -1,4 +1,9 @@
 @echo off
+:: DEPRECATED: Use ai-bench-installer.bat serve-compare instead.
+:: This script will be removed in a future release.
+:: See: scripts\ai-bench-installer.bat serve-compare -Instances prod,dev
+echo WARNING: This script is deprecated. Use ai-bench-installer.bat serve-compare instead.
+echo.
 :: Start both production and dev eval servers side by side.
 ::   Production: http://127.0.0.1:8100  (venv wheel install)
 ::   Dev:        http://127.0.0.1:8200  (editable install)

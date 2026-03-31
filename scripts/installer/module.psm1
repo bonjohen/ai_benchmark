@@ -496,6 +496,96 @@ function Read-VersionJson {
 }
 
 # ─────────────────────────────────────────────────────────────────────
+# Comparison
+# ─────────────────────────────────────────────────────────────────────
+
+function Compare-InstanceDatabases {
+    <#
+    .SYNOPSIS
+        Compares row counts across all tables in two instance databases.
+    .PARAMETER Name1
+        First instance name.
+    .PARAMETER Name2
+        Second instance name.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Name1,
+        [Parameter(Mandatory)][string]$Name2
+    )
+
+    $entry1 = Find-InstanceByName -Name $Name1
+    $entry2 = Find-InstanceByName -Name $Name2
+    if (-not $entry1) { throw "Instance '$Name1' not found in registry." }
+    if (-not $entry2) { throw "Instance '$Name2' not found in registry." }
+
+    # Resolve database paths
+    $db1 = Join-Path $entry1.path "data\ai_benchmark.db"
+    if (-not (Test-Path $db1)) {
+        $db1 = Join-Path $entry1.path "ai_benchmark.db"
+    }
+    $db2 = Join-Path $entry2.path "data\ai_benchmark.db"
+    if (-not (Test-Path $db2)) {
+        $db2 = Join-Path $entry2.path "ai_benchmark.db"
+    }
+
+    if (-not (Test-Path $db1)) {
+        throw "Database not found for instance '$Name1'"
+    }
+    if (-not (Test-Path $db2)) {
+        throw "Database not found for instance '$Name2'"
+    }
+
+    # Find a usable Python
+    $python = Join-Path $entry1.path "venv\Scripts\python.exe"
+    if (-not (Test-Path $python)) {
+        $python = Join-Path $entry2.path "venv\Scripts\python.exe"
+    }
+    if (-not (Test-Path $python)) {
+        $found = Get-Command "python" -ErrorAction SilentlyContinue
+        if ($found) { $python = $found.Source }
+        else { throw "Cannot find Python to run comparison." }
+    }
+
+    # Write comparison script to temp file
+    $tmpScript = Join-Path ([System.IO.Path]::GetTempPath()) "aibench_compare_$([guid]::NewGuid().ToString('N')).py"
+    try {
+        @"
+import sqlite3, sys
+db1, db2, n1, n2 = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+def get_counts(path):
+    conn = sqlite3.connect(path)
+    tables = [r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+    )]
+    counts = {}
+    for t in tables:
+        counts[t] = conn.execute(f'SELECT COUNT(*) FROM "{t}"').fetchone()[0]
+    conn.close()
+    return counts
+c1, c2 = get_counts(db1), get_counts(db2)
+all_tables = sorted(set(list(c1.keys()) + list(c2.keys())))
+print(f"{'Table':<40} {n1:>10} {n2:>10} {'Diff':>10}")
+print("-" * 74)
+for t in all_tables:
+    v1, v2 = c1.get(t, 0), c2.get(t, 0)
+    diff = v2 - v1
+    marker = "" if diff == 0 else f"{diff:+d}"
+    print(f"{t:<40} {v1:>10} {v2:>10} {marker:>10}")
+"@ | Set-Content -Path $tmpScript -Encoding UTF8
+
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        & $python $tmpScript $db1 $db2 $Name1 $Name2 2>&1
+        $ErrorActionPreference = $prevEAP
+        if ($LASTEXITCODE -ne 0) {
+            throw "Database comparison script failed."
+        }
+    } finally {
+        Remove-Item $tmpScript -Force -ErrorAction SilentlyContinue
+    }
+}
+
+# ─────────────────────────────────────────────────────────────────────
 # Module exports
 # ─────────────────────────────────────────────────────────────────────
 
@@ -523,4 +613,6 @@ Export-ModuleMember -Function @(
     # Version
     'Write-VersionJson'
     'Read-VersionJson'
+    # Comparison
+    'Compare-InstanceDatabases'
 )

@@ -77,5 +77,6 @@ def test_pipeline_settings_warns_on_relative_default(monkeypatch, capsys):
 
 def test_eval_settings_loads_env_file():
     """EvalSettings should have env_file configured."""
-    assert EvalSettings.model_config.get("env_file") == ".env"
+    # env_file is ".env" by default, or the AI_BENCH_ENV_FILE override
+    assert EvalSettings.model_config.get("env_file") is not None
     assert EvalSettings.model_config.get("env_file_encoding") == "utf-8"

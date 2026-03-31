@@ -1,4 +1,8 @@
 #Requires -RunAsAdministrator
+# DEPRECATED: Use ai-bench-installer.bat install instead.
+# This script will be removed in a future release.
+# See: scripts\ai-bench-installer.bat install -Help
+Write-Warning "This script is deprecated. Use ai-bench-installer.bat install instead."
 <#
 .SYNOPSIS
     AI Benchmark Pipeline — Windows Installer (PowerShell)

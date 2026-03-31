@@ -1,4 +1,9 @@
 @echo off
+:: DEPRECATED: Use ai-bench-installer.bat dev-setup instead.
+:: This script will be removed in a future release.
+:: See: scripts\ai-bench-installer.bat dev-setup -Help
+echo WARNING: This script is deprecated. Use ai-bench-installer.bat dev-setup instead.
+echo.
 :: AI Benchmark — Dev Environment Setup
 :: Run from the project root: scripts\setup_dev.bat
 :: Sets up the dev editable install, creates .env, and initializes the database.

@@ -10,6 +10,8 @@
 ::   status      Show instance status
 ::   backup      Back up instance database
 ::   dev-setup   Set up development environment
+::   serve-compare  Launch two eval servers side by side
+::   compare     Compare databases across instances
 
 setlocal enabledelayedexpansion
 
@@ -32,6 +34,8 @@ if "%SUBCMD%"=="" (
     echo    status      Show instance status
     echo    backup      Back up instance database
     echo    dev-setup   Set up development environment
+    echo    serve-compare  Launch two eval servers side by side
+    echo    compare     Compare databases across instances
     echo.
     echo  Examples:
     echo    %~nx0 install -Path C:\ai-benchmark
@@ -87,6 +91,16 @@ if /i "%SUBCMD%"=="backup" (
 
 if /i "%SUBCMD%"=="dev-setup" (
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Setup-Dev.ps1" !ARGS!
+    exit /b !ERRORLEVEL!
+)
+
+if /i "%SUBCMD%"=="serve-compare" (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Serve-Compare.ps1" !ARGS!
+    exit /b !ERRORLEVEL!
+)
+
+if /i "%SUBCMD%"=="compare" (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Compare-Instances.ps1" !ARGS!
     exit /b !ERRORLEVEL!
 )
 

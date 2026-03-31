@@ -483,9 +483,9 @@ def eval_machines(
 
 
 @eval_group.command("serve")
-@click.option("--host", default="127.0.0.1", help="Bind host.")
-@click.option("--port", default=8100, type=int, help="Bind port.")
-def eval_serve(host: str, port: int):
+@click.option("--host", default=None, help="Bind host (default: from settings or 127.0.0.1).")
+@click.option("--port", default=None, type=int, help="Bind port (default: from settings or 8100).")
+def eval_serve(host: str | None, port: int | None):
     """Start the evaluation API server."""
     import uvicorn
 
@@ -493,6 +493,8 @@ def eval_serve(host: str, port: int):
     from ..config import EvalSettings
 
     settings = EvalSettings()
+    host = host or settings.api_host
+    port = port or settings.api_port
     app = create_app(settings)
     uvicorn.run(app, host=host, port=port)
 

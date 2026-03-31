@@ -53,28 +53,41 @@ ai-benchmark analyze correlations [--min-overlap 5]
 
 ## Deployment
 
-Production runs at `C:\ai-benchmark` with its own venv (`C:\ai-benchmark\venv`). Dev uses an editable install (`pip install -e ".[dev]"`) in the project directory. The two are isolated — dev code changes do not affect production until explicitly deployed.
+Production and development instances are managed by the unified installer. Each instance is isolated with its own directory, venv, config, and database. The installer tracks instances in a JSON registry at `%LOCALAPPDATA%\ai-benchmark\instances.json`.
 
 ```powershell
-# First-time install (creates venv, builds wheel, installs, registers scheduled task)
-scripts\install.ps1                    # PowerShell (admin)
-scripts\install.bat                    # or batch equivalent
+# Unified installer (preferred)
+scripts\ai-bench-installer.bat install -Path C:\ai-benchmark              # New production instance
+scripts\ai-bench-installer.bat install -Path D:\staging -Name staging -Port 9200
+scripts\ai-bench-installer.bat upgrade -Name prod                         # Upgrade existing instance
+scripts\ai-bench-installer.bat backup -Name prod                          # Database backup with rotation
+scripts\ai-bench-installer.bat dev-setup                                  # Dev editable install + registry
+scripts\ai-bench-installer.bat list                                       # Show all instances
+scripts\ai-bench-installer.bat status -Name prod                          # Detailed instance status
+scripts\ai-bench-installer.bat uninstall -Name staging                    # Remove instance
+scripts\ai-bench-installer.bat serve-compare -Instances prod,dev          # Side-by-side eval servers
+scripts\ai-bench-installer.bat compare -Instances prod,dev                # Database row-count diff
 
-# Deploy new code (backup DB, build wheel, install into venv, copy bin scripts)
-scripts\deploy.ps1                     # PowerShell
-scripts\deploy.bat                     # or batch equivalent
-
-# Manual database backup with rotation (keep last 10)
-scripts\backup.ps1                     # PowerShell
-scripts\backup.bat                     # or batch equivalent
+# Any subcommand supports -DryRun to preview without changes
+scripts\ai-bench-installer.bat install -Path C:\ai-benchmark -DryRun
 ```
 
 Production layout:
-- `C:\ai-benchmark\venv\` — Python venv with wheel-installed package
-- `C:\ai-benchmark\config\.env` — production config (API keys, absolute DB path)
-- `C:\ai-benchmark\data\ai_benchmark.db` — production database
-- `C:\ai-benchmark\bin\` — batch scripts using venv Python
-- `C:\ai-benchmark\backup\` — timestamped database backups
+- `<install-dir>\venv\` — Python venv with wheel-installed package
+- `<install-dir>\config\.env` — instance config (API keys, absolute DB path)
+- `<install-dir>\data\ai_benchmark.db` — instance database
+- `<install-dir>\bin\` — generated batch scripts (collect, serve, run, backfill)
+- `<install-dir>\backup\` — timestamped database backups
+- `<install-dir>\config\version.json` — version and install metadata
+
+Bin scripts set `AI_BENCH_ENV_FILE` to point at the instance's `config\.env`, so both `PipelineSettings` and `EvalSettings` load the correct config regardless of working directory. The `eval serve` command reads its default port from `EvalSettings.api_port` (configured via `AI_BENCH_EVAL_API_PORT` in `.env`), so no `--port` flag is needed when the config is correct.
+
+Old scripts (deprecated, will be removed):
+- `scripts\install.ps1`, `scripts\install.bat` — use `ai-bench-installer.bat install`
+- `scripts\deploy.ps1`, `scripts\deploy.bat` — use `ai-bench-installer.bat upgrade`
+- `scripts\backup.ps1`, `scripts\backup.bat` — use `ai-bench-installer.bat backup`
+- `scripts\setup_dev.bat` — use `ai-bench-installer.bat dev-setup`
+- `scripts\serve_both.bat` — use `ai-bench-installer.bat serve-compare`
 
 ## Configuration
 

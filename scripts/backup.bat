@@ -1,4 +1,9 @@
 @echo off
+:: DEPRECATED: Use ai-bench-installer.bat backup instead.
+:: This script will be removed in a future release.
+:: See: scripts\ai-bench-installer.bat backup -Help
+echo WARNING: This script is deprecated. Use ai-bench-installer.bat backup instead.
+echo.
 :: AI Benchmark — Database Backup with Rotation
 :: Copies the production SQLite database to a timestamped backup file.
 :: Rotates old backups, keeping only the most recent 10 copies.

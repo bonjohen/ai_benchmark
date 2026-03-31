@@ -1,3 +1,7 @@
+# DEPRECATED: Use ai-bench-installer.bat backup instead.
+# This script will be removed in a future release.
+# See: scripts\ai-bench-installer.bat backup -Help
+Write-Warning "This script is deprecated. Use ai-bench-installer.bat backup instead."
 <#
 .SYNOPSIS
     AI Benchmark — Database Backup with Rotation

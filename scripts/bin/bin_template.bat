@@ -8,6 +8,7 @@ setlocal enabledelayedexpansion
 set INSTALL_DIR={{INSTALL_DIR}}
 set ENV_FILE=%INSTALL_DIR%\config\.env
 set PYTHON=%INSTALL_DIR%\venv\Scripts\python.exe
+set AI_BENCH_ENV_FILE=%ENV_FILE%
 
 :: Load environment from .env
 if exist "%ENV_FILE%" (

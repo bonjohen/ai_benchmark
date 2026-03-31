@@ -1,4 +1,9 @@
 @echo off
+:: DEPRECATED: Use ai-bench-installer.bat install instead.
+:: This script will be removed in a future release.
+:: See: scripts\ai-bench-installer.bat install -Help
+echo WARNING: This script is deprecated. Use ai-bench-installer.bat install instead.
+echo.
 :: AI Benchmark Pipeline — Windows Installer
 :: Run from an elevated (Admin) Command Prompt.
 :: Usage: install.bat [INSTALL_DIR] [PYTHON_PATH]

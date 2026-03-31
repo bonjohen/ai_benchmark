@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -45,7 +46,7 @@ class PipelineSettings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="AI_BENCH_",
-        env_file=".env",
+        env_file=os.environ.get("AI_BENCH_ENV_FILE", ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )

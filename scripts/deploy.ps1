@@ -1,3 +1,7 @@
+# DEPRECATED: Use ai-bench-installer.bat upgrade instead.
+# This script will be removed in a future release.
+# See: scripts\ai-bench-installer.bat upgrade -Help
+Write-Warning "This script is deprecated. Use ai-bench-installer.bat upgrade instead."
 <#
 .SYNOPSIS
     AI Benchmark Pipeline — Deploy/Upgrade Script (PowerShell)
