@@ -149,7 +149,23 @@ class CollectionCoordinator:
                 )
                 result = await session.execute(stmt)
                 source_record = result.scalar_one_or_none()
-                source_id = source_record.id if source_record else 0
+
+                if source_record is None:
+                    source_record = SourceModel(
+                        source_name=source_config.source_name,
+                        category=source_config.category,
+                        organization=source_config.organization,
+                        homepage_url=source_config.homepage_url,
+                        base_domain=source_config.base_domain,
+                        trust_rating=source_config.trust_rating,
+                        source_role=getattr(source_config, "source_role", "primary source"),
+                        classification=source_config.classification,
+                        collection_method=source_config.collection_method,
+                    )
+                    session.add(source_record)
+                    await session.flush()
+
+                source_id = source_record.id
 
                 for page_config in source_config.pages:
                     # Look up or create Page record

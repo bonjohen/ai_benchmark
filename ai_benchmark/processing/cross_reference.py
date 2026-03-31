@@ -57,6 +57,7 @@ async def find_related_by_org_event_type(
         EventRecord.organization == event.organization,
         EventRecord.event_type == event.event_type,
         EventRecord.id != event.id,
+        EventRecord.model_slug.is_not(None),
     )
     if event.observed_at:
         window_start = event.observed_at - timedelta(days=time_window_days)
@@ -242,21 +243,24 @@ async def build_cross_references(
 
     # Strategy 1: same model within time window
     model_related = await find_related_by_model(session, event)
-    for related in model_related:
+    for related in model_related[:10]:
         xref = await create_cross_reference(session, event, related)
         if xref:
             created.append(xref)
 
     # Strategy 2: same org + event type within tight window
-    org_related = await find_related_by_org_event_type(session, event)
-    for related in org_related:
-        xref = await create_cross_reference(session, event, related)
-        if xref:
-            created.append(xref)
+    # Only fire if the event itself has a model_slug — prevents combinatorial explosion
+    # from generic announcements with no model attribution
+    if event.model_slug:
+        org_related = await find_related_by_org_event_type(session, event)
+        for related in org_related[:10]:
+            xref = await create_cross_reference(session, event, related)
+            if xref:
+                created.append(xref)
 
     # Strategy 3: shared arXiv ID → cites relationship
     arxiv_related = await find_related_by_arxiv_id(session, event)
-    for related in arxiv_related:
+    for related in arxiv_related[:10]:
         xref = await create_cross_reference(session, event, related, relationship_type="cites")
         if xref:
             created.append(xref)
