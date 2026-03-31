@@ -75,6 +75,10 @@ async def process_item(
     published_date = extract_date(item.date_text or item.body)
     event_type = classify_event_type(item.title, item.body)
 
+    # Override: items with benchmark_variant metadata are benchmark results
+    if item.metadata.get("benchmark_variant") and event_type == "announcement":
+        event_type = "benchmark_result"
+
     # 1b. Discovery queue — check for new model slugs before dedup/creation
     if model_slug:
         await check_and_enqueue(session, model_slug, organization)

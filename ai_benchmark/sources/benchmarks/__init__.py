@@ -51,11 +51,12 @@ class BenchmarkCollector(SourceCollector):
             }
             if entry.metadata:
                 metadata.update(entry.metadata)
+            score_str = f", Score: {entry.score}" if entry.score is not None else ""
             items.append(
                 RawItem(
                     title=f"{self.benchmark_family}: {subject} = {entry.score}",
                     body=(
-                        f"Rank: {entry.rank}, Variant: {entry.variant}, "
+                        f"Rank: {entry.rank}{score_str}, Variant: {entry.variant}, "
                         f"Conditions: {entry.conditions}"
                     ),
                     item_type="benchmark_entry",

@@ -933,6 +933,74 @@ def seed_models(ctx: click.Context) -> None:
     asyncio.run(_run())
 
 
+@analyze_group.command("backfill-types")
+@click.pass_context
+def backfill_types(ctx: click.Context) -> None:
+    """Backfill event_type and Elo scores for benchmark events."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            import re as _re
+
+            from sqlalchemy import select, update
+
+            from ..models.events import ClaimRecord, EventRecord
+
+            # Fix event_type: announcement → benchmark_result where benchmark_variant exists
+            type_stmt = (
+                update(EventRecord)
+                .where(EventRecord.benchmark_variant.is_not(None))
+                .where(EventRecord.event_type == "announcement")
+                .values(event_type="benchmark_result")
+            )
+            type_result = await session.execute(type_stmt)
+            types_fixed = type_result.rowcount
+
+            # Backfill Elo scores from claim_text into raw_content
+            elo_stmt = (
+                select(EventRecord)
+                .where(EventRecord.organization == "LMArena")
+                .where(EventRecord.raw_content.like("Rank:%"))
+                .where(~EventRecord.raw_content.like("%Score:%"))
+            )
+            elo_result = await session.execute(elo_stmt)
+            events = elo_result.scalars().all()
+            elo_pattern = _re.compile(r"=\s*(\d+)")
+            scores_fixed = 0
+
+            for ev in events:
+                claim_stmt = (
+                    select(ClaimRecord.claim_text)
+                    .where(ClaimRecord.event_id == ev.id)
+                    .where(ClaimRecord.claim_text.like("LMArena:%=%"))
+                    .limit(1)
+                )
+                claim_result = await session.execute(claim_stmt)
+                claim_text = claim_result.scalar_one_or_none()
+                if claim_text:
+                    m = elo_pattern.search(claim_text)
+                    if m:
+                        elo = m.group(1)
+                        parts = ev.raw_content.split(",", 1)
+                        rest = f",{parts[1]}" if len(parts) > 1 else ""
+                        ev.raw_content = f"{parts[0]}, Score: {elo}{rest}"
+                        scores_fixed += 1
+
+            await session.commit()
+            click.echo(f"Types fixed: {types_fixed} events → benchmark_result")
+            click.echo(f"Elo scores backfilled: {scores_fixed} events")
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
 @analyze_group.command("backfill-slugs")
 @click.pass_context
 def backfill_slugs(ctx: click.Context) -> None:
