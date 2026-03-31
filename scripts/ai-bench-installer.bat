@@ -71,13 +71,13 @@ if /i "%SUBCMD%"=="uninstall" (
 )
 
 if /i "%SUBCMD%"=="list" (
-    echo Subcommand 'list' is not yet implemented. Coming in Phase 3.
-    exit /b 1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Get-Instances.ps1" !ARGS!
+    exit /b !ERRORLEVEL!
 )
 
 if /i "%SUBCMD%"=="status" (
-    echo Subcommand 'status' is not yet implemented. Coming in Phase 3.
-    exit /b 1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%Get-InstanceStatus.ps1" !ARGS!
+    exit /b !ERRORLEVEL!
 )
 
 if /i "%SUBCMD%"=="backup" (

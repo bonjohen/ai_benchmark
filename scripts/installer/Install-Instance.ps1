@@ -188,7 +188,28 @@ if (-not (Test-PortAvailable -Port $Port -ExcludeName $Name)) {
 }
 Write-Host "  Port $Port OK"
 
-# 1g. Elevation
+# 1g. Schedule stagger suggestion
+if (-not $NoSchedule) {
+    $existingRegistry = Get-InstanceRegistry
+    foreach ($regName in $existingRegistry.Keys) {
+        if ($regName -eq $Name) { continue }
+        $regEntry = $existingRegistry[$regName]
+        if ($regEntry.task_time -eq $TaskTime) {
+            Write-Host "  NOTE: Instance '$regName' already schedules at $TaskTime." -ForegroundColor Yellow
+            # Suggest a staggered time (30-min increments)
+            $baseHour = [int]($TaskTime.Split(':')[0])
+            $baseMin = [int]($TaskTime.Split(':')[1])
+            $suggested = "{0:D2}:{1:D2}" -f $baseHour, ($baseMin + 30)
+            if (($baseMin + 30) -ge 60) {
+                $suggested = "{0:D2}:00" -f ($baseHour + 1)
+            }
+            Write-Host "  Consider using -TaskTime $suggested to stagger API calls." -ForegroundColor Yellow
+            break
+        }
+    }
+}
+
+# 1h. Elevation
 if (-not $NoSchedule) {
     $isAdmin = Test-Elevation
     if (-not $isAdmin) {
@@ -420,6 +441,7 @@ Invoke-InstallerAction -Description "Register instance '$Name' in registry" -Act
         last_upgrade_date = ""
         api_port          = $Port
         task_name         = $taskName
+        task_time         = if ($NoSchedule) { "" } else { $TaskTime }
     }
 }
 

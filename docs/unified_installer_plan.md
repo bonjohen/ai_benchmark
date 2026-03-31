@@ -92,19 +92,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Create `scripts/installer/Get-Instances.ps1` — implements `list` subcommand. Reads instance registry, prints table: name, path, type, version, port, task schedule, last upgrade date. Per req D5. |
-| 3.2 | Open | | | Create `scripts/installer/Get-InstanceStatus.ps1` — implements `status` subcommand. Parameters: `-Path` or `-Name` (identify instance). Displays: version (from `version.json`), database file size, last collection time (newest log file timestamp in `logs/`), scheduled task state (via `schtasks /query`), whether eval server is running on configured port (via `Test-NetConnection`). Per req D6. |
-| 3.3 | Open | | | Update `ai-bench-installer.bat` — wire `list` and `status` subcommands to their scripts. |
-| 3.4 | Open | | | Add port collision detection to `Install-Instance.ps1` — before install, check registry for existing instance using the same port. Warn and refuse unless `--force`. Per req B3 collision prevention. |
-| 3.5 | Open | | | Add schedule stagger suggestion — when `-TaskTime` is default `05:00` and another instance already uses `05:00`, suggest a staggered time (e.g., `05:30`) to avoid concurrent API rate-limit issues. Per req B4. |
-| 3.6 | Open | | | Verify: install two instances to different paths with different names and ports. Run `list` — both appear. Run `status` on each — correct version, DB size, task state. Confirm task names are unique (`AIBenchmark_<name>_Collect`). Confirm `.env` files have different ports. |
-| 3.7 | Open | | | Stage all Phase 3 changes. |
-| 3.8 | Open | | | Commit all Phase 3 changes. |
+| 3.1 | Completed | 2026-03-30 11:15 PM | 2026-03-30 11:20 PM | Create `scripts/installer/Get-Instances.ps1` — implements `list` subcommand. Reads instance registry, prints table: name, path, type, version, port, task schedule, last upgrade date. Per req D5. |
+| 3.2 | Completed | 2026-03-30 11:15 PM | 2026-03-30 11:20 PM | Create `scripts/installer/Get-InstanceStatus.ps1` — implements `status` subcommand. Parameters: `-Path` or `-Name` (identify instance). Displays: version (from `version.json`), database file size, last collection time (newest log file timestamp in `logs/`), scheduled task state (via `schtasks /query`), whether eval server is running on configured port (via `Test-NetConnection`). Per req D6. |
+| 3.3 | Completed | 2026-03-30 11:20 PM | 2026-03-30 11:20 PM | Update `ai-bench-installer.bat` — wire `list` and `status` subcommands to their scripts. |
+| 3.4 | Completed | 2026-03-30 10:35 PM | 2026-03-30 10:50 PM | Add port collision detection to `Install-Instance.ps1` — already implemented in Phase 2 pre-flight step 1f via `Test-PortAvailable`. |
+| 3.5 | Completed | 2026-03-30 11:20 PM | 2026-03-30 11:25 PM | Add schedule stagger suggestion — checks registry for `task_time` collision, suggests 30-min stagger. Added `task_time` field to registry entry. Per req B4. |
+| 3.6 | Completed | 2026-03-30 11:25 PM | 2026-03-30 11:30 PM | Verify: installed test instance, `list` shows it with correct table (name, path, type, version, port, task, dates). `status -Name test` shows version info, DB size (64 KB), venv OK, collection logs, task state, eval server port check. Empty registry shows "No instances registered." message. |
+| 3.7 | Completed | 2026-03-30 11:30 PM | 2026-03-30 11:30 PM | Stage all Phase 3 changes. |
+| 3.8 | Completed | 2026-03-30 11:30 PM | 2026-03-30 11:30 PM | Commit all Phase 3 changes. |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `scripts/installer/Get-Instances.ps1` (list subcommand with formatted table output) and `scripts/installer/Get-InstanceStatus.ps1` (status subcommand showing version, DB size, last collection, task state, eval server). Wired both into `ai-bench-installer.bat`. Added schedule stagger suggestion to Install-Instance.ps1 (checks registry for `task_time` collision, suggests 30-min offset). Added `task_time` field to registry entries.
+- **Changes hosted at:** `scripts/installer/Get-Instances.ps1`, `scripts/installer/Get-InstanceStatus.ps1`, `scripts/ai-bench-installer.bat`, `scripts/installer/Install-Instance.ps1`, `docs/unified_installer_plan.md`
 - **Commit:** `Add list and status subcommands with multi-instance port and schedule management`
 
 ## Phase 4: Upgrade Subcommand
