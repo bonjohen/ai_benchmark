@@ -78,11 +78,11 @@
 <div class="card">
     <div class="table-wrapper">
         <table data-sortable>
-            <caption class="sr-only">Benchmark scores for this model</caption>
+            <caption class="sr-only">Benchmark results for this model</caption>
             <thead>
                 <tr>
                     <th data-sort="string">Benchmark</th>
-                    <th data-sort="string">Score / Content</th>
+                    <th data-sort="number">Rank</th>
                     <th data-sort="string">Date</th>
                     <th data-sort="string">Source</th>
                 </tr>
@@ -91,7 +91,7 @@
                 {% for b in benchmark_scores %}
                 <tr>
                     <td><a href="/eval/analysis/benchmarks/{{ b.benchmark }}">{{ b.benchmark }}</a></td>
-                    <td>{{ b.score[:80] if b.score else "—" }}</td>
+                    <td>{% if b.rank %}#{{ b.rank }}{% else %}{{ b.raw }}{% endif %}</td>
                     <td>{{ b.date }}</td>
                     <td>{{ b.source }}</td>
                 </tr>

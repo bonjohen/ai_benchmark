@@ -27,9 +27,8 @@
             <caption class="sr-only">Leaderboard for {{ benchmark_name }}</caption>
             <thead>
                 <tr>
-                    <th data-sort="number">Rank</th>
+                    <th data-sort="number">#</th>
                     <th data-sort="string">Model</th>
-                    <th data-sort="number">Score</th>
                     <th data-sort="string">Date</th>
                     <th data-sort="string">Source</th>
                 </tr>
@@ -39,7 +38,6 @@
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td><a href="/eval/analysis/models/{{ entry.model_slug }}">{{ entry.model_slug | prettify_slug }}</a></td>
-                    <td>{{ entry.score if entry.score is not none else "—" }}</td>
                     <td>{{ entry.date or "—" }}</td>
                     <td>{{ entry.source_name or "—" }}</td>
                 </tr>

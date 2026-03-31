@@ -31,6 +31,31 @@ _PUBLISHER_ORGS = frozenset(
 # Date-suffix pattern for versioned API slugs (e.g., claude-3-5-sonnet-20241022).
 _DATE_SUFFIX_RE = re.compile(r"-(\d{8})(-thinking-\d+k)?$")
 
+# Infer publisher from model slug prefix patterns.
+_SLUG_PUBLISHER_PATTERNS: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"^claude[-_]"), "Anthropic"),
+    (re.compile(r"^gpt[-_]|^chatgpt[-_]|^o[134][-_]"), "OpenAI"),
+    (re.compile(r"^gemini[-_]|^gemma[-_]|^palm[-_]"), "Google"),
+    (re.compile(r"^llama[-_]"), "Meta"),
+    (re.compile(r"^grok[-_]"), "xAI"),
+    (re.compile(r"^mistral[-_]|^codestral[-_]|^pixtral[-_]|^ministral[-_]"), "Mistral AI"),
+    (re.compile(r"^command[-_]|^c4ai[-_]|^aya[-_]"), "Cohere"),
+    (re.compile(r"^deepseek[-_]"), "DeepSeek"),
+    (re.compile(r"^qwen[-_]"), "Alibaba"),
+    (re.compile(r"^phi[-_]"), "Microsoft"),
+    (re.compile(r"^amazon[-_]|^nova[-_]"), "Amazon"),
+    (re.compile(r"^yi[-_]"), "01.AI"),
+    (re.compile(r"^dbrx"), "Databricks"),
+    (re.compile(r"^falcon[-_]"), "TII"),
+    (re.compile(r"^internlm"), "Shanghai AI Lab"),
+    (re.compile(r"^chatglm|^glm[-_]"), "Zhipu AI"),
+    (re.compile(r"^vicuna[-_]"), "LMSYS"),
+    (re.compile(r"^wizardlm"), "Microsoft"),
+    (re.compile(r"^nemotron"), "NVIDIA"),
+    (re.compile(r"^reka[-_]"), "Reka"),
+    (re.compile(r"^jamba[-_]"), "AI21 Labs"),
+]
+
 
 def _prettify_slug(slug: str) -> str:
     """Convert a model slug to a human-readable display name."""
@@ -48,6 +73,15 @@ def _strip_date_suffix(slug: str) -> str | None:
 def _is_publisher(org: str) -> bool:
     """Check if an organization is a model publisher."""
     return org in _PUBLISHER_ORGS
+
+
+def _infer_publisher_from_slug(slug: str) -> str | None:
+    """Infer the model publisher from the slug name pattern."""
+    slug_lower = slug.lower()
+    for pattern, publisher in _SLUG_PUBLISHER_PATTERNS:
+        if pattern.search(slug_lower):
+            return publisher
+    return None
 
 
 def _infer_status(event_types: set[str]) -> str:
@@ -118,13 +152,14 @@ async def seed_model_entities(session: AsyncSession) -> dict[str, int]:
             slug_mappings.append((slug, org, base))
             continue
 
-        # No match — create a new entity with publisher="Unknown"
+        # No match — create a new entity, infer publisher from slug name
         if slug not in entities:
             event_types = set((event_types_str or "").split(","))
+            inferred_pub = _infer_publisher_from_slug(slug) or "Unknown"
             entities[slug] = ModelEntity(
                 canonical_slug=slug,
                 display_name=_prettify_slug(slug),
-                publisher="Unknown",
+                publisher=inferred_pub,
                 status=_infer_status(event_types),
                 release_date=first_date,
             )

@@ -1399,17 +1399,24 @@ async def analysis_model_detail(
     for c in claims:
         claim_summary[c.confirmation_status] = claim_summary.get(c.confirmation_status, 0) + 1
 
-    # Benchmark scores from events
-    benchmark_scores = [
-        {
+    # Benchmark data from events — extract rank from raw_content
+    benchmark_scores = []
+    for e in events:
+        if not e.benchmark_variant:
+            continue
+        raw = e.raw_content or ""
+        # Parse "Rank: N" from LMArena data
+        rank = None
+        if raw.startswith("Rank: "):
+            with contextlib.suppress(ValueError):
+                rank = int(raw.split(",")[0].replace("Rank: ", ""))
+        benchmark_scores.append({
             "benchmark": e.benchmark_variant,
-            "score": e.raw_content,
-            "date": e.published_date or str(e.observed_at)[:10] if e.observed_at else "—",
+            "rank": rank,
+            "raw": raw[:100] if raw else "—",
+            "date": e.published_date or (str(e.observed_at)[:10] if e.observed_at else "—"),
             "source": e.organization,
-        }
-        for e in events
-        if e.benchmark_variant
-    ]
+        })
 
     return templates.TemplateResponse(
         request,
