@@ -58,12 +58,13 @@ async def list_benchmarks(session: AsyncSession) -> list[BenchmarkSummary]:
     stmt = (
         select(
             EventRecord.benchmark_variant,
-            func.count(EventRecord.id).label("entry_count"),
+            func.count(func.distinct(EventRecord.model_slug)).label("entry_count"),
             func.max(EventRecord.published_date).label("latest_date"),
         )
         .where(EventRecord.benchmark_variant.is_not(None))
+        .where(EventRecord.model_slug.is_not(None))
         .group_by(EventRecord.benchmark_variant)
-        .order_by(func.count(EventRecord.id).desc())
+        .order_by(func.count(func.distinct(EventRecord.model_slug)).desc())
     )
     result = await session.execute(stmt)
     rows = result.all()

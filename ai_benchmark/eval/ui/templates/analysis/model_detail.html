@@ -82,6 +82,7 @@
             <thead>
                 <tr>
                     <th data-sort="string">Benchmark</th>
+                    <th data-sort="number">Score</th>
                     <th data-sort="number">Rank</th>
                     <th data-sort="string">Date</th>
                     <th data-sort="string">Source</th>
@@ -90,8 +91,9 @@
             <tbody>
                 {% for b in benchmark_scores %}
                 <tr>
-                    <td><a href="/eval/analysis/benchmarks/{{ b.benchmark }}">{{ b.benchmark }}</a></td>
-                    <td>{% if b.rank %}#{{ b.rank }}{% else %}{{ b.raw }}{% endif %}</td>
+                    <td><a href="/eval/analysis/benchmarks?selected={{ b.benchmark }}">{{ b.benchmark }}</a></td>
+                    <td>{% if b.score %}{{ b.score }}{% else %}—{% endif %}</td>
+                    <td>{% if b.rank %}#{{ b.rank }}{% else %}—{% endif %}</td>
                     <td>{{ b.date }}</td>
                     <td>{{ b.source }}</td>
                 </tr>

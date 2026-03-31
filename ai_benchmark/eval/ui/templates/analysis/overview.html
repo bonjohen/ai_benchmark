@@ -39,36 +39,6 @@
     </a>
 </div>
 
-<!-- Models Table -->
-{% if models %}
-<h2 class="section-heading">Models ({{ models|length }})</h2>
-<div class="card">
-    <div class="table-wrapper">
-        <table data-sortable>
-            <caption class="sr-only">Tracked AI models with publisher and dates</caption>
-            <thead>
-                <tr>
-                    <th data-sort="string">Model</th>
-                    <th data-sort="string">Publisher</th>
-                    <th data-sort="string">Status</th>
-                    <th data-sort="string">Release Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for m in models %}
-                <tr>
-                    <td><a href="/eval/analysis/models/{{ m.canonical_slug }}">{{ m.display_name }}</a></td>
-                    <td>{{ m.publisher }}</td>
-                    <td><span class="badge badge-{{ 'completed' if m.status == 'active' else 'canceled' if m.status == 'deprecated' else 'queued' }}">{{ m.status }}</span></td>
-                    <td>{{ m.release_date or "—" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
-
 <!-- Benchmarks Quick View -->
 {% if benchmarks %}
 <h2 class="section-heading">Benchmarks</h2>

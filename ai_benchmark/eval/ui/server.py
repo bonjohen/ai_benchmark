@@ -1296,17 +1296,12 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
     from ...analysis.services.benchmark_trends import list_benchmarks
     from ...analysis.services.evolution import get_benchmark_evolution
     from ...analysis.services.landscape import get_landscape
-    from ...analysis.services.model_registry import (
-        count_model_entities,
-        list_model_entities,
-        list_publishers,
-    )
+    from ...analysis.services.model_registry import count_model_entities, list_publishers
     from ...analysis.services.spotlight import get_spotlight
     from ...analysis.services.verification import get_verification_report
 
     model_count = await count_model_entities(session)
     publishers = await list_publishers(session)
-    models = await list_model_entities(session, limit=500)
     benchmarks = await list_benchmarks(session)
     verification = await get_verification_report(session)
     spotlight = await get_spotlight(session, window_days=365)
@@ -1324,7 +1319,6 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
                 "total_claims": verification.total_claims,
                 "total_benchmarks": len(benchmarks),
             },
-            "models": [_entity_to_dict(m) for m in models],
             "benchmarks": [_benchmark_summary_to_dict(b) for b in benchmarks],
             "verification": {
                 "confirmation_rate": verification.confirmation_rate,
@@ -1408,22 +1402,29 @@ async def analysis_model_detail(
     for c in claims:
         claim_summary[c.confirmation_status] = claim_summary.get(c.confirmation_status, 0) + 1
 
-    # Benchmark data from events — extract rank from raw_content
+    # Benchmark data from events — extract rank and score from raw_content
+    import re as _re
+
+    _score_re = _re.compile(r"Score:\s*(\d+)")
+    _rank_re = _re.compile(r"Rank:\s*(\d+)")
     benchmark_scores = []
     for e in events:
         if not e.benchmark_variant:
             continue
         raw = e.raw_content or ""
-        # Parse "Rank: N" from LMArena data
         rank = None
-        if raw.startswith("Rank: "):
-            with contextlib.suppress(ValueError):
-                rank = int(raw.split(",")[0].replace("Rank: ", ""))
+        score = None
+        rank_m = _rank_re.search(raw)
+        if rank_m:
+            rank = int(rank_m.group(1))
+        score_m = _score_re.search(raw)
+        if score_m:
+            score = int(score_m.group(1))
         benchmark_scores.append(
             {
                 "benchmark": e.benchmark_variant,
                 "rank": rank,
-                "raw": raw if raw else "—",
+                "score": score,
                 "date": e.published_date or (str(e.observed_at)[:10] if e.observed_at else "—"),
                 "source": e.organization,
             }
