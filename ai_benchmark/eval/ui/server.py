@@ -1295,12 +1295,12 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
     """Intelligence overview — summary of collected data and key products."""
     from ...analysis.services.evolution import get_benchmark_evolution
     from ...analysis.services.landscape import get_landscape
-    from ...analysis.services.model_lifecycle import list_tracked_models
+    from ...analysis.services.model_registry import count_model_entities, list_publishers
     from ...analysis.services.spotlight import get_spotlight
     from ...analysis.services.verification import get_verification_report
 
-    models = await list_tracked_models(session, limit=500)
-    orgs = sorted({m.organization for m in models})
+    model_count = await count_model_entities(session)
+    publishers = await list_publishers(session)
     verification = await get_verification_report(session)
     spotlight = await get_spotlight(session, window_days=365)
     landscape = await get_landscape(session, window_days=365)
@@ -1311,8 +1311,8 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
         "analysis/overview.html",
         {
             "stats": {
-                "total_models": len(models),
-                "total_orgs": len(orgs),
+                "total_models": model_count,
+                "total_orgs": len(publishers),
                 "total_events": verification.total_events,
                 "total_claims": verification.total_claims,
                 "total_benchmarks": len(evolution),
@@ -1338,23 +1338,22 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
 @router.get("/analysis/models", response_class=HTMLResponse)
 async def analysis_models(
     request: Request,
-    org: str | None = None,
+    publisher: str | None = None,
     session: AsyncSession = Depends(get_session),
 ):
-    """Tracked models list with optional org filter."""
-    from ...analysis.services.model_lifecycle import list_tracked_models
+    """Curated models list from the model registry."""
+    from ...analysis.services.model_registry import list_model_entities, list_publishers
 
-    models = await list_tracked_models(session, organization=org, limit=500)
-    all_models = await list_tracked_models(session, limit=500) if org else models
-    orgs = sorted({m.organization for m in all_models})
+    entities = await list_model_entities(session, publisher=publisher, limit=500)
+    publishers = await list_publishers(session)
 
     return templates.TemplateResponse(
         request,
         "analysis/models.html",
         {
-            "models": [_model_summary_to_dict(m) for m in models],
-            "orgs": orgs,
-            "org_filter": org or "",
+            "models": [_entity_to_dict(e) for e in entities],
+            "publishers": publishers,
+            "publisher_filter": publisher or "",
         },
     )
 
@@ -1365,26 +1364,63 @@ async def analysis_model_detail(
     slug: str,
     session: AsyncSession = Depends(get_session),
 ):
-    """Detailed model profile with capability analysis."""
-    from ...analysis.services.capability import get_capability_profile
-    from ...analysis.services.model_lifecycle import build_model_profile
+    """Detailed model profile using the model registry."""
+    from ...analysis.services.model_registry import (
+        get_entity_claims,
+        get_entity_events,
+        get_model_entity,
+    )
 
-    profile = await build_model_profile(session, slug)
-    if profile is None:
+    entity = await get_model_entity(session, slug)
+    if entity is None:
         return templates.TemplateResponse(
             request,
             "analysis/models.html",
-            {"models": [], "orgs": [], "org_filter": ""},
+            {"models": [], "publishers": [], "publisher_filter": ""},
         )
 
-    capability = await get_capability_profile(session, slug)
+    events = await get_entity_events(session, entity.id)
+    claims = await get_entity_claims(session, entity.id)
+
+    # Group events by type for display
+    event_timeline = [
+        {
+            "date": str(e.observed_at)[:10] if e.observed_at else e.published_date or "—",
+            "type": e.event_type,
+            "title": e.title,
+            "organization": e.organization,
+            "source_type": e.source_type,
+        }
+        for e in events
+    ]
+
+    # Claim summary
+    claim_summary = {}
+    for c in claims:
+        claim_summary[c.confirmation_status] = claim_summary.get(c.confirmation_status, 0) + 1
+
+    # Benchmark scores from events
+    benchmark_scores = [
+        {
+            "benchmark": e.benchmark_variant,
+            "score": e.raw_content,
+            "date": e.published_date or str(e.observed_at)[:10] if e.observed_at else "—",
+            "source": e.organization,
+        }
+        for e in events
+        if e.benchmark_variant
+    ]
 
     return templates.TemplateResponse(
         request,
         "analysis/model_detail.html",
         {
-            "profile": _model_profile_to_dict(profile),
-            "capability": _capability_to_dict(capability) if capability else None,
+            "entity": _entity_to_dict(entity),
+            "event_timeline": event_timeline,
+            "claim_summary": claim_summary,
+            "benchmark_scores": benchmark_scores,
+            "total_events": len(events),
+            "total_claims": len(claims),
         },
     )
 
@@ -1416,6 +1452,19 @@ def _model_summary_to_dict(m) -> dict:
         "latest_activity": m.latest_activity,
         "event_count": m.event_count,
         "status": m.status,
+    }
+
+
+def _entity_to_dict(e) -> dict:
+    return {
+        "canonical_slug": e.canonical_slug,
+        "display_name": e.display_name,
+        "publisher": e.publisher,
+        "model_family": e.model_family,
+        "status": e.status,
+        "description": e.description,
+        "parameter_count": e.parameter_count,
+        "release_date": e.release_date,
     }
 
 

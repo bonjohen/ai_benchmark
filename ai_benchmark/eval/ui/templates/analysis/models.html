@@ -1,36 +1,32 @@
 {% extends "base.html" %}
 {% set active_page = "intel_models" %}
-{% block title %}Tracked Models{% endblock %}
+{% block title %}Models{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1>Tracked Models</h1>
+    <h1>Models</h1>
     <a href="/eval/analysis" class="btn btn-outline btn-sm">Back to Overview</a>
 </div>
 
 <div class="card-grid">
     <div class="stat-card">
         <div class="stat-value">{{ models|length }}</div>
-        <div class="stat-label">Total Models</div>
+        <div class="stat-label">Models</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value">{{ models|selectattr("status", "equalto", "active")|list|length }}</div>
-        <div class="stat-label">Active</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value">{{ orgs|length }}</div>
-        <div class="stat-label">Organizations</div>
+        <div class="stat-value">{{ publishers|length }}</div>
+        <div class="stat-label">Publishers</div>
     </div>
 </div>
 
-<!-- Filter by org -->
+<!-- Filter by publisher -->
 <div class="card" style="margin-bottom: 1rem; padding: 0.75rem 1rem;">
     <form method="get" action="/eval/analysis/models" style="display: flex; gap: 0.5rem; align-items: center;">
-        <label for="org-filter"><strong>Organization:</strong></label>
-        <select id="org-filter" name="org" onchange="this.form.submit()" style="padding: 0.25rem 0.5rem;">
+        <label for="pub-filter"><strong>Publisher:</strong></label>
+        <select id="pub-filter" name="publisher" onchange="this.form.submit()" style="padding: 0.25rem 0.5rem;">
             <option value="">All</option>
-            {% for o in orgs %}
-            <option value="{{ o }}" {% if org_filter == o %}selected{% endif %}>{{ o }}</option>
+            {% for p in publishers %}
+            <option value="{{ p }}" {% if publisher_filter == p %}selected{% endif %}>{{ p }}</option>
             {% endfor %}
         </select>
     </form>
@@ -38,29 +34,25 @@
 
 {% if models %}
 <div class="card">
-    <div class="card-header">Models{% if org_filter %} — {{ org_filter }}{% endif %}</div>
+    <div class="card-header">Models{% if publisher_filter %} — {{ publisher_filter }}{% endif %}</div>
     <div class="table-wrapper">
         <table data-sortable>
-            <caption class="sr-only">All tracked AI models with event counts</caption>
+            <caption class="sr-only">AI models with publisher and status</caption>
             <thead>
                 <tr>
                     <th data-sort="string">Model</th>
-                    <th data-sort="string">Organization</th>
-                    <th data-sort="string">First Seen</th>
-                    <th data-sort="string">Latest Activity</th>
-                    <th data-sort="number">Events</th>
+                    <th data-sort="string">Publisher</th>
                     <th data-sort="string">Status</th>
+                    <th data-sort="string">Release Date</th>
                 </tr>
             </thead>
             <tbody>
                 {% for m in models %}
                 <tr>
-                    <td><a href="/eval/analysis/models/{{ m.model_slug }}">{{ m.model_slug | prettify_slug }}</a></td>
-                    <td>{{ m.organization }}</td>
-                    <td>{{ m.first_seen or "—" }}</td>
-                    <td>{{ m.latest_activity or "—" }}</td>
-                    <td>{{ m.event_count }}</td>
+                    <td><a href="/eval/analysis/models/{{ m.canonical_slug }}">{{ m.display_name }}</a></td>
+                    <td>{{ m.publisher }}</td>
                     <td><span class="badge badge-{{ 'completed' if m.status == 'active' else 'canceled' if m.status == 'deprecated' else 'queued' }}">{{ m.status }}</span></td>
+                    <td>{{ m.release_date or "—" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -69,7 +61,7 @@
 </div>
 {% else %}
 <div class="card">
-    <p class="text-muted text-center">No models found.</p>
+    <p class="text-muted text-center">No models found. Run <code>ai-benchmark analyze seed-models</code> to populate the registry.</p>
 </div>
 {% endif %}
 {% endblock %}
