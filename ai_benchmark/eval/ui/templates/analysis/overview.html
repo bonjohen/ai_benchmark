@@ -17,8 +17,8 @@
     </a>
     <a href="/eval/analysis/models" class="stat-card-link">
         <div class="stat-card">
-            <div class="stat-value">{{ stats.total_orgs }}</div>
-            <div class="stat-label">Publishers</div>
+            <div class="stat-value">{{ stats.total_publishers }}</div>
+            <div class="stat-label">Model Publishers</div>
         </div>
     </a>
     <div class="stat-card">
@@ -49,7 +49,7 @@
             <thead>
                 <tr>
                     <th data-sort="string">Benchmark</th>
-                    <th data-sort="number">Entries</th>
+                    <th data-sort="number">Models</th>
                     <th data-sort="string">Latest Date</th>
                     <th data-sort="string">Current Leader</th>
                 </tr>
@@ -57,7 +57,7 @@
             <tbody>
                 {% for b in benchmarks %}
                 <tr>
-                    <td><a href="/eval/analysis/benchmarks/{{ b.benchmark_name }}">{{ b.benchmark_name }}</a></td>
+                    <td><a href="/eval/analysis/benchmarks?selected={{ b.benchmark_name }}">{{ b.benchmark_name }}</a></td>
                     <td>{{ b.entry_count }}</td>
                     <td>{{ b.latest_date or "—" }}</td>
                     <td>
@@ -73,37 +73,13 @@
 </div>
 {% endif %}
 
-<!-- Verification Summary -->
-<h2 class="section-heading">Verification Health</h2>
-<div class="card-grid">
-    <a href="/eval/analysis/verification" class="stat-card-link">
-        <div class="stat-card">
-            <div class="stat-value">{{ "%.1f"|format(verification.confirmation_rate) }}%</div>
-            <div class="stat-label">Confirmed</div>
-        </div>
-    </a>
-    <a href="/eval/analysis/verification" class="stat-card-link">
-        <div class="stat-card">
-            <div class="stat-value {% if verification.conflict_rate > 10 %}text-danger{% endif %}">{{ "%.1f"|format(verification.conflict_rate) }}%</div>
-            <div class="stat-label">Conflicted</div>
-        </div>
-    </a>
-    {% for tier, count in verification.tier_distribution.items() %}
-    <div class="stat-card">
-        <div class="stat-value">{{ count }}</div>
-        <div class="stat-label">{{ tier | replace("_", " ") | title }}</div>
-    </div>
-    {% endfor %}
-</div>
-
 <!-- Competitive Landscape -->
 {% if landscape.entries %}
 <h2 class="section-heading">Competitive Landscape</h2>
 <div class="card">
-    <div class="card-header">{{ landscape.entries|length }} Active Organization{{ "s" if landscape.entries|length != 1 }}</div>
     <div class="table-wrapper">
         <table data-sortable>
-            <caption class="sr-only">Organization competitive landscape summary</caption>
+            <caption class="sr-only">Competitive landscape by organization</caption>
             <thead>
                 <tr>
                     <th data-sort="string">Organization</th>

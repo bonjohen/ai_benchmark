@@ -1293,20 +1293,22 @@ def _machine_to_dict(m) -> dict:
 @router.get("/analysis", response_class=HTMLResponse)
 async def analysis_overview(request: Request, session: AsyncSession = Depends(get_session)):
     """Intelligence overview — summary of collected data and key products."""
+    from sqlalchemy import func, select
+
     from ...analysis.services.benchmark_trends import list_benchmarks
-    from ...analysis.services.evolution import get_benchmark_evolution
     from ...analysis.services.landscape import get_landscape
     from ...analysis.services.model_registry import count_model_entities, list_publishers
-    from ...analysis.services.spotlight import get_spotlight
-    from ...analysis.services.verification import get_verification_report
+    from ...models.events import ClaimRecord, EventRecord
 
+    # Lightweight counts instead of full verification/spotlight reports
     model_count = await count_model_entities(session)
     publishers = await list_publishers(session)
     benchmarks = await list_benchmarks(session)
-    verification = await get_verification_report(session)
-    spotlight = await get_spotlight(session, window_days=365)
+
+    event_count = (await session.execute(select(func.count(EventRecord.id)))).scalar_one()
+    claim_count = (await session.execute(select(func.count(ClaimRecord.id)))).scalar_one()
+
     landscape = await get_landscape(session, window_days=365)
-    evolution = await get_benchmark_evolution(session, window_days=365)
 
     return templates.TemplateResponse(
         request,
@@ -1314,26 +1316,15 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
         {
             "stats": {
                 "total_models": model_count,
-                "total_orgs": len(publishers),
-                "total_events": verification.total_events,
-                "total_claims": verification.total_claims,
+                "total_publishers": len(publishers),
+                "total_events": event_count,
+                "total_claims": claim_count,
                 "total_benchmarks": len(benchmarks),
             },
             "benchmarks": [_benchmark_summary_to_dict(b) for b in benchmarks],
-            "verification": {
-                "confirmation_rate": verification.confirmation_rate,
-                "conflict_rate": verification.conflict_rate,
-                "tier_distribution": verification.tier_distribution,
-            },
-            "spotlight": {
-                "window_days": spotlight.window_days,
-                "total_new_models": spotlight.total_new_models,
-                "entries": [_spotlight_entry_to_dict(e) for e in spotlight.entries],
-            },
             "landscape": {
                 "entries": [_landscape_entry_to_dict(e) for e in landscape.entries],
             },
-            "evolution": [_evolution_to_dict(s) for s in evolution],
         },
     )
 
@@ -1342,12 +1333,35 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
 async def analysis_models(
     request: Request,
     publisher: str | None = None,
+    primary_only: bool = False,
     session: AsyncSession = Depends(get_session),
 ):
     """Curated models list from the model registry."""
     from ...analysis.services.model_registry import list_model_entities, list_publishers
 
-    entities = await list_model_entities(session, publisher=publisher, limit=500)
+    # Primary publishers = orgs that create models (not aggregators/benchmarks)
+    _primary_publishers = {
+        "Anthropic",
+        "OpenAI",
+        "Google",
+        "Meta",
+        "xAI",
+        "Mistral AI",
+        "Cohere",
+        "DeepSeek",
+        "Alibaba",
+        "Microsoft",
+        "Amazon",
+        "Baidu",
+        "Tencent",
+    }
+
+    if primary_only:
+        # Get all, then filter to primary publishers
+        all_entities = await list_model_entities(session, publisher=publisher, limit=10000)
+        entities = [e for e in all_entities if e.publisher in _primary_publishers]
+    else:
+        entities = await list_model_entities(session, publisher=publisher, limit=10000)
     publishers = await list_publishers(session)
 
     return templates.TemplateResponse(
@@ -1357,6 +1371,7 @@ async def analysis_models(
             "models": [_entity_to_dict(e) for e in entities],
             "publishers": publishers,
             "publisher_filter": publisher or "",
+            "primary_only": primary_only,
         },
     )
 

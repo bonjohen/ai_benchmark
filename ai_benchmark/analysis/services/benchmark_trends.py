@@ -120,12 +120,13 @@ async def get_benchmark_leaderboard(
     result = await session.execute(stmt)
     events = list(result.scalars().all())
 
-    # Group by model_slug, take latest entry per model
+    # Group by model_slug, take latest entry per model (skip NULL slugs)
     latest_by_model: dict[str, EventRecord] = {}
     for event in events:
-        slug = event.model_slug or "unknown"
-        if slug not in latest_by_model:
-            latest_by_model[slug] = event
+        if not event.model_slug:
+            continue
+        if event.model_slug not in latest_by_model:
+            latest_by_model[event.model_slug] = event
 
     # Extract scores and build data points
     entries: list[BenchmarkDataPoint] = []

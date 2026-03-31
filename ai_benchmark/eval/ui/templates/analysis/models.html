@@ -29,6 +29,10 @@
             <option value="{{ p }}" {% if publisher_filter == p %}selected{% endif %}>{{ p }}</option>
             {% endfor %}
         </select>
+        <label style="margin-left: 1rem; cursor: pointer;">
+            <input type="checkbox" name="primary_only" value="true" onchange="this.form.submit()" {% if primary_only %}checked{% endif %}>
+            Only Primary
+        </label>
     </form>
 </div>
 
