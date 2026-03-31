@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Latest Edition{% endblock %}
+
+{% block content %}
+{% if edition %}
+<header class="edition-header">
+    <h1>Daily AI Benchmark — {{ edition.publication_date }}</h1>
+    <p class="edition-summary">{{ edition.summary }}</p>
+</header>
+
+<div class="edition-sections">
+    {% for section in edition.sections %}
+    {% if section.entries %}
+    <section class="pub-section" id="section-{{ section.section_key }}">
+        <h2>{{ section.title }}</h2>
+        {% if section.summary %}
+        <p class="section-summary">{{ section.summary }}</p>
+        {% endif %}
+
+        {% for entry in section.entries %}
+        <article class="pub-entry">
+            <div class="entry-header" onclick="toggleDetail(this)">
+                <span class="entry-rank">{{ entry.rank }}.</span>
+                <span class="entry-title">{{ entry.title }}</span>
+                <span class="badge badge-{{ entry.verification_status }}">{{ entry.verification_status }}</span>
+            </div>
+            <div class="entry-summary">{{ entry.summary }}</div>
+            <div class="entry-detail" style="display:none;">
+                {% if entry.why_it_matters %}
+                <p class="why-it-matters"><strong>Why it matters:</strong> {{ entry.why_it_matters }}</p>
+                {% endif %}
+                <div class="entry-meta">
+                    {% if entry.organization %}<span class="meta-tag">{{ entry.organization }}</span>{% endif %}
+                    {% if entry.model_slug %}<span class="meta-tag">{{ entry.model_slug }}</span>{% endif %}
+                    {% if entry.benchmark_name %}<span class="meta-tag">{{ entry.benchmark_name }}</span>{% endif %}
+                    <span class="meta-sources">{{ entry.source_count }} source(s)</span>
+                    <span class="meta-score">Score: {{ "%.2f"|format(entry.score) }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+    {% endfor %}
+</div>
+
+{% if edition.stats %}
+<div class="edition-stats">
+    {{ edition.stats.get('total_candidates', 0) }} candidates evaluated,
+    {{ edition.stats.get('total_entries', 0) }} entries published across
+    {{ edition.stats.get('sections_with_items', 0) }} sections.
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <h2>No Edition Available</h2>
+    <p>No publication edition has been generated yet. Generate one via CLI or API.</p>
+</div>
+{% endif %}
+{% endblock %}

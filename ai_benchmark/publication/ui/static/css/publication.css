@@ -1,0 +1,79 @@
+/* Publication UI styles */
+:root {
+    --pub-bg: #fafafa;
+    --pub-card-bg: #fff;
+    --pub-border: #e0e0e0;
+    --pub-text: #333;
+    --pub-muted: #666;
+    --pub-accent: #1a73e8;
+    --pub-green: #34a853;
+    --pub-yellow: #f9ab00;
+    --pub-red: #ea4335;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--pub-text); background: var(--pub-bg); line-height: 1.6; }
+
+/* Navigation */
+.pub-nav { display: flex; align-items: center; gap: 2rem; padding: 0.75rem 2rem; background: #fff; border-bottom: 1px solid var(--pub-border); }
+.pub-brand { font-weight: 700; font-size: 1.1rem; color: var(--pub-accent); }
+.pub-nav-links { list-style: none; display: flex; gap: 1rem; }
+.pub-nav-links a { text-decoration: none; color: var(--pub-muted); padding: 0.25rem 0.5rem; border-radius: 4px; }
+.pub-nav-links a.active, .pub-nav-links a:hover { color: var(--pub-accent); background: #e8f0fe; }
+
+/* Main layout */
+.pub-main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+.pub-footer { text-align: center; padding: 2rem; color: var(--pub-muted); font-size: 0.85rem; }
+
+/* Edition header */
+.edition-header { margin-bottom: 2rem; }
+.edition-header h1 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+.edition-summary { color: var(--pub-muted); font-style: italic; font-size: 1rem; }
+.edition-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
+.edition-stats { margin-top: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 6px; font-size: 0.85rem; color: var(--pub-muted); }
+
+/* Section navigation */
+.section-nav { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 0.75rem; background: #fff; border: 1px solid var(--pub-border); border-radius: 6px; }
+.section-nav a { text-decoration: none; color: var(--pub-accent); font-size: 0.9rem; padding: 0.25rem 0.5rem; border-radius: 4px; }
+.section-nav a:hover { background: #e8f0fe; }
+
+/* Sections */
+.pub-section { margin-bottom: 2rem; }
+.pub-section h2 { font-size: 1.25rem; margin-bottom: 0.5rem; padding-bottom: 0.25rem; border-bottom: 2px solid var(--pub-accent); }
+.section-summary { color: var(--pub-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+
+/* Entries */
+.pub-entry { background: var(--pub-card-bg); border: 1px solid var(--pub-border); border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; }
+.entry-header { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.entry-rank { font-weight: 700; color: var(--pub-accent); min-width: 1.5em; }
+.entry-title { font-weight: 600; flex: 1; }
+.entry-summary { color: var(--pub-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+.entry-detail { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--pub-border); }
+.why-it-matters { font-size: 0.9rem; margin-bottom: 0.5rem; }
+.entry-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8rem; }
+.meta-tag { background: #e8f0fe; color: var(--pub-accent); padding: 0.15rem 0.5rem; border-radius: 3px; }
+.meta-sources, .meta-score, .meta-confidence { color: var(--pub-muted); }
+
+/* Badges */
+.badge { font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 3px; font-weight: 600; }
+.badge-confirmed { background: #e6f4ea; color: var(--pub-green); }
+.badge-unconfirmed { background: #fef7e0; color: var(--pub-yellow); }
+.badge-conflicted { background: #fce8e6; color: var(--pub-red); }
+.badge-draft { background: #e8f0fe; color: var(--pub-accent); }
+.badge-frozen { background: #e6f4ea; color: var(--pub-green); }
+.badge-published { background: #e6f4ea; color: var(--pub-green); }
+
+/* Table */
+.pub-table { width: 100%; border-collapse: collapse; background: var(--pub-card-bg); border: 1px solid var(--pub-border); border-radius: 6px; }
+.pub-table th, .pub-table td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--pub-border); }
+.pub-table th { background: #f5f5f5; font-weight: 600; font-size: 0.85rem; }
+.pub-table a { color: var(--pub-accent); text-decoration: none; }
+.pub-table a:hover { text-decoration: underline; }
+
+/* Buttons */
+.btn-sm { display: inline-block; padding: 0.25rem 0.75rem; background: var(--pub-accent); color: #fff; border-radius: 4px; text-decoration: none; font-size: 0.8rem; }
+.btn-sm:hover { opacity: 0.9; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--pub-muted); }
+.empty-state h2 { margin-bottom: 0.5rem; color: var(--pub-text); }
+.empty-state a { color: var(--pub-accent); }

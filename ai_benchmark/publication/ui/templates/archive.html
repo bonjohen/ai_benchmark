@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Archive{% endblock %}
+
+{% block content %}
+<header class="edition-header">
+    <h1>Publication Archive</h1>
+</header>
+
+{% if editions %}
+<table class="pub-table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Version</th>
+            <th>Generated</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in editions %}
+        <tr>
+            <td><a href="/publication/{{ e.publication_date }}">{{ e.publication_date }}</a></td>
+            <td><span class="badge badge-{{ e.status }}">{{ e.status }}</span></td>
+            <td>v{{ e.generation_version }}</td>
+            <td>{{ e.generated_at|string|truncate(19, True, '') if e.generated_at else '—' }}</td>
+            <td><a href="/publication/{{ e.publication_date }}" class="btn-sm">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <h2>No Editions</h2>
+    <p>No publication editions have been generated yet.</p>
+</div>
+{% endif %}
+{% endblock %}

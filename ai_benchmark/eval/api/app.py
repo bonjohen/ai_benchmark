@@ -229,4 +229,9 @@ def create_app(settings: EvalSettings | None = None) -> FastAPI:
 
     mount_ui(app)
 
+    # Mount publication UI
+    from ...publication.ui.server import mount_publication_ui
+
+    mount_publication_ui(app)
+
     return app
