@@ -1403,7 +1403,7 @@ async def analysis_model_detail(
     # Group events by type for display
     event_timeline = [
         {
-            "date": e.published_date or "—",
+            "date": str(e.observed_at)[:10] if e.observed_at else e.published_date or "—",
             "type": e.event_type,
             "title": e.title,
             "organization": e.organization,
@@ -1420,18 +1420,8 @@ async def analysis_model_detail(
     # Benchmark data from events — extract rank and score from raw_content
     import re as _re
 
-    _score_re = _re.compile(r"Score:\s*([\d.]+[kKmM]?)")
+    _score_re = _re.compile(r"Score:\s*(\d+)")
     _rank_re = _re.compile(r"Rank:\s*(\d+)")
-
-    def _parse_score(s: str) -> str:
-        """Parse score string, handling k/m suffixes."""
-        s = s.strip()
-        if s.lower().endswith("k"):
-            return str(int(float(s[:-1]) * 1000))
-        if s.lower().endswith("m"):
-            return str(int(float(s[:-1]) * 1000000))
-        return s
-
     benchmark_scores = []
     for e in events:
         if not e.benchmark_variant:
@@ -1444,13 +1434,13 @@ async def analysis_model_detail(
             rank = int(rank_m.group(1))
         score_m = _score_re.search(raw)
         if score_m:
-            score = _parse_score(score_m.group(1))
+            score = int(score_m.group(1))
         benchmark_scores.append(
             {
                 "benchmark": e.benchmark_variant,
                 "rank": rank,
                 "score": score,
-                "date": e.published_date or "—",
+                "date": e.published_date or (str(e.observed_at)[:10] if e.observed_at else "—"),
                 "source": e.organization,
             }
         )

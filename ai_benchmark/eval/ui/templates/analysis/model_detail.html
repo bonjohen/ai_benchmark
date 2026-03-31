@@ -8,108 +8,99 @@
     <a href="/eval/analysis/models" class="btn btn-outline btn-sm">Back to Models</a>
 </div>
 
-<!-- Model identity + stats in one row -->
-<div class="card" style="margin-bottom: 1rem;">
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.75rem; align-items: start;">
-        <div>
-            <div style="font-size: 0.8rem; color: #666;">Publisher</div>
-            <div style="font-weight: 600;">{{ entity.publisher }}</div>
-        </div>
-        <div>
-            <div style="font-size: 0.8rem; color: #666;">Status</div>
-            <div><span class="badge badge-{{ 'completed' if entity.status == 'active' else 'canceled' if entity.status == 'deprecated' else 'queued' }}">{{ entity.status }}</span></div>
-        </div>
-        <div>
-            <div style="font-size: 0.8rem; color: #666;">Release Date</div>
-            <div>{{ entity.release_date or "—" }}</div>
-        </div>
-        <div>
-            <div style="font-size: 0.8rem; color: #666;">Events / Claims</div>
-            <div>{{ total_events }} / {{ total_claims }}</div>
-        </div>
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="metadata-grid">
+        <div><strong>Publisher:</strong> {{ entity.publisher }}</div>
+        <div><strong>Status:</strong> <span class="badge badge-{{ 'completed' if entity.status == 'active' else 'canceled' if entity.status == 'deprecated' else 'queued' }}">{{ entity.status }}</span></div>
+        <div><strong>Release Date:</strong> {{ entity.release_date or "—" }}</div>
         {% if entity.parameter_count %}
-        <div>
-            <div style="font-size: 0.8rem; color: #666;">Parameters</div>
-            <div>{{ entity.parameter_count }}</div>
-        </div>
+        <div><strong>Parameters:</strong> {{ entity.parameter_count }}</div>
+        {% endif %}
+        {% if entity.model_family %}
+        <div><strong>Family:</strong> {{ entity.model_family }}</div>
         {% endif %}
         {% if entity.description %}
-        <div style="grid-column: 1 / -1;">
-            <div style="font-size: 0.8rem; color: #666;">Description</div>
-            <div>{{ entity.description }}</div>
-        </div>
-        {% endif %}
-        {% if claim_summary %}
-        {% for status, count in claim_summary.items() %}
-        <div>
-            <div style="font-size: 0.8rem; color: #666;">{{ status | title }}</div>
-            <div>{{ count }}</div>
-        </div>
-        {% endfor %}
+        <div style="grid-column: 1 / -1;"><strong>Description:</strong> {{ entity.description }}</div>
         {% endif %}
     </div>
 </div>
 
-<!-- Benchmark scores and events side by side -->
-<div style="display: grid; grid-template-columns: {% if benchmark_scores %}1fr 1fr{% else %}1fr{% endif %}; gap: 1rem;">
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_events }}</div>
+        <div class="stat-label">Events</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_claims }}</div>
+        <div class="stat-label">Claims</div>
+    </div>
+    {% for status, count in claim_summary.items() %}
+    <div class="stat-card">
+        <div class="stat-value">{{ count }}</div>
+        <div class="stat-label">{{ status | title }}</div>
+    </div>
+    {% endfor %}
+</div>
 
-{% if benchmark_scores %}
-<div>
-    <h2 class="section-heading">Benchmarks ({{ benchmark_scores|length }})</h2>
-    <div class="card">
-        <div class="table-wrapper">
-            <table data-sortable>
-                <thead>
-                    <tr>
-                        <th data-sort="string">Benchmark</th>
-                        <th data-sort="number">Score</th>
-                        <th data-sort="number">Rank</th>
-                        <th data-sort="string">Source</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for b in benchmark_scores %}
-                    <tr>
-                        <td><a href="/eval/analysis/benchmarks?selected={{ b.benchmark }}">{{ b.benchmark }}</a></td>
-                        <td>{% if b.score %}{{ b.score }}{% else %}—{% endif %}</td>
-                        <td>{% if b.rank %}#{{ b.rank }}{% else %}—{% endif %}</td>
-                        <td>{{ b.source }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<!-- Event Timeline -->
+{% if event_timeline %}
+<h2 class="section-heading">Event Timeline</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Events related to this model</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Date</th>
+                    <th data-sort="string">Type</th>
+                    <th data-sort="string">Title</th>
+                    <th data-sort="string">Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in event_timeline %}
+                <tr>
+                    <td>{{ e.date }}</td>
+                    <td><span class="badge badge-queued">{{ e.type | replace("_", " ") }}</span></td>
+                    <td>{{ e.title }}</td>
+                    <td>{{ e.organization }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endif %}
 
-<div>
-    <h2 class="section-heading">Events ({{ event_timeline|length }})</h2>
-    <div class="card">
-        <div class="table-wrapper">
-            <table data-sortable>
-                <thead>
-                    <tr>
-                        <th data-sort="string">Date</th>
-                        <th data-sort="string">Type</th>
-                        <th data-sort="string">Title</th>
-                        <th data-sort="string">Source</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for e in event_timeline %}
-                    <tr>
-                        <td>{{ e.date }}</td>
-                        <td><span class="badge badge-queued">{{ e.type | replace("_", " ") }}</span></td>
-                        <td>{{ e.title[:120] }}</td>
-                        <td>{{ e.organization }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<!-- Benchmark Scores -->
+{% if benchmark_scores %}
+<h2 class="section-heading">Benchmark Scores</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Benchmark results for this model</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Benchmark</th>
+                    <th data-sort="number">Score</th>
+                    <th data-sort="number">Rank</th>
+                    <th data-sort="string">Date</th>
+                    <th data-sort="string">Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in benchmark_scores %}
+                <tr>
+                    <td><a href="/eval/analysis/benchmarks?selected={{ b.benchmark }}">{{ b.benchmark }}</a></td>
+                    <td>{% if b.score %}{{ b.score }}{% else %}—{% endif %}</td>
+                    <td>{% if b.rank %}#{{ b.rank }}{% else %}—{% endif %}</td>
+                    <td>{{ b.date }}</td>
+                    <td>{{ b.source }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
-
-</div>
+{% endif %}
 {% endblock %}
