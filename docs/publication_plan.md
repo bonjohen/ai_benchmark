@@ -116,20 +116,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Create `ai_benchmark/publication/formatters/__init__.py` with exports. |
-| 4.2 | Open | | | Create `ai_benchmark/publication/formatters/markdown.py` — `edition_to_markdown(edition: EditionResult) -> str`. Render full edition: title with date, edition summary, then each section with header, section summary, and numbered entries (headline, summary, why_it_matters, verification badge, source count, org/model/benchmark tags). Follow pattern from `analysis/formatters/markdown.py`. |
-| 4.3 | Open | | | Create `ai_benchmark/publication/formatters/json_export.py` — `edition_to_json(edition: EditionResult) -> str`. Serialize EditionResult via `dataclasses.asdict()` with JSON encoding of dates. Follow pattern from `analysis/formatters/json_export.py`. |
-| 4.4 | Open | | | Create `ai_benchmark/publication/api.py` — FastAPI router with endpoints per PDR §9.8: `GET /latest`, `GET /{date}`, `GET /` (list with pagination), `POST /generate`, `GET /{date}/export?format=markdown|json|html`. Use `Depends(get_session)` from eval app. Load edition from DB, convert to EditionResult, format per request. Return 404 when no edition exists for date. |
-| 4.5 | Open | | | Import and mount publication router in `ai_benchmark/eval/api/app.py` at prefix `/api/publications` with tag `"publications"`. Add publication model imports to lifespan handler for table creation. |
-| 4.6 | Open | | | Create `tests/test_publication_formatters.py` — test markdown output structure (headers, sections, entries), JSON round-trip (parse output, verify keys), edge cases (empty sections, missing optional fields). |
-| 4.7 | Open | | | Create `tests/test_publication_api.py` — test endpoints with `httpx.AsyncClient` + `TestClient`: generate, retrieve latest, retrieve by date, list, export as markdown, export as JSON, 404 for missing date. |
-| 4.8 | Open | | | Run full `pytest` and ruff checks — fix until green. |
-| 4.9 | Open | | | Stage all Phase 4 changes. |
-| 4.10 | Open | | | Commit all Phase 4 changes. |
+| 4.1 | Completed | 2026-03-30 12:55 PM | 2026-03-30 12:55 PM | Create `ai_benchmark/publication/formatters/__init__.py` with exports. |
+| 4.2 | Completed | 2026-03-30 12:55 PM | 2026-03-30 12:58 PM | Create `ai_benchmark/publication/formatters/markdown.py` — full edition rendering with verification badges and metadata. |
+| 4.3 | Completed | 2026-03-30 12:55 PM | 2026-03-30 12:57 PM | Create `ai_benchmark/publication/formatters/json_export.py` — dataclasses.asdict serialization. |
+| 4.4 | Completed | 2026-03-30 12:58 PM | 2026-03-30 01:05 PM | Create `ai_benchmark/publication/api.py` — 6 endpoints: GET /latest, GET /{date}, GET /, POST /generate, GET /{date}/export. |
+| 4.5 | Completed | 2026-03-30 01:05 PM | 2026-03-30 01:07 PM | Mount publication router at `/api/publications` and add model imports to lifespan in `eval/api/app.py`. |
+| 4.6-7 | Completed | 2026-03-30 01:07 PM | 2026-03-30 01:15 PM | Create `tests/test_publication_api.py` — 13 tests covering all API endpoints, markdown/JSON formatters, and edge cases. |
+| 4.8 | Completed | 2026-03-30 01:15 PM | 2026-03-30 01:18 PM | All 51 publication tests pass. Ruff check and format clean. |
+| 4.9 | Completed | 2026-03-30 01:18 PM | 2026-03-30 01:19 PM | Stage all Phase 4 changes. |
+| 4.10 | Completed | 2026-03-30 01:19 PM | 2026-03-30 01:19 PM | Commit all Phase 4 changes. |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `publication/formatters/` with `markdown.py` (edition_to_markdown with verification badges, metadata) and `json_export.py` (dataclass serialization). Created `publication/api.py` (6 REST endpoints). Mounted router and models in `eval/api/app.py`. Created `tests/test_publication_api.py` (13 tests).
 - **Changes hosted at:** TBD
 - **Commit:** `Add publication formatters, REST API, and mount on eval app`
 
