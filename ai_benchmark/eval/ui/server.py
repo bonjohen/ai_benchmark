@@ -1293,14 +1293,21 @@ def _machine_to_dict(m) -> dict:
 @router.get("/analysis", response_class=HTMLResponse)
 async def analysis_overview(request: Request, session: AsyncSession = Depends(get_session)):
     """Intelligence overview — summary of collected data and key products."""
+    from ...analysis.services.benchmark_trends import list_benchmarks
     from ...analysis.services.evolution import get_benchmark_evolution
     from ...analysis.services.landscape import get_landscape
-    from ...analysis.services.model_registry import count_model_entities, list_publishers
+    from ...analysis.services.model_registry import (
+        count_model_entities,
+        list_model_entities,
+        list_publishers,
+    )
     from ...analysis.services.spotlight import get_spotlight
     from ...analysis.services.verification import get_verification_report
 
     model_count = await count_model_entities(session)
     publishers = await list_publishers(session)
+    models = await list_model_entities(session, limit=500)
+    benchmarks = await list_benchmarks(session)
     verification = await get_verification_report(session)
     spotlight = await get_spotlight(session, window_days=365)
     landscape = await get_landscape(session, window_days=365)
@@ -1315,8 +1322,10 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
                 "total_orgs": len(publishers),
                 "total_events": verification.total_events,
                 "total_claims": verification.total_claims,
-                "total_benchmarks": len(evolution),
+                "total_benchmarks": len(benchmarks),
             },
+            "models": [_entity_to_dict(m) for m in models],
+            "benchmarks": [_benchmark_summary_to_dict(b) for b in benchmarks],
             "verification": {
                 "confirmation_rate": verification.confirmation_rate,
                 "conflict_rate": verification.conflict_rate,
@@ -1410,13 +1419,15 @@ async def analysis_model_detail(
         if raw.startswith("Rank: "):
             with contextlib.suppress(ValueError):
                 rank = int(raw.split(",")[0].replace("Rank: ", ""))
-        benchmark_scores.append({
-            "benchmark": e.benchmark_variant,
-            "rank": rank,
-            "raw": raw[:100] if raw else "—",
-            "date": e.published_date or (str(e.observed_at)[:10] if e.observed_at else "—"),
-            "source": e.organization,
-        })
+        benchmark_scores.append(
+            {
+                "benchmark": e.benchmark_variant,
+                "rank": rank,
+                "raw": raw[:100] if raw else "—",
+                "date": e.published_date or (str(e.observed_at)[:10] if e.observed_at else "—"),
+                "source": e.organization,
+            }
+        )
 
     return templates.TemplateResponse(
         request,
@@ -1451,21 +1462,68 @@ async def analysis_verification(
     )
 
 
+@router.get("/analysis/verification/claims/{model_slug}")
+async def verification_claims_for_model(
+    model_slug: str,
+    session: AsyncSession = Depends(get_session),
+):
+    """Return JSON claim details for a model slug (used by expandable verification rows)."""
+    from sqlalchemy import select as sa_select
+
+    from ...models.events import ClaimRecord, EventRecord
+
+    stmt = (
+        sa_select(
+            ClaimRecord.id,
+            ClaimRecord.claim_text,
+            ClaimRecord.source_name,
+            ClaimRecord.confidence_tier,
+            ClaimRecord.confirmation_status,
+            ClaimRecord.observed_at,
+            EventRecord.title,
+            EventRecord.event_type,
+        )
+        .join(EventRecord, ClaimRecord.event_id == EventRecord.id)
+        .where(EventRecord.model_slug == model_slug)
+        .order_by(ClaimRecord.observed_at.desc())
+    )
+    result = await session.execute(stmt)
+    rows = result.all()
+    return [
+        {
+            "claim_text": r[1][:200] if r[1] else "",
+            "source_name": r[2],
+            "confidence_tier": r[3],
+            "confirmation_status": r[4],
+            "observed_at": str(r[5])[:19] if r[5] else "",
+            "event_title": r[6][:100] if r[6] else "",
+            "event_type": r[7],
+        }
+        for r in rows
+    ]
+
+
 @router.get("/analysis/benchmarks", response_class=HTMLResponse)
 async def analysis_benchmarks(
     request: Request,
+    selected: str | None = None,
     session: AsyncSession = Depends(get_session),
 ):
-    """Benchmark variants list."""
-    from ...analysis.services.benchmark_trends import list_benchmarks
+    """Benchmark variants with optional selected leaderboard."""
+    from ...analysis.services.benchmark_trends import get_benchmark_leaderboard, list_benchmarks
 
     benchmarks = await list_benchmarks(session)
+    leaderboard = None
+    if selected:
+        leaderboard = await get_benchmark_leaderboard(session, selected)
 
     return templates.TemplateResponse(
         request,
         "analysis/benchmarks.html",
         {
             "benchmarks": [_benchmark_summary_to_dict(b) for b in benchmarks],
+            "selected": selected or "",
+            "leaderboard": _leaderboard_to_dict(leaderboard) if leaderboard else None,
         },
     )
 

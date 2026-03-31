@@ -18,7 +18,7 @@
     <a href="/eval/analysis/models" class="stat-card-link">
         <div class="stat-card">
             <div class="stat-value">{{ stats.total_orgs }}</div>
-            <div class="stat-label">Organizations</div>
+            <div class="stat-label">Publishers</div>
         </div>
     </a>
     <div class="stat-card">
@@ -38,6 +38,70 @@
         </div>
     </a>
 </div>
+
+<!-- Models Table -->
+{% if models %}
+<h2 class="section-heading">Models ({{ models|length }})</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Tracked AI models with publisher and dates</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Model</th>
+                    <th data-sort="string">Publisher</th>
+                    <th data-sort="string">Status</th>
+                    <th data-sort="string">Release Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in models %}
+                <tr>
+                    <td><a href="/eval/analysis/models/{{ m.canonical_slug }}">{{ m.display_name }}</a></td>
+                    <td>{{ m.publisher }}</td>
+                    <td><span class="badge badge-{{ 'completed' if m.status == 'active' else 'canceled' if m.status == 'deprecated' else 'queued' }}">{{ m.status }}</span></td>
+                    <td>{{ m.release_date or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Benchmarks Quick View -->
+{% if benchmarks %}
+<h2 class="section-heading">Benchmarks</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Tracked benchmark variants</caption>
+            <thead>
+                <tr>
+                    <th data-sort="string">Benchmark</th>
+                    <th data-sort="number">Entries</th>
+                    <th data-sort="string">Latest Date</th>
+                    <th data-sort="string">Current Leader</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in benchmarks %}
+                <tr>
+                    <td><a href="/eval/analysis/benchmarks/{{ b.benchmark_name }}">{{ b.benchmark_name }}</a></td>
+                    <td>{{ b.entry_count }}</td>
+                    <td>{{ b.latest_date or "—" }}</td>
+                    <td>
+                        {% if b.top_model %}
+                        <a href="/eval/analysis/models/{{ b.top_model }}">{{ b.top_model | prettify_slug }}</a>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 
 <!-- Verification Summary -->
 <h2 class="section-heading">Verification Health</h2>
@@ -62,56 +126,9 @@
     {% endfor %}
 </div>
 
-<!-- New Model Spotlight -->
-<h2 class="section-heading">New Model Spotlight ({{ spotlight.window_days }}d)</h2>
-
-{% if spotlight.entries %}
-<div class="card">
-    <div class="card-header">{{ spotlight.total_new_models }} New Model{{ "s" if spotlight.total_new_models != 1 }}</div>
-    <div class="table-wrapper">
-        <table data-sortable>
-            <caption class="sr-only">Recently appeared models with benchmark context</caption>
-            <thead>
-                <tr>
-                    <th data-sort="string">Model</th>
-                    <th data-sort="string">Organization</th>
-                    <th data-sort="string">First Seen</th>
-                    <th data-sort="number">Benchmarks</th>
-                    <th data-sort="number">Debut Strength</th>
-                    <th data-sort="number">Cross-Refs</th>
-                    <th>Best Scores</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for e in spotlight.entries %}
-                <tr>
-                    <td><a href="/eval/analysis/models/{{ e.model_slug }}">{{ e.model_slug | prettify_slug }}</a></td>
-                    <td>{{ e.organization }}</td>
-                    <td>{{ e.first_seen }}</td>
-                    <td>{{ e.benchmark_count }}</td>
-                    <td>{{ e.debut_strength }}</td>
-                    <td>{{ e.xref_count }}</td>
-                    <td>
-                        {% for bname, score in e.best_scores.items() %}
-                        <span class="badge badge-completed">{{ bname }}: {{ score }}</span>
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% else %}
-<div class="card">
-    <p class="text-muted text-center">No new models in the last {{ spotlight.window_days }} days.</p>
-</div>
-{% endif %}
-
 <!-- Competitive Landscape -->
-<h2 class="section-heading">Competitive Landscape</h2>
-
 {% if landscape.entries %}
+<h2 class="section-heading">Competitive Landscape</h2>
 <div class="card">
     <div class="card-header">{{ landscape.entries|length }} Active Organization{{ "s" if landscape.entries|length != 1 }}</div>
     <div class="table-wrapper">
@@ -123,7 +140,6 @@
                     <th data-sort="number">Models</th>
                     <th data-sort="number">New</th>
                     <th data-sort="number">Benchmarks</th>
-                    <th>Best Score</th>
                     <th data-sort="number">Pricing Events</th>
                     <th data-sort="string">Trend</th>
                 </tr>
@@ -135,13 +151,6 @@
                     <td>{{ e.total_models }}</td>
                     <td>{{ e.new_models }}</td>
                     <td>{{ e.benchmark_breadth }}</td>
-                    <td>
-                        {% if e.best_result_score %}
-                        {{ e.best_result_score }} ({{ e.best_result_benchmark }})
-                        {% else %}
-                        —
-                        {% endif %}
-                    </td>
                     <td>{{ e.pricing_events }}{% if e.has_price_drop %} <span class="text-danger">(drop)</span>{% endif %}</td>
                     <td>
                         {% if e.trend == "up" %}
@@ -152,47 +161,6 @@
                         &#9644; stable
                         {% endif %}
                     </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% else %}
-<div class="card">
-    <p class="text-muted text-center">No active organizations found.</p>
-</div>
-{% endif %}
-
-<!-- Benchmark Evolution -->
-{% if evolution %}
-<h2 class="section-heading">Benchmark Evolution</h2>
-<div class="card">
-    <div class="card-header">{{ evolution|length }} Tracked Benchmark{{ "s" if evolution|length != 1 }}</div>
-    <div class="table-wrapper">
-        <table data-sortable>
-            <caption class="sr-only">Benchmark evolution with rate of improvement</caption>
-            <thead>
-                <tr>
-                    <th data-sort="string">Benchmark</th>
-                    <th data-sort="string">Leader</th>
-                    <th data-sort="number">Top Score</th>
-                    <th data-sort="number">Improvement</th>
-                    <th data-sort="number">Rate/mo</th>
-                    <th data-sort="number">Saturation</th>
-                    <th data-sort="number">Models</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in evolution %}
-                <tr>
-                    <td>{{ s.benchmark_name }}</td>
-                    <td>{{ s.current_leader | prettify_slug if s.current_leader else "—" }}</td>
-                    <td>{{ s.current_top_score if s.current_top_score is not none else "—" }}</td>
-                    <td>{{ "%.2f"|format(s.total_improvement) if s.total_improvement is not none else "—" }}</td>
-                    <td>{{ "%.2f"|format(s.improvement_rate_per_month) if s.improvement_rate_per_month is not none else "—" }}</td>
-                    <td>{{ "%.1f%%"|format(s.saturation_pct) if s.saturation_pct is not none else "—" }}</td>
-                    <td>{{ s.models_evaluated }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

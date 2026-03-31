@@ -8,16 +8,58 @@
     <a href="/eval/analysis" class="btn btn-outline btn-sm">Back to Overview</a>
 </div>
 
-<div class="card-grid">
-    <div class="stat-card">
-        <div class="stat-value">{{ benchmarks|length }}</div>
-        <div class="stat-label">Benchmarks Tracked</div>
+<!-- Benchmark Selector -->
+<div class="card" style="margin-bottom: 1rem; padding: 0.75rem 1rem;">
+    <form method="get" action="/eval/analysis/benchmarks" style="display: flex; gap: 0.5rem; align-items: center;">
+        <label for="bench-select"><strong>Select Benchmark:</strong></label>
+        <select id="bench-select" name="selected" onchange="this.form.submit()" style="padding: 0.25rem 0.5rem;">
+            <option value="">-- All Benchmarks --</option>
+            {% for b in benchmarks %}
+            <option value="{{ b.benchmark_name }}" {% if selected == b.benchmark_name %}selected{% endif %}>{{ b.benchmark_name }} ({{ b.entry_count }} entries)</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{% if selected and leaderboard and leaderboard.entries %}
+<!-- Leaderboard for selected benchmark -->
+<div class="card">
+    <div class="card-header">{{ selected }} — {{ leaderboard.entries|length }} Models</div>
+    <div class="table-wrapper">
+        <table data-sortable>
+            <caption class="sr-only">Leaderboard for {{ selected }}</caption>
+            <thead>
+                <tr>
+                    <th data-sort="number">#</th>
+                    <th data-sort="string">Model</th>
+                    <th data-sort="string">Date</th>
+                    <th data-sort="string">Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in leaderboard.entries %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><a href="/eval/analysis/models/{{ entry.model_slug }}">{{ entry.model_slug | prettify_slug }}</a></td>
+                    <td>{{ entry.date or "—" }}</td>
+                    <td>{{ entry.source_name or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
+{% elif selected %}
+<div class="card">
+    <p class="text-muted text-center">No leaderboard data for {{ selected }}.</p>
+</div>
+
+{% else %}
+<!-- Summary table when no benchmark selected -->
 {% if benchmarks %}
 <div class="card">
-    <div class="card-header">Benchmark Variants</div>
+    <div class="card-header">{{ benchmarks|length }} Benchmark Variants</div>
     <div class="table-wrapper">
         <table data-sortable>
             <caption class="sr-only">Tracked benchmark variants with entry counts</caption>
@@ -27,13 +69,12 @@
                     <th data-sort="number">Entries</th>
                     <th data-sort="string">Latest Date</th>
                     <th data-sort="string">Current Leader</th>
-                    <th data-sort="number">Top Score</th>
                 </tr>
             </thead>
             <tbody>
                 {% for b in benchmarks %}
                 <tr>
-                    <td><a href="/eval/analysis/benchmarks/{{ b.benchmark_name }}">{{ b.benchmark_name }}</a></td>
+                    <td><a href="/eval/analysis/benchmarks?selected={{ b.benchmark_name }}">{{ b.benchmark_name }}</a></td>
                     <td>{{ b.entry_count }}</td>
                     <td>{{ b.latest_date or "—" }}</td>
                     <td>
@@ -41,7 +82,6 @@
                         <a href="/eval/analysis/models/{{ b.top_model }}">{{ b.top_model | prettify_slug }}</a>
                         {% else %}—{% endif %}
                     </td>
-                    <td>{{ b.top_score if b.top_score is not none else "—" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -52,5 +92,6 @@
 <div class="card">
     <p class="text-muted text-center">No benchmarks found.</p>
 </div>
+{% endif %}
 {% endif %}
 {% endblock %}

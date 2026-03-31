@@ -46,7 +46,7 @@
 <div class="card">
     <div class="table-wrapper">
         <table data-sortable>
-            <caption class="sr-only">Per-model claim verification metrics</caption>
+            <caption class="sr-only">Per-model claim verification — click Claims count to expand</caption>
             <thead>
                 <tr>
                     <th data-sort="string">Model</th>
@@ -61,15 +61,20 @@
             </thead>
             <tbody>
                 {% for m in report.model_verifications %}
-                <tr>
+                <tr class="verif-row" data-model-slug="{{ m.model_slug }}" style="cursor: pointer;" onclick="toggleClaims(this)">
                     <td><a href="/eval/analysis/models/{{ m.model_slug }}">{{ m.model_slug | prettify_slug }}</a></td>
                     <td>{{ m.organization }}</td>
-                    <td>{{ m.total_claims }}</td>
+                    <td><span class="badge badge-queued" title="Click row to expand claims">{{ m.total_claims }}</span></td>
                     <td>{{ "%.1f%%"|format(m.confirmed_pct) }}</td>
                     <td>{% if m.conflicted_pct > 0 %}<span class="text-danger">{{ "%.1f%%"|format(m.conflicted_pct) }}</span>{% else %}0.0%{% endif %}</td>
                     <td>{{ m.source_count }}</td>
                     <td>{{ m.highest_confidence_tier | replace("_", " ") | title }}</td>
                     <td>{{ m.xref_confirms_count }}</td>
+                </tr>
+                <tr class="claims-detail" id="claims-{{ m.model_slug }}" style="display: none;">
+                    <td colspan="8">
+                        <div class="claims-loading" style="padding: 0.5rem; color: #999;">Loading claims...</div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -96,7 +101,7 @@
             <tbody>
                 {% for b in report.benchmark_verifications %}
                 <tr>
-                    <td>{{ b.benchmark_variant }}</td>
+                    <td><a href="/eval/analysis/benchmarks?selected={{ b.benchmark_variant }}">{{ b.benchmark_variant }}</a></td>
                     <td>{{ b.source_count }}</td>
                     <td>{% if b.has_conflicts %}<span class="text-danger">Yes</span>{% else %}No{% endif %}</td>
                     <td>{{ "%.4f"|format(b.score_variance) if b.score_variance is not none else "—" }}</td>
@@ -107,4 +112,50 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+function toggleClaims(row) {
+    // Don't toggle if clicking a link
+    if (event.target.tagName === 'A') return;
+
+    var slug = row.getAttribute('data-model-slug');
+    var detailRow = document.getElementById('claims-' + slug);
+    if (!detailRow) return;
+
+    if (detailRow.style.display === 'none') {
+        detailRow.style.display = '';
+        // Fetch claims if not already loaded
+        var container = detailRow.querySelector('td');
+        if (container.querySelector('.claims-loading')) {
+            fetch('/eval/analysis/verification/claims/' + encodeURIComponent(slug))
+                .then(function(r) { return r.json(); })
+                .then(function(claims) {
+                    if (claims.length === 0) {
+                        container.innerHTML = '<div style="padding:0.5rem;color:#999;">No claims found.</div>';
+                        return;
+                    }
+                    var html = '<table style="width:100%;font-size:0.85rem;border-collapse:collapse;">';
+                    html += '<tr style="background:#f5f5f5;"><th style="padding:4px 8px;text-align:left;">Claim</th><th style="padding:4px 8px;">Source</th><th style="padding:4px 8px;">Tier</th><th style="padding:4px 8px;">Status</th><th style="padding:4px 8px;">Date</th></tr>';
+                    claims.forEach(function(c) {
+                        var statusColor = c.confirmation_status === 'confirmed' ? '#34a853' : c.confirmation_status === 'conflicted' ? '#ea4335' : '#666';
+                        html += '<tr style="border-bottom:1px solid #eee;">';
+                        html += '<td style="padding:4px 8px;">' + c.claim_text + '</td>';
+                        html += '<td style="padding:4px 8px;">' + c.source_name + '</td>';
+                        html += '<td style="padding:4px 8px;font-size:0.8rem;">' + c.confidence_tier.replace(/_/g, ' ') + '</td>';
+                        html += '<td style="padding:4px 8px;color:' + statusColor + ';">' + c.confirmation_status + '</td>';
+                        html += '<td style="padding:4px 8px;font-size:0.8rem;">' + c.observed_at + '</td>';
+                        html += '</tr>';
+                    });
+                    html += '</table>';
+                    container.innerHTML = html;
+                })
+                .catch(function(err) {
+                    container.innerHTML = '<div style="padding:0.5rem;color:#ea4335;">Error loading claims.</div>';
+                });
+        }
+    } else {
+        detailRow.style.display = 'none';
+    }
+}
+</script>
 {% endblock %}
