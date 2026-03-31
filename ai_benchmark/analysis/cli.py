@@ -933,6 +933,47 @@ def seed_models(ctx: click.Context) -> None:
     asyncio.run(_run())
 
 
+@analyze_group.command("backfill-slugs")
+@click.pass_context
+def backfill_slugs(ctx: click.Context) -> None:
+    """Backfill model_slug on events where it is currently NULL."""
+    settings = ctx.obj["settings"]
+
+    async def _run() -> None:
+        engine = _get_analysis_engine(settings)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        session_factory = create_session_factory(engine)
+        async with session_factory() as session:
+            from sqlalchemy import select
+
+            from ..models.events import EventRecord
+            from ..processing.normalizer import extract_model_slug, validate_model_slug
+
+            stmt = select(EventRecord).where(EventRecord.model_slug.is_(None))
+            result = await session.execute(stmt)
+            events = result.scalars().all()
+            total = len(events)
+            updated = 0
+
+            for ev in events:
+                text = f"{ev.title} {ev.raw_content or ''}"
+                raw_slug = extract_model_slug(text)
+                if raw_slug:
+                    slug = validate_model_slug(raw_slug)
+                    if slug:
+                        ev.model_slug = slug
+                        updated += 1
+
+            await session.commit()
+            click.echo(f"Backfill complete: {updated} of {total} NULL-slug events updated.")
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
 def _digest_to_text(report) -> str:
     """Simple text rendering of a DigestReport."""
     lines = [

@@ -152,10 +152,99 @@ _STOP_WORDS = {
 }
 
 
+# CamelCase boundary for repairing HTML-concatenated text (e.g. "launchedClaude")
+_CAMEL_BOUNDARY = re.compile(r"([a-z])([A-Z])")
+
+# Known model names → canonical slugs. Checked before regex patterns.
+# Sorted longest-first at lookup time so "claude opus 4.6" matches before "claude opus 4".
+_KNOWN_MODEL_NAMES: dict[str, str] = {
+    "claude opus 4.6": "claude-opus-4.6",
+    "claude sonnet 4.6": "claude-sonnet-4.6",
+    "claude haiku 4.5": "claude-haiku-4.5",
+    "claude opus 4.5": "claude-opus-4.5",
+    "claude sonnet 4.5": "claude-sonnet-4.5",
+    "claude opus 4.1": "claude-opus-4.1",
+    "claude opus 4": "claude-opus-4",
+    "claude sonnet 3.7": "claude-sonnet-3.7",
+    "claude sonnet 3.5": "claude-sonnet-3.5",
+    "claude haiku 3.5": "claude-haiku-3.5",
+    "claude 3 opus": "claude-3-opus",
+    "claude 3 sonnet": "claude-3-sonnet",
+    "claude 3 haiku": "claude-3-haiku",
+    "gpt-5.4": "gpt-5.4",
+    "gpt-5.3": "gpt-5.3",
+    "gpt-5.2": "gpt-5.2",
+    "gpt-5": "gpt-5",
+    "gpt-4o mini": "gpt-4o-mini",
+    "gpt-4o": "gpt-4o",
+    "gemini 3.1 pro": "gemini-3.1-pro",
+    "gemini 3 pro": "gemini-3-pro",
+    "gemini 3 flash": "gemini-3-flash",
+    "gemini 3": "gemini-3",
+    "grok-4": "grok-4",
+    "grok-3": "grok-3",
+    "mistral large 3": "mistral-large-3",
+    "mistral medium 3": "mistral-medium-3",
+    "mistral small 3": "mistral-small-3",
+    "command r+": "command-r-plus",
+    "command r": "command-r",
+    "command a": "command-a",
+    "llama 4": "llama-4",
+    "llama 3.3": "llama-3.3",
+    "llama 3.1": "llama-3.1",
+    "llama 3": "llama-3",
+    "llama 2": "llama-2",
+    "deepseek v3": "deepseek-v3",
+    "deep seek v3": "deepseek-v3",
+    "deepseek v2.5": "deepseek-v2.5",
+    "deep seek v2.5": "deepseek-v2.5",
+    "deepseek r1": "deepseek-r1",
+    "deep seek r1": "deepseek-r1",
+    "phi-4": "phi-4",
+    "phi-3": "phi-3",
+    "qwen 2.5": "qwen-2.5",
+    "qwen 2": "qwen-2",
+}
+
+# Build a normalized lookup: (normalized_key → canonical_slug), sorted longest-first.
+_KNOWN_NAMES_NORMALIZED: list[tuple[str, str]] = sorted(
+    [(re.sub(r"\s+", " ", re.sub(r"[-_]+", " ", k)), v) for k, v in _KNOWN_MODEL_NAMES.items()],
+    key=lambda pair: len(pair[0]),
+    reverse=True,
+)
+
+
+def _repair_whitespace(text: str) -> str:
+    """Insert spaces at CamelCase boundaries from HTML concatenation."""
+    return _CAMEL_BOUNDARY.sub(r"\1 \2", text)
+
+
+def _match_known_model(text: str) -> str | None:
+    """Match a known model name in text via dictionary lookup (longest match wins)."""
+    normalized = _repair_whitespace(text).lower()
+    normalized = re.sub(r"[-_]+", " ", normalized)
+    normalized = re.sub(r"\s+", " ", normalized)
+    for norm_key, slug in _KNOWN_NAMES_NORMALIZED:
+        if norm_key in normalized:
+            return slug
+    return None
+
+
 def extract_model_slug(text: str) -> str | None:
-    """Extract the first recognized model slug from text."""
+    """Extract the first recognized model slug from text.
+
+    Tries dictionary lookup first (handles HTML-concatenated text),
+    then falls back to regex patterns.
+    """
+    # Phase 1: Dictionary lookup with whitespace repair
+    known = _match_known_model(text)
+    if known:
+        return known
+
+    # Phase 2: Regex patterns on repaired text
+    repaired = _repair_whitespace(text)
     for pattern in MODEL_PATTERNS:
-        match = pattern.search(text)
+        match = pattern.search(repaired)
         if match:
             raw = match.group(1).strip()
             # Trim trailing stop words
