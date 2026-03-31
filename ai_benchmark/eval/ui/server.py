@@ -60,9 +60,9 @@ async def dashboard(request: Request, session: AsyncSession = Depends(get_sessio
     runners = await runner_service.list_runners(session)
 
     return templates.TemplateResponse(
+        request,
         "dashboard.html",
         {
-            "request": request,
             "active_runs": [_run_to_dict(r) for r in active_runs],
             "completed_runs": [_run_to_dict(r) for r in completed_runs],
             "machines": [_machine_to_dict(m) for m in machines],
@@ -81,9 +81,9 @@ async def evaluation_list(request: Request, session: AsyncSession = Depends(get_
     items = await eval_service.list_evaluations(session)
     data = [_eval_to_dict(e) for e in items]
     return templates.TemplateResponse(
+        request,
         "evaluations/list.html",
         {
-            "request": request,
             "evaluations": data,
         },
     )
@@ -96,9 +96,9 @@ async def evaluation_create_form(request: Request, session: AsyncSession = Depen
     datasets = await dataset_service.list_datasets(session)
     scorers = await scorer_service.list_scorers(session)
     return templates.TemplateResponse(
+        request,
         "evaluations/create.html",
         {
-            "request": request,
             "datasets": [{"id": d.id, "name": d.name} for d in datasets],
             "scorers": [
                 {"id": s.id, "name": s.name, "scorer_type": s.scorer_type} for s in scorers
@@ -134,9 +134,9 @@ async def evaluation_detail(
     ]
 
     return templates.TemplateResponse(
+        request,
         "evaluations/detail.html",
         {
-            "request": request,
             "evaluation": _eval_to_dict(ev),
             "versions": versions,
             "recent_runs": recent_runs,
@@ -167,9 +167,9 @@ async def dataset_list(request: Request, session: AsyncSession = Depends(get_ses
     items = await dataset_service.list_datasets(session)
     data = [_dataset_to_dict(d) for d in items]
     return templates.TemplateResponse(
+        request,
         "datasets/list.html",
         {
-            "request": request,
             "datasets": data,
         },
     )
@@ -207,9 +207,9 @@ async def dataset_detail(
         )
 
     return templates.TemplateResponse(
+        request,
         "datasets/detail.html",
         {
-            "request": request,
             "dataset": _dataset_to_dict(ds),
             "versions": versions,
         },
@@ -260,9 +260,9 @@ async def dataset_version_preview(
         )
 
     return templates.TemplateResponse(
+        request,
         "datasets/preview.html",
         {
-            "request": request,
             "dataset": _dataset_to_dict(ds),
             "version": {
                 "id": dv.id,
@@ -293,9 +293,9 @@ async def scorer_list(request: Request, session: AsyncSession = Depends(get_sess
         for s in items
     ]
     return templates.TemplateResponse(
+        request,
         "scorers/list.html",
         {
-            "request": request,
             "scorers": data,
         },
     )
@@ -333,9 +333,9 @@ async def scorer_detail(
     ]
 
     return templates.TemplateResponse(
+        request,
         "scorers/detail.html",
         {
-            "request": request,
             "scorer": {
                 "id": scorer.id,
                 "name": scorer.name,
@@ -358,9 +358,9 @@ async def target_list(request: Request, session: AsyncSession = Depends(get_sess
     items = await target_service.list_targets(session)
     data = [_target_to_dict(t) for t in items]
     return templates.TemplateResponse(
+        request,
         "targets/list.html",
         {
-            "request": request,
             "targets": data,
         },
     )
@@ -380,9 +380,9 @@ async def target_detail(
     target_runs = [_run_to_dict(r) for r in runs if r.target_config_id == target_id]
 
     return templates.TemplateResponse(
+        request,
         "targets/detail.html",
         {
-            "request": request,
             "target": _target_to_dict(t),
             "runs": target_runs,
         },
@@ -400,8 +400,9 @@ async def target_clone_form(
         return HTMLResponse("<h1>Not Found</h1>", status_code=404)
 
     return templates.TemplateResponse(
+        request,
         "targets/clone.html",
-        {"request": request, "target": _target_to_dict(t)},
+        {"target": _target_to_dict(t)},
     )
 
 
@@ -439,9 +440,9 @@ async def runner_list(request: Request, session: AsyncSession = Depends(get_sess
     runner_classes = sorted({r.runner_class for r in all_runners})
 
     return templates.TemplateResponse(
+        request,
         "runners/list.html",
         {
-            "request": request,
             "runners": data,
             "runner_classes": runner_classes,
         },
@@ -476,9 +477,9 @@ async def runner_detail(
         runs = [_run_to_dict(r) for r in all_runs if r.target_config_id in target_ids]
 
     return templates.TemplateResponse(
+        request,
         "runners/detail.html",
         {
-            "request": request,
             "runner": runner_data,
             "targets": targets,
             "runs": runs,
@@ -496,9 +497,9 @@ async def machine_list(request: Request, session: AsyncSession = Depends(get_ses
     items = await machine_service.list_profiles(session)
     data = [_machine_to_dict(m) for m in items]
     return templates.TemplateResponse(
+        request,
         "machines/list.html",
         {
-            "request": request,
             "machines": data,
         },
     )
@@ -565,9 +566,9 @@ async def machine_detail(
     targets = [_target_to_dict(t) for t in tgt_result.scalars().all()]
 
     return templates.TemplateResponse(
+        request,
         "machines/detail.html",
         {
-            "request": request,
             "machine": machine_data,
             "snapshots": snapshots,
             "targets": targets,
@@ -621,9 +622,9 @@ async def run_list(request: Request, session: AsyncSession = Depends(get_session
     hw_classes = sorted({m.hardware_class for m in machines if m.hardware_class})
 
     return templates.TemplateResponse(
+        request,
         "runs/list.html",
         {
-            "request": request,
             "runs": data,
             "evaluations": eval_data,
             "hardware_classes": hw_classes,
@@ -671,9 +672,9 @@ async def run_launch_form(request: Request, session: AsyncSession = Depends(get_
         pass  # Compatibility check is best-effort
 
     return templates.TemplateResponse(
+        request,
         "runs/launch.html",
         {
-            "request": request,
             "evaluations": eval_data,
             "targets": target_data,
             "validation_warnings": warnings_list,
@@ -807,9 +808,9 @@ async def run_detail(request: Request, run_id: int, session: AsyncSession = Depe
     ]
 
     return templates.TemplateResponse(
+        request,
         "runs/detail.html",
         {
-            "request": request,
             "run": _run_to_dict(run),
             "items": item_data,
             "metrics": metric_data,
@@ -839,9 +840,9 @@ async def run_live(request: Request, run_id: int, session: AsyncSession = Depend
     ]
 
     return templates.TemplateResponse(
+        request,
         "runs/live.html",
         {
-            "request": request,
             "run": _run_to_dict(run),
             "items": item_data,
         },
@@ -891,9 +892,9 @@ async def run_group_list(request: Request, session: AsyncSession = Depends(get_s
         )
 
     return templates.TemplateResponse(
+        request,
         "run_groups/list.html",
         {
-            "request": request,
             "groups": data,
         },
     )
@@ -933,9 +934,9 @@ async def run_group_detail(
     runs = [_run_to_dict(r) for r in run_result.scalars().all()]
 
     return templates.TemplateResponse(
+        request,
         "run_groups/detail.html",
         {
-            "request": request,
             "group": group_data,
             "runs": runs,
         },
@@ -995,9 +996,9 @@ async def comparison_page(
                 comparison["config_diff"] = config_diff
 
     return templates.TemplateResponse(
+        request,
         "comparisons/compare.html",
         {
-            "request": request,
             "comparison": comparison,
             "run_details": run_details,
         },
@@ -1071,9 +1072,9 @@ async def search_page(request: Request, session: AsyncSession = Depends(get_sess
         has_results = any(v for v in results.values())
 
     return templates.TemplateResponse(
+        request,
         "search.html",
         {
-            "request": request,
             "query": q,
             "results": results,
             "has_results": has_results,
@@ -1116,9 +1117,9 @@ async def reports_page(request: Request, session: AsyncSession = Depends(get_ses
         )
 
     return templates.TemplateResponse(
+        request,
         "reports/dashboard.html",
         {
-            "request": request,
             "presets": preset_data,
             "chart_data": chart_data,
         },
@@ -1306,9 +1307,9 @@ async def analysis_overview(request: Request, session: AsyncSession = Depends(ge
     evolution = await get_benchmark_evolution(session, window_days=365)
 
     return templates.TemplateResponse(
+        request,
         "analysis/overview.html",
         {
-            "request": request,
             "stats": {
                 "total_models": len(models),
                 "total_orgs": len(orgs),
@@ -1348,9 +1349,9 @@ async def analysis_models(
     orgs = sorted({m.organization for m in all_models})
 
     return templates.TemplateResponse(
+        request,
         "analysis/models.html",
         {
-            "request": request,
             "models": [_model_summary_to_dict(m) for m in models],
             "orgs": orgs,
             "org_filter": org or "",
@@ -1371,16 +1372,17 @@ async def analysis_model_detail(
     profile = await build_model_profile(session, slug)
     if profile is None:
         return templates.TemplateResponse(
+            request,
             "analysis/models.html",
-            {"request": request, "models": [], "orgs": [], "org_filter": ""},
+            {"models": [], "orgs": [], "org_filter": ""},
         )
 
     capability = await get_capability_profile(session, slug)
 
     return templates.TemplateResponse(
+        request,
         "analysis/model_detail.html",
         {
-            "request": request,
             "profile": _model_profile_to_dict(profile),
             "capability": _capability_to_dict(capability) if capability else None,
         },
@@ -1398,9 +1400,9 @@ async def analysis_verification(
     report = await get_verification_report(session)
 
     return templates.TemplateResponse(
+        request,
         "analysis/verification.html",
         {
-            "request": request,
             "report": _verification_to_dict(report),
         },
     )
