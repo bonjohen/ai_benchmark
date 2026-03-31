@@ -119,7 +119,7 @@ async def lifespan(app: FastAPI):
 
     # Import models to register them with Base.metadata
     from ...analysis import models as analysis_models  # noqa: F401
-    from ...models import discovery  # noqa: F401
+    from ...models import discovery, events, research, sources  # noqa: F401
     from ...publication import models as publication_models  # noqa: F401
     from ..models import artifact, dataset, evaluation, machine, run, scorer, target  # noqa: F401
 

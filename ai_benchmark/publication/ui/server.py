@@ -33,9 +33,9 @@ async def latest_page(
     """Daily landing page showing the latest edition."""
     edition = await _load_latest_edition(session)
     return templates.TemplateResponse(
+        request,
         "latest.html",
         {
-            "request": request,
             "edition": edition,
             "active_page": "latest",
         },
@@ -56,9 +56,9 @@ async def archive_page(
     result = await session.execute(stmt)
     editions = result.scalars().all()
     return templates.TemplateResponse(
+        request,
         "archive.html",
         {
-            "request": request,
             "editions": editions,
             "active_page": "archive",
         },
@@ -74,9 +74,9 @@ async def detail_page(
     """Edition detail page."""
     edition = await _load_edition_by_date(session, date)
     return templates.TemplateResponse(
+        request,
         "detail.html",
         {
-            "request": request,
             "edition": edition,
             "date": date,
             "active_page": "detail",
@@ -130,9 +130,9 @@ async def admin_page(
         audit_logs = log_result.scalars().all()
 
     return templates.TemplateResponse(
+        request,
         "admin.html",
         {
-            "request": request,
             "edition": edition,
             "entries": entries,
             "audit_logs": audit_logs,
