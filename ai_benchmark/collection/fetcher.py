@@ -75,6 +75,7 @@ class Fetcher:
         if proxy_url:
             self._client_kwargs["proxy"] = proxy_url
         self._client: httpx.AsyncClient | None = None
+        self._browser_fetcher = None
 
     async def _ensure_client(self) -> httpx.AsyncClient:
         """Create the shared httpx client lazily on first use."""
@@ -82,11 +83,22 @@ class Fetcher:
             self._client = httpx.AsyncClient(**self._client_kwargs)
         return self._client
 
+    async def _fetch_with_browser(self, url: str) -> FetchResult:
+        """Delegate to PlaywrightFetcher for Cloudflare-protected pages."""
+        if self._browser_fetcher is None:
+            from .playwright_fetcher import PlaywrightFetcher
+
+            self._browser_fetcher = PlaywrightFetcher(timeout=self.timeout)
+        return await self._browser_fetcher.fetch(url)
+
     async def aclose(self) -> None:
-        """Close the underlying HTTP client."""
+        """Close the underlying HTTP client and browser if open."""
         if self._client is not None:
             await self._client.aclose()
             self._client = None
+        if self._browser_fetcher is not None:
+            await self._browser_fetcher.aclose()
+            self._browser_fetcher = None
 
     async def __aenter__(self) -> Fetcher:
         return self
@@ -94,8 +106,18 @@ class Fetcher:
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         await self.aclose()
 
-    async def fetch(self, url: str) -> FetchResult:
-        """Fetch a URL with retry and concurrency control."""
+    async def fetch(self, url: str, use_browser: bool = False) -> FetchResult:
+        """Fetch a URL with retry and concurrency control.
+
+        If ``use_browser`` is True and playwright is installed, uses headless
+        Chromium to solve Cloudflare JS challenges.
+        """
+        if use_browser:
+            from .playwright_fetcher import is_playwright_available
+
+            if is_playwright_available():
+                return await self._fetch_with_browser(url)
+            logger.warning("playwright_not_installed", url=url, fallback="httpx")
         async with self._semaphore:
             return await self._fetch_with_retry(url)
 

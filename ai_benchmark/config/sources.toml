@@ -19,31 +19,33 @@ canonical_url = "https://openai.com/news/product-releases/"
 page_type = "product-news index"
 polling_frequency = "daily"
 priority = true
-notes = "WAF-blocked since 2026-03 (403 Forbidden). RSS feed is primary collection path."
+browser = true
 
 [[sources.pages]]
 canonical_url = "https://platform.openai.com/docs/changelog"
 page_type = "api changelog"
 polling_frequency = "6h"
 priority = true
+browser = true
 
 [[sources.pages]]
 canonical_url = "https://platform.openai.com/docs/models"
 page_type = "model catalog"
 polling_frequency = "daily"
+browser = true
 
 [[sources.pages]]
 canonical_url = "https://openai.com/api/pricing/"
 page_type = "pricing"
 polling_frequency = "daily"
 priority = true
-notes = "WAF-blocked since 2026-03 (403 Forbidden). RSS feed is primary collection path."
+browser = true
 
 [[sources.pages]]
 canonical_url = "https://openai.com/index/system-cards/"
 page_type = "system-card index"
 polling_frequency = "daily"
-notes = "WAF-blocked since 2026-03 (403 Forbidden). RSS feed is primary collection path."
+browser = true
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=openai+model+OR+api+OR+gpt+site:openai.com&hl=en-US&gl=US&ceid=US:en"
@@ -162,7 +164,7 @@ notes = "Stale since 2026-03 — returns unchanged content."
 canonical_url = "https://x.ai/news"
 page_type = "news"
 polling_frequency = "daily"
-notes = "WAF-blocked since 2026-03 (403 Forbidden). RSS feed is primary collection path."
+browser = true
 
 [[sources.pages]]
 canonical_url = "https://docs.x.ai/developers/rate-limits"

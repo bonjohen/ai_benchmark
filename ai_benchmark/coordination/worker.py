@@ -101,7 +101,7 @@ async def fetch_and_extract(
         )
 
     # Standard HTML path
-    fetch_result = await fetcher.fetch(task.page_url)
+    fetch_result = await fetcher.fetch(task.page_url, use_browser=task.browser)
     elapsed_ms = fetch_result.elapsed_ms
 
     if not fetch_result.ok:

@@ -199,6 +199,7 @@ class CollectionCoordinator:
                             css_selectors=page_config.css_selectors,
                             since_date=since_date,
                             priority=page_config.priority,
+                            browser=page_config.browser,
                         )
                     )
 

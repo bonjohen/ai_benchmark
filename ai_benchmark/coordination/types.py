@@ -21,6 +21,7 @@ class FetchTask:
     css_selectors: dict[str, str] = field(default_factory=dict)
     since_date: date | None = None
     priority: bool = False
+    browser: bool = False
     attempt: int = 0
 
 

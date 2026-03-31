@@ -39,6 +39,9 @@ research = [
     "pymupdf>=1.23",
     "semanticscholar>=0.8",
 ]
+browser = [
+    "playwright>=1.40",
+]
 
 [project.scripts]
 ai-benchmark = "ai_benchmark.cli:cli"

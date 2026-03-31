@@ -24,6 +24,7 @@ class PageConfig(BaseModel):
     polling_frequency: str = "daily"
     css_selectors: dict[str, str] = Field(default_factory=dict)
     priority: bool = False
+    browser: bool = False
 
 
 class SourceConfig(BaseModel):
