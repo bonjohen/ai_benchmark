@@ -86,9 +86,9 @@ def _make_fetch_result(body: str = "<html><body>Test</body></html>", status: int
 class TestCollectionCoordinatorIntegration:
     """Integration tests for the coordinator -> worker -> pipeline chain."""
 
-    async def test_full_path_items_extracted_and_processed(self, db_engine_fk):
+    async def test_full_path_items_extracted_and_processed(self, db_engine):
         """End-to-end: collect_all extracts items, process_items creates events."""
-        session_factory = create_session_factory(db_engine_fk)
+        session_factory = create_session_factory(db_engine)
 
         # Seed database
         async with session_factory() as session:
@@ -169,9 +169,9 @@ class TestCollectionCoordinatorIntegration:
             assert page_record.times_polled >= 1
             assert page_record.last_polled_at is not None
 
-    async def test_collection_with_no_items(self, db_engine_fk):
+    async def test_collection_with_no_items(self, db_engine):
         """When the collector returns no items, no events are created."""
-        session_factory = create_session_factory(db_engine_fk)
+        session_factory = create_session_factory(db_engine)
 
         async with session_factory() as session:
             await _seed_source(session)
@@ -213,9 +213,9 @@ class TestCollectionCoordinatorIntegration:
             events = list(result.scalars().all())
             assert len(events) == 0
 
-    async def test_empty_catalog_returns_no_tasks(self, db_engine_fk):
+    async def test_empty_catalog_returns_no_tasks(self, db_engine):
         """When the source org is not in the catalog, no tasks are created."""
-        session_factory = create_session_factory(db_engine_fk)
+        session_factory = create_session_factory(db_engine)
 
         settings = PipelineSettings(database_url="sqlite+aiosqlite:///:memory:")
         coord = CollectionCoordinator(settings)
@@ -232,9 +232,9 @@ class TestCollectionCoordinatorIntegration:
         assert stats["tasks_created"] == 0
         assert stats["items_processed"] == 0
 
-    async def test_fetch_failure_records_error(self, db_engine_fk):
+    async def test_fetch_failure_records_error(self, db_engine):
         """When fetch fails, the coordinator increments consecutive_failures."""
-        session_factory = create_session_factory(db_engine_fk)
+        session_factory = create_session_factory(db_engine)
 
         async with session_factory() as session:
             _source, page = await _seed_source(session)
@@ -279,9 +279,9 @@ class TestCollectionCoordinatorIntegration:
             page_record = page_result.scalar_one()
             assert page_record.consecutive_failures >= 1
 
-    async def test_snapshot_created_during_collection(self, db_engine_fk):
+    async def test_snapshot_created_during_collection(self, db_engine):
         """Verify that snapshot records are created via SnapshotManager."""
-        session_factory = create_session_factory(db_engine_fk)
+        session_factory = create_session_factory(db_engine)
 
         async with session_factory() as session:
             _source, page = await _seed_source(session)
