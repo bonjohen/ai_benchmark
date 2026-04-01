@@ -21,10 +21,6 @@ dependencies = [
     "pydantic-settings>=2.2",
     "structlog>=24.1",
     "click>=8.1",
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.34",
-    "python-multipart>=0.0.9",
-    "jinja2>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -53,17 +49,11 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "TCH"]
 
-[tool.ruff.lint.per-file-ignores]
-"ai_benchmark/eval/api/routes/*.py" = ["B008"]
-"ai_benchmark/eval/api/middleware.py" = ["TC002"]
-"ai_benchmark/eval/ui/server.py" = ["B008"]
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 filterwarnings = [
     "ignore::DeprecationWarning:pytest_asyncio",
-    "ignore::DeprecationWarning:starlette.templating",
 ]
 
 [tool.mypy]
