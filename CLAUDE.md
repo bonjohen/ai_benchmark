@@ -119,7 +119,7 @@ Also supports `.env` file in project root.
 
 ## Core Domain Concepts
 
-- **Source catalog**: 22 monitored sources across 5 categories — 22 registered collectors (including SemanticScholarCollector); 85 monitored pages (including Google News RSS feeds and API endpoints). Mistral pages use Next.js RSC streaming; Cohere pages are JS-rendered shells (RSS-only)
+- **Source catalog**: 21 monitored sources across 5 categories — 22 registered collectors (SemanticScholar disabled pending API key); 84 monitored pages (including Google News RSS feeds and API endpoints). Mistral pages use Next.js RSC streaming; Cohere pages are JS-rendered shells (RSS-only)
 - **Source classifications**: primary (official vendor pages), secondary (independent benchmarks, reputable news), discovery-only (community forums, arXiv, trending feeds)
 - **Trust tiers**: sources rated 1-5; official vendor pages are 5, community sources as low as 3
 - **Event records**: normalized change records with source, title, path, observed timestamp, and extracted model/version names

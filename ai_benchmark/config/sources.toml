@@ -545,21 +545,24 @@ canonical_url = "https://huggingface.co/papers/trending"
 page_type = "trending papers"
 polling_frequency = "daily"
 
-[[sources]]
-source_name = "Semantic Scholar"
-category = "searchable research database"
-organization = "Ai2"
-homepage_url = "https://www.semanticscholar.org/"
-base_domain = "semanticscholar.org"
-trust_rating = 4.5
-source_role = "searchable research database and API"
-classification = "secondary"
-collection_method = "api"
-
-[[sources.pages]]
-canonical_url = "https://api.semanticscholar.org/graph/v1"
-page_type = "api endpoint"
-polling_frequency = "on_demand"
+# Semantic Scholar — disabled until API key is provisioned.
+# Re-enable by uncommenting and setting AI_BENCH_SEMANTIC_SCHOLAR_API_KEY.
+#
+# [[sources]]
+# source_name = "Semantic Scholar"
+# category = "searchable research database"
+# organization = "Ai2"
+# homepage_url = "https://www.semanticscholar.org/"
+# base_domain = "semanticscholar.org"
+# trust_rating = 4.5
+# source_role = "searchable research database and API"
+# classification = "secondary"
+# collection_method = "api"
+#
+# [[sources.pages]]
+# canonical_url = "https://api.semanticscholar.org/graph/v1"
+# page_type = "api endpoint"
+# polling_frequency = "on_demand"
 
 # ─── News Sources ───
 
