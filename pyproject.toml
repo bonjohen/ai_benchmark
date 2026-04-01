@@ -21,6 +21,7 @@ dependencies = [
     "pydantic-settings>=2.2",
     "structlog>=24.1",
     "click>=8.1",
+    "playwright>=1.40",
 ]
 
 [project.optional-dependencies]
@@ -34,9 +35,6 @@ dev = [
 research = [
     "pymupdf>=1.23",
     "semanticscholar>=0.8",
-]
-browser = [
-    "playwright>=1.40",
 ]
 
 [project.scripts]

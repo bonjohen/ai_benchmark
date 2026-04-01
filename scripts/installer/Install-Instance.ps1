@@ -358,6 +358,19 @@ Invoke-InstallerAction -Description "Install wheel into venv" -Action {
     Remove-Item $TmpDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+# Install Playwright browser binary
+Invoke-InstallerAction -Description "Install Playwright Chromium browser" -Action {
+    Write-Host "    Installing Chromium..."
+    $prevEAP = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    & $VenvPython -m playwright install chromium 2>&1 | Out-Null
+    $ErrorActionPreference = $prevEAP
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  WARNING: Playwright browser install failed" -ForegroundColor Yellow
+        Write-Host "  Run manually: $VenvPython -m playwright install chromium"
+    }
+}
+
 Write-Host "  Package installed into venv" -ForegroundColor Green
 Write-Host ""
 
