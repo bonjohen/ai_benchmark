@@ -104,7 +104,7 @@ Write-Host " Source      : $SourceDir"
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
-Write-InstallerLog -InstallDir $Path -Message "Upgrade started: $currentPkgVersion -> $newPackageVersion from $SourceDir"
+Write-InstallerLog -InstallDir $Path -Message "Upgrade started: $currentPkgVersion -> $newPackageVersion from $SourceDir to $Path"
 
 # ================================================================
 # Step 2: Pre-upgrade Backup
@@ -461,7 +461,7 @@ if ($migrationFailed -or $verifyFailed) {
     }
     Write-Host "  Restored bin scripts from backup" -ForegroundColor Yellow
 
-    Write-InstallerLog -InstallDir $Path -Message "Upgrade FAILED and rolled back. Backup: $backupDir"
+    Write-InstallerLog -InstallDir $Path -Message "Upgrade FAILED at $Path and rolled back. Backup: $backupDir"
     Write-Host ""
     Write-Host "Upgrade rolled back. Backup preserved at: $backupDir" -ForegroundColor Red
     exit 1
@@ -491,7 +491,7 @@ Invoke-InstallerAction -Description "Update registry entry for '$instanceName'" 
     Set-InstanceEntry -Name $instanceName -Data $updatedEntry
 }
 
-Write-InstallerLog -InstallDir $Path -Message "Upgrade completed: $currentPkgVersion -> $newPackageVersion"
+Write-InstallerLog -InstallDir $Path -Message "Upgrade completed: $currentPkgVersion -> $newPackageVersion at $Path"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green

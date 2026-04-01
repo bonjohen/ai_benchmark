@@ -236,7 +236,7 @@ foreach ($dir in $dirs) {
     }
 }
 
-Write-InstallerLog -InstallDir $Path -Message "Install started: Name=$Name, Path=$Path, Port=$Port, Python=$resolvedPython"
+Write-InstallerLog -InstallDir $Path -Message "Install started: Name=$Name, Source=$SourceDir, Target=$Path, Port=$Port, Python=$resolvedPython"
 Write-Host ""
 
 # ================================================================
@@ -484,7 +484,7 @@ if (-not $NoSchedule) {
 # Done
 # ================================================================
 
-Write-InstallerLog -InstallDir $Path -Message "Install completed successfully"
+Write-InstallerLog -InstallDir $Path -Message "Install completed: $packageVersion at $Path from $SourceDir"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green
