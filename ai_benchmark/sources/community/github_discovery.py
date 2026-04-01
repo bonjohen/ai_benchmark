@@ -5,8 +5,12 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, ClassVar
 
+import structlog
+
 from ...collection.api_client import APIClient
 from ..base import RawItem, SourceCollector
+
+logger = structlog.get_logger(__name__)
 
 if TYPE_CHECKING:
     from datetime import date
@@ -163,8 +167,10 @@ class GitHubDiscoveryCollector(SourceCollector):
         return items
 
     async def _collect_repo(self, owner: str, repo: str) -> list[RawItem]:
-        """Collect releases for a specific repository."""
+        """Collect releases (or tags as fallback) for a specific repository."""
         items: list[RawItem] = []
+
+        # Try releases first
         try:
             releases = await self.client.get_repo_releases(owner, repo)
             for rel in releases[:5]:
@@ -185,7 +191,33 @@ class GitHubDiscoveryCollector(SourceCollector):
                     )
                 )
         except Exception:
-            pass
+            logger.warning("github_releases_failed", owner=owner, repo=repo, exc_info=True)
+
+        if items:
+            return items
+
+        # Fall back to tags when no releases exist
+        try:
+            tags = await self.client.get_repo_tags(owner, repo)
+            for tag in tags[:5]:
+                tag_name = tag.get("name", "")
+                items.append(
+                    RawItem(
+                        title=f"{owner}/{repo}: {tag_name}",
+                        url=f"https://github.com/{owner}/{repo}/releases/tag/{tag_name}",
+                        item_type="github_tag",
+                        metadata={
+                            "source": "github_discovery",
+                            "org": owner,
+                            "repo": repo,
+                            "tag": tag_name,
+                            "confidence_tier": self.CONFIDENCE_TIER,
+                        },
+                    )
+                )
+        except Exception:
+            logger.warning("github_tags_failed", owner=owner, repo=repo, exc_info=True)
+
         return items
 
     def extract_items(self, html: str, page: PageConfig) -> list[RawItem]:
