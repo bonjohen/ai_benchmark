@@ -49,7 +49,9 @@ class APIClient:
             "User-Agent": "ai-benchmark-pipeline/0.1",
             **self.auth_header(),
         }
-        async with self._semaphore, httpx.AsyncClient(timeout=self.timeout) as client:
+        async with self._semaphore, httpx.AsyncClient(
+            timeout=self.timeout, follow_redirects=True
+        ) as client:
             for attempt in range(max_retries):
                 response = await client.get(url, headers=headers, params=params)
                 if response.status_code == 429:
