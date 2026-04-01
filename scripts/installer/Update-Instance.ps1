@@ -306,12 +306,6 @@ $binSpecs = @(
         SCRIPT_DESCRIPTION = "Daemon mode (APScheduler)"
     },
     @{
-        FileName           = "serve.bat"
-        CLI_COMMAND        = "eval serve"
-        LOG_PREFIX         = "serve_$instanceName"
-        SCRIPT_DESCRIPTION = "Eval API server"
-    },
-    @{
         FileName           = "backfill.bat"
         CLI_COMMAND        = "collect --since %~1"
         LOG_PREFIX         = "backfill_$instanceName"
