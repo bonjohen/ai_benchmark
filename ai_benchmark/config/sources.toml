@@ -653,30 +653,34 @@ canonical_url = "https://github.com/princeton-nlp/SWE-bench"
 page_type = "github repo releases"
 polling_frequency = "12h"
 
-[[sources.pages]]
-canonical_url = "https://github.com/LiveBench/LiveBench"
-page_type = "github repo releases"
-polling_frequency = "12h"
+# LiveBench/LiveBench — disabled: no releases or tags
+# [[sources.pages]]
+# canonical_url = "https://github.com/LiveBench/LiveBench"
+# page_type = "github repo releases"
+# polling_frequency = "12h"
 
 [[sources.pages]]
 canonical_url = "https://huggingface.co/datasets/gaia-benchmark/GAIA"
 page_type = "dataset page"
 polling_frequency = "12h"
 
-[[sources.pages]]
-canonical_url = "https://github.com/centerforaisafety/hle"
-page_type = "github repo releases"
-polling_frequency = "12h"
+# centerforaisafety/hle — disabled: no releases or tags
+# [[sources.pages]]
+# canonical_url = "https://github.com/centerforaisafety/hle"
+# page_type = "github repo releases"
+# polling_frequency = "12h"
 
-[[sources.pages]]
-canonical_url = "https://github.com/laude-institute/t-bench"
-page_type = "github repo releases"
-polling_frequency = "12h"
+# laude-institute/t-bench — disabled: no releases or tags
+# [[sources.pages]]
+# canonical_url = "https://github.com/laude-institute/t-bench"
+# page_type = "github repo releases"
+# polling_frequency = "12h"
 
-[[sources.pages]]
-canonical_url = "https://github.com/lmarena/arena-hard-auto"
-page_type = "github repo releases"
-polling_frequency = "12h"
+# lmarena/arena-hard-auto — disabled: no releases or tags
+# [[sources.pages]]
+# canonical_url = "https://github.com/lmarena/arena-hard-auto"
+# page_type = "github repo releases"
+# polling_frequency = "12h"
 
 [[sources]]
 source_name = "Hugging Face Forums"
