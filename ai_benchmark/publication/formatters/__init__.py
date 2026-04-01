@@ -1,1 +1,0 @@
-"""Publication output formatters."""
