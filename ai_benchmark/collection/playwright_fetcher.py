@@ -43,13 +43,16 @@ class PlaywrightFetcher:
         self.timeout = timeout * 1000  # Playwright uses milliseconds
         self._playwright = None
         self._browser = None
+        self._launch_lock = asyncio.Lock()
 
     async def _ensure_browser(self):
-        """Launch browser on first use."""
+        """Launch browser on first use (serialized to prevent duplicate launches)."""
         if self._browser is None:
-            self._playwright = await async_playwright().start()
-            self._browser = await self._playwright.chromium.launch(headless=True)
-            logger.info("playwright_browser_launched")
+            async with self._launch_lock:
+                if self._browser is None:
+                    self._playwright = await async_playwright().start()
+                    self._browser = await self._playwright.chromium.launch(headless=True)
+                    logger.info("playwright_browser_launched")
         return self._browser
 
     async def fetch(self, url: str) -> FetchResult:
@@ -127,10 +130,15 @@ class PlaywrightFetcher:
             self._browser = None
         if self._playwright:
             await self._playwright.stop()
-            # Grace period for subprocess transport teardown on Windows.
-            # Without this, Python 3.14 emits ResourceWarning spam during
-            # GC finalization because proactor pipe transports are still
-            # pending when the event loop closes.
-            await asyncio.sleep(0.25)
             self._playwright = None
+            # Force GC while the event loop is still active so Playwright's
+            # subprocess transports finalize now (with warnings suppressed)
+            # instead of during interpreter shutdown where they produce
+            # ResourceWarning spam on Python 3.14 + Windows.
+            import gc
+            import warnings
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=ResourceWarning)
+                gc.collect()
             logger.info("playwright_browser_closed")
