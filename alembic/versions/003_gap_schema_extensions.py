@@ -1,11 +1,11 @@
 """Gap Phase G1: Schema extensions for benchmark_variant, snapshot_id FK, model_slug in dedup key.
 
 Revision ID: 003
-Revises: 002
+Revises: 001
 """
 
 revision = "003"
-down_revision = "002"
+down_revision = "001"
 
 from alembic import op
 import sqlalchemy as sa
