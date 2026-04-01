@@ -324,21 +324,5 @@ def cleanup_lmarena(ctx: click.Context) -> None:
     asyncio.run(_cleanup())
 
 
-# Register eval subcommands
-from .eval.cli.commands import eval_group  # noqa: E402
-
-cli.add_command(eval_group)
-
-# Register analysis subcommands
-from .analysis.cli import analyze_group  # noqa: E402
-
-cli.add_command(analyze_group)
-
-# Register publication subcommands
-from .publication.cli import publish_group  # noqa: E402
-
-cli.add_command(publish_group)
-
-
 if __name__ == "__main__":
     cli()

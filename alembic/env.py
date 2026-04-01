@@ -12,8 +12,7 @@ from ai_benchmark.config.settings import PipelineSettings
 from ai_benchmark.models.base import Base
 
 # Import all models so metadata is populated
-from ai_benchmark.models import events, research, sources  # noqa: F401
-from ai_benchmark.eval.models import dataset, scorer, evaluation, machine, target, run, artifact  # noqa: F401
+from ai_benchmark.models import discovery, events, research, sources  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
