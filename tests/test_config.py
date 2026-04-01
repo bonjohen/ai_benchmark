@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from ai_benchmark.config.settings import PipelineSettings, load_source_catalog
-from ai_benchmark.eval.config import EvalSettings
 
 
 def test_default_settings(monkeypatch):
@@ -73,10 +72,3 @@ def test_pipeline_settings_warns_on_relative_default(monkeypatch, capsys):
     PipelineSettings()
     captured = capsys.readouterr()
     assert "database_url_is_relative_default" in captured.out
-
-
-def test_eval_settings_loads_env_file():
-    """EvalSettings should have env_file configured."""
-    # env_file is ".env" by default, or the AI_BENCH_ENV_FILE override
-    assert EvalSettings.model_config.get("env_file") is not None
-    assert EvalSettings.model_config.get("env_file_encoding") == "utf-8"

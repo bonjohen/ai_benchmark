@@ -64,10 +64,7 @@ def _make_config(tmp_path, db_path_name: str) -> tuple[Config, str]:
         from alembic.ddl.sqlite import SQLiteImpl
         from sqlalchemy import engine_from_config, pool
 
-        from ai_benchmark.eval.models import (  # noqa: F401
-            artifact, dataset, evaluation, machine, run, scorer, target,
-        )
-        from ai_benchmark.models import events, research, sources  # noqa: F401
+        from ai_benchmark.models import discovery, events, research, sources  # noqa: F401
         from ai_benchmark.models.base import Base
 
         config = context.config
@@ -149,24 +146,6 @@ CORE_TABLES = [
     "enriched_papers",
 ]
 
-EVAL_TABLES = [
-    "datasets",
-    "dataset_versions",
-    "test_cases",
-    "scorers",
-    "scorer_versions",
-    "evaluation_definitions",
-    "evaluation_versions",
-    "machine_profiles",
-    "machine_snapshots",
-    "target_configurations",
-    "run_groups",
-    "runs",
-    "run_item_results",
-    "run_aggregate_metrics",
-    "artifacts",
-]
-
 DISCOVERY_TABLES = [
     "follow_up_tasks",
 ]
@@ -190,9 +169,6 @@ class TestMigrationChain:
         for table in CORE_TABLES:
             assert table in tables, f"Missing core table: {table}"
 
-        for table in EVAL_TABLES:
-            assert table in tables, f"Missing eval table: {table}"
-
         for table in DISCOVERY_TABLES:
             assert table in tables, f"Missing discovery table: {table}"
 
@@ -209,10 +185,9 @@ class TestMigrationChain:
         engine.dispose()
 
         assert "sources" in tables
-        assert "runs" in tables
 
     def test_alembic_version_at_head(self, tmp_path):
-        """After upgrade the alembic_version row contains revision 007."""
+        """After upgrade the alembic_version row contains revision 008."""
         cfg, db_url = _make_config(tmp_path, "version.db")
         command.upgrade(cfg, "head")
 
@@ -226,7 +201,7 @@ class TestMigrationChain:
         assert rows[0][0] == "008"
 
     def test_core_tables_have_expected_columns(self, tmp_path):
-        """Spot-check columns on sources, runs, and event_records."""
+        """Spot-check columns on sources and event_records."""
         cfg, db_url = _make_config(tmp_path, "columns.db")
         command.upgrade(cfg, "head")
 
@@ -237,13 +212,6 @@ class TestMigrationChain:
         assert "id" in source_cols
         assert "source_name" in source_cols
         assert "trust_rating" in source_cols
-
-        run_cols = {c["name"] for c in inspector.get_columns("runs")}
-        assert "id" in run_cols
-        assert "status" in run_cols
-        assert "evaluation_version_id" in run_cols
-        assert "target_config_id" in run_cols
-        assert "total_items" in run_cols
 
         event_cols = {c["name"] for c in inspector.get_columns("event_records")}
         assert "id" in event_cols
