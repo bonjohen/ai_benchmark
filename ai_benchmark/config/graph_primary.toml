@@ -143,19 +143,10 @@ polling_frequency = "daily"
 priority = true
 
 [[nodes]]
-id = "openai.system_cards"
-type = "page"
-label = "OpenAI System Cards"
-url = "https://openai.com/index/system-cards/"
-page_type = "system-card index"
-collection_method = "html"
-polling_frequency = "daily"
-
-[[nodes]]
 id = "openai.rss"
 type = "page"
 label = "OpenAI Google News RSS"
-url = "https://news.google.com/rss/search?q=openai+model+OR+api+OR+gpt+site:openai.com&hl=en-US&gl=US&ceid=US:en"
+url = "https://news.google.com/rss/search?q=openai+model+OR+api+OR+gpt+OR+%22system+card%22+site:openai.com&hl=en-US&gl=US&ceid=US:en"
 page_type = "rss feed"
 collection_method = "rss"
 polling_frequency = "6h"
@@ -657,11 +648,6 @@ relationship = "monitors"
 
 [[edges]]
 source = "openai"
-target = "openai.system_cards"
-relationship = "monitors"
-
-[[edges]]
-source = "openai"
 target = "openai.rss"
 relationship = "monitors"
 
@@ -905,11 +891,6 @@ relationship = "produces"
 
 [[edges]]
 source = "openai.pricing"
-target = "END"
-relationship = "produces"
-
-[[edges]]
-source = "openai.system_cards"
 target = "END"
 relationship = "produces"
 

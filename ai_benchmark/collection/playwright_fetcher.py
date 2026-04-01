@@ -127,5 +127,10 @@ class PlaywrightFetcher:
             self._browser = None
         if self._playwright:
             await self._playwright.stop()
+            # Grace period for subprocess transport teardown on Windows.
+            # Without this, Python 3.14 emits ResourceWarning spam during
+            # GC finalization because proactor pipe transports are still
+            # pending when the event loop closes.
+            await asyncio.sleep(0.25)
             self._playwright = None
             logger.info("playwright_browser_closed")

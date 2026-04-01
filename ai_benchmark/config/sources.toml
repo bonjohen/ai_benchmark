@@ -42,13 +42,7 @@ priority = true
 browser = true
 
 [[sources.pages]]
-canonical_url = "https://openai.com/index/system-cards/"
-page_type = "system-card index"
-polling_frequency = "daily"
-browser = true
-
-[[sources.pages]]
-canonical_url = "https://news.google.com/rss/search?q=openai+model+OR+api+OR+gpt+site:openai.com&hl=en-US&gl=US&ceid=US:en"
+canonical_url = "https://news.google.com/rss/search?q=openai+model+OR+api+OR+gpt+OR+%22system+card%22+site:openai.com&hl=en-US&gl=US&ceid=US:en"
 page_type = "rss feed"
 polling_frequency = "6h"
 priority = true
