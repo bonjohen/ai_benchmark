@@ -79,4 +79,5 @@ def test_cli_commands_registered():
     assert "status" in commands
     assert "query" in commands
     assert "export" in commands
+    assert "report" in commands
     assert "run" in commands
