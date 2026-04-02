@@ -1,5 +1,5 @@
 # AI Benchmark Intelligence Pipeline — Source Catalog
-# All 22 monitored sources with their pages and polling configuration.
+# Monitored sources with their pages and polling configuration.
 
 # ─── Primary Sources: Official Vendor Pages ───
 
@@ -22,7 +22,7 @@ priority = true
 browser = true
 
 [[sources.pages]]
-canonical_url = "https://platform.openai.com/docs/changelog"
+canonical_url = "https://developers.openai.com/api/docs/changelog"
 page_type = "api changelog"
 polling_frequency = "6h"
 priority = true
@@ -231,23 +231,13 @@ page_type = "release notes"
 polling_frequency = "daily"
 notes = "Mintlify JS shell - returns empty HTML. RSS feed is primary collection path."
 
-[[sources.pages]]
-canonical_url = "https://cohere.com/blog"
-page_type = "blog"
-polling_frequency = "daily"
-notes = "Next.js + Sanity CMS - returns empty HTML. RSS feed is primary collection path."
-
-[[sources.pages]]
-canonical_url = "https://cohere.com/pricing"
-page_type = "pricing"
-polling_frequency = "daily"
-notes = "Next.js shell - returns empty HTML. RSS feed is primary collection path."
+# cohere.com/blog and cohere.com/pricing — disabled: JS-rendered shells, 0 items.
+# RSS feed is the primary collection path.
 
 [[sources.pages]]
 canonical_url = "https://docs.cohere.com/docs/models"
 page_type = "model catalog"
 polling_frequency = "daily"
-notes = "Mintlify JS shell - returns empty HTML. RSS feed is primary collection path."
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=cohere+ai+model+OR+release+site:cohere.com&hl=en-US&gl=US&ceid=US:en"
@@ -272,10 +262,7 @@ page_type = "github org"
 polling_frequency = "6h"
 priority = true
 
-[[sources.pages]]
-canonical_url = "https://ai.meta.com/opensourceAI/"
-page_type = "landing page"
-polling_frequency = "daily"
+# ai.meta.com/opensourceAI/ — disabled: React SPA, returns 0 items
 
 [[sources.pages]]
 canonical_url = "https://llama.meta.com/"
@@ -284,6 +271,39 @@ polling_frequency = "daily"
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=meta+llama+model+OR+release+site:ai.meta.com&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "6h"
+priority = true
+
+[[sources]]
+source_name = "DeepSeek"
+category = "official company source"
+organization = "DeepSeek"
+homepage_url = "https://www.deepseek.com/"
+base_domain = "deepseek.com"
+trust_rating = 5.0
+source_role = "primary source for DeepSeek model releases, pricing, API updates"
+classification = "primary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://api-docs.deepseek.com/quick_start/pricing"
+page_type = "pricing / model catalog"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://api-docs.deepseek.com/"
+page_type = "api changelog"
+polling_frequency = "6h"
+
+[[sources.pages]]
+canonical_url = "https://github.com/deepseek-ai"
+page_type = "github org"
+polling_frequency = "12h"
+
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=deepseek+ai+model+OR+release+site:deepseek.com&hl=en-US&gl=US&ceid=US:en"
 page_type = "rss feed"
 polling_frequency = "6h"
 priority = true
@@ -307,11 +327,7 @@ page_type = "leaderboard"
 polling_frequency = "6h"
 priority = true
 
-[[sources.pages]]
-canonical_url = "https://artificialanalysis.ai/embed/llm-performance-leaderboard"
-page_type = "leaderboard"
-polling_frequency = "6h"
-priority = true
+# artificialanalysis.ai/embed — disabled: iframe container, 0 items
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=%22artificial+analysis%22+ai+benchmark+OR+leaderboard&hl=en-US&gl=US&ceid=US:en"
@@ -380,10 +396,7 @@ source_role = "contamination-resistant, frequently refreshed benchmark"
 classification = "secondary"
 collection_method = "html"
 
-[[sources.pages]]
-canonical_url = "https://livebench.ai/"
-page_type = "leaderboard"
-polling_frequency = "daily"
+# livebench.ai/ — disabled: React SPA, 0 items. PDF is the useful source.
 
 [[sources.pages]]
 canonical_url = "https://livebench.ai/livebench.pdf"
@@ -433,10 +446,7 @@ source_role = "general AI assistant benchmark"
 classification = "secondary"
 collection_method = "html"
 
-[[sources.pages]]
-canonical_url = "https://huggingface.co/spaces/gaia-benchmark/leaderboard"
-page_type = "leaderboard"
-polling_frequency = "daily"
+# huggingface.co/spaces/gaia-benchmark/leaderboard — disabled: Gradio app, 0 items
 
 [[sources.pages]]
 canonical_url = "https://huggingface.co/gaia-benchmark"
@@ -454,16 +464,7 @@ source_role = "frontier knowledge/reasoning exam"
 classification = "secondary"
 collection_method = "html"
 
-[[sources.pages]]
-canonical_url = "https://scale.com/leaderboard/humanitys_last_exam"
-page_type = "leaderboard"
-polling_frequency = "daily"
-priority = true
-
-[[sources.pages]]
-canonical_url = "https://scale.com/leaderboard"
-page_type = "leaderboard hub"
-polling_frequency = "daily"
+# scale.com/leaderboard pages — disabled: Next.js SPA, 0 items. RSS is the source.
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=%22humanity%27s+last+exam%22+OR+%22HLE%22+benchmark&hl=en-US&gl=US&ceid=US:en"
@@ -481,10 +482,7 @@ source_role = "terminal-environment agent benchmark"
 classification = "secondary"
 collection_method = "html"
 
-[[sources.pages]]
-canonical_url = "https://www.tbench.ai/"
-page_type = "leaderboard"
-polling_frequency = "daily"
+# tbench.ai/ — disabled: React SPA, 0 items. Registry + RSS are the sources.
 
 [[sources.pages]]
 canonical_url = "https://www.tbench.ai/docs/registry"
@@ -493,6 +491,28 @@ polling_frequency = "weekly"
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=%22terminal-bench%22+OR+%22tbench%22+benchmark&hl=en-US&gl=US&ceid=US:en"
+page_type = "rss feed"
+polling_frequency = "daily"
+
+[[sources]]
+source_name = "Epoch AI"
+category = "benchmark / research aggregator"
+organization = "Epoch AI"
+homepage_url = "https://epoch.ai/benchmarks"
+base_domain = "epoch.ai"
+trust_rating = 5.0
+source_role = "curated benchmark database with independently verified results"
+classification = "secondary"
+collection_method = "html"
+
+[[sources.pages]]
+canonical_url = "https://epoch.ai/benchmarks"
+page_type = "benchmark database"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://news.google.com/rss/search?q=%22epoch+ai%22+benchmark+OR+%22capabilities+index%22&hl=en-US&gl=US&ceid=US:en"
 page_type = "rss feed"
 polling_frequency = "daily"
 
@@ -594,10 +614,7 @@ source_role = "fast-moving startup, product, and ecosystem coverage"
 classification = "secondary"
 collection_method = "html"
 
-[[sources.pages]]
-canonical_url = "https://techcrunch.com/category/artificial-intelligence/"
-page_type = "news index"
-polling_frequency = "6h"
+# techcrunch.com HTML page — disabled: Next.js SPA, 0 items. RSS feed is the source.
 
 [[sources.pages]]
 canonical_url = "https://techcrunch.com/category/artificial-intelligence/feed/"

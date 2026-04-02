@@ -16,6 +16,7 @@ from .cohere import CohereCollector
 from .community.github_discovery import GitHubDiscoveryCollector
 from .community.hf_forums import HFForumsCollector
 from .community.hf_leaderboard_docs import HFLeaderboardDocsCollector
+from .deepseek import DeepSeekCollector
 from .google import GoogleCollector
 from .meta import MetaCollector
 from .mistral import MistralCollector
@@ -40,8 +41,10 @@ COLLECTOR_CLASSES: dict[str, type[SourceCollector]] = {
     "xAI": XAICollector,
     "Mistral AI": MistralCollector,
     "Cohere": CohereCollector,
+    "DeepSeek": DeepSeekCollector,
     "Meta": MetaCollector,
-    # Benchmarks
+    # Benchmarks / Aggregators
+    "Epoch AI": DeepSeekCollector,  # reuses generic HTML table + RSS extraction
     "Artificial Analysis": ArtificialAnalysisCollector,
     "LMArena": LMArenaCollector,
     "LiveBench": LiveBenchCollector,

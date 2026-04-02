@@ -20,7 +20,7 @@ def test_default_settings(monkeypatch):
 
 def test_load_source_catalog():
     sources = load_source_catalog()
-    assert len(sources) == 21  # Semantic Scholar disabled pending API key
+    assert len(sources) == 23  # +DeepSeek, +Epoch AI; Semantic Scholar disabled
     names = {s.source_name for s in sources}
     assert "OpenAI" in names
     assert "Anthropic" in names
