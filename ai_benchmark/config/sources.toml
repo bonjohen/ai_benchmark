@@ -231,8 +231,15 @@ page_type = "release notes"
 polling_frequency = "daily"
 notes = "Mintlify JS shell - returns empty HTML. RSS feed is primary collection path."
 
-# cohere.com/blog and cohere.com/pricing — disabled: JS-rendered shells, 0 items.
-# RSS feed is the primary collection path.
+[[sources.pages]]
+canonical_url = "https://cohere.com/blog"
+page_type = "blog"
+polling_frequency = "daily"
+
+[[sources.pages]]
+canonical_url = "https://cohere.com/pricing"
+page_type = "pricing"
+polling_frequency = "daily"
 
 [[sources.pages]]
 canonical_url = "https://docs.cohere.com/docs/models"
@@ -262,7 +269,10 @@ page_type = "github org"
 polling_frequency = "6h"
 priority = true
 
-# ai.meta.com/opensourceAI/ — disabled: React SPA, returns 0 items
+[[sources.pages]]
+canonical_url = "https://ai.meta.com/opensourceAI/"
+page_type = "landing page"
+polling_frequency = "daily"
 
 [[sources.pages]]
 canonical_url = "https://llama.meta.com/"
@@ -327,7 +337,10 @@ page_type = "leaderboard"
 polling_frequency = "6h"
 priority = true
 
-# artificialanalysis.ai/embed — disabled: iframe container, 0 items
+[[sources.pages]]
+canonical_url = "https://artificialanalysis.ai/embed/llm-performance-leaderboard"
+page_type = "leaderboard"
+polling_frequency = "6h"
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=%22artificial+analysis%22+ai+benchmark+OR+leaderboard&hl=en-US&gl=US&ceid=US:en"
@@ -396,7 +409,10 @@ source_role = "contamination-resistant, frequently refreshed benchmark"
 classification = "secondary"
 collection_method = "html"
 
-# livebench.ai/ — disabled: React SPA, 0 items. PDF is the useful source.
+[[sources.pages]]
+canonical_url = "https://livebench.ai/"
+page_type = "leaderboard"
+polling_frequency = "daily"
 
 [[sources.pages]]
 canonical_url = "https://livebench.ai/livebench.pdf"
@@ -446,7 +462,10 @@ source_role = "general AI assistant benchmark"
 classification = "secondary"
 collection_method = "html"
 
-# huggingface.co/spaces/gaia-benchmark/leaderboard — disabled: Gradio app, 0 items
+[[sources.pages]]
+canonical_url = "https://huggingface.co/spaces/gaia-benchmark/leaderboard"
+page_type = "leaderboard"
+polling_frequency = "daily"
 
 [[sources.pages]]
 canonical_url = "https://huggingface.co/gaia-benchmark"
@@ -464,7 +483,16 @@ source_role = "frontier knowledge/reasoning exam"
 classification = "secondary"
 collection_method = "html"
 
-# scale.com/leaderboard pages — disabled: Next.js SPA, 0 items. RSS is the source.
+[[sources.pages]]
+canonical_url = "https://scale.com/leaderboard/humanitys_last_exam"
+page_type = "leaderboard"
+polling_frequency = "daily"
+priority = true
+
+[[sources.pages]]
+canonical_url = "https://scale.com/leaderboard"
+page_type = "leaderboard hub"
+polling_frequency = "daily"
 
 [[sources.pages]]
 canonical_url = "https://news.google.com/rss/search?q=%22humanity%27s+last+exam%22+OR+%22HLE%22+benchmark&hl=en-US&gl=US&ceid=US:en"
@@ -482,7 +510,10 @@ source_role = "terminal-environment agent benchmark"
 classification = "secondary"
 collection_method = "html"
 
-# tbench.ai/ — disabled: React SPA, 0 items. Registry + RSS are the sources.
+[[sources.pages]]
+canonical_url = "https://www.tbench.ai/"
+page_type = "leaderboard"
+polling_frequency = "daily"
 
 [[sources.pages]]
 canonical_url = "https://www.tbench.ai/docs/registry"
@@ -614,7 +645,10 @@ source_role = "fast-moving startup, product, and ecosystem coverage"
 classification = "secondary"
 collection_method = "html"
 
-# techcrunch.com HTML page — disabled: Next.js SPA, 0 items. RSS feed is the source.
+[[sources.pages]]
+canonical_url = "https://techcrunch.com/category/artificial-intelligence/"
+page_type = "news index"
+polling_frequency = "6h"
 
 [[sources.pages]]
 canonical_url = "https://techcrunch.com/category/artificial-intelligence/feed/"
