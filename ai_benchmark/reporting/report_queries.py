@@ -19,16 +19,6 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class ClaimDetail:
-    """A unique claim from a specific source."""
-
-    text: str
-    source_name: str
-    confidence_tier: str
-    confirmation_status: str
-
-
-@dataclass
 class CrossRefDetail:
     """A cross-reference linking two events."""
 
@@ -39,7 +29,7 @@ class CrossRefDetail:
 
 @dataclass
 class Article:
-    """A publication-style event with deduplicated claims."""
+    """A publication-style event with abstract and source metadata."""
 
     title: str
     published_date: str | None
@@ -47,7 +37,11 @@ class Article:
     source_type: str
     event_type: str
     model_slug: str | None
-    claims: list[ClaimDetail] = field(default_factory=list)
+    abstract: str  # body text from raw_content
+    url: str  # canonical_path (source link)
+    source_count: int  # number of distinct sources that reported this
+    confidence_tier: str  # highest confidence tier from claims
+    confirmation_status: str  # confirmed, conflicted, or unconfirmed
     cross_refs: list[CrossRefDetail] = field(default_factory=list)
     event_id: int = 0
 
@@ -80,24 +74,51 @@ class WeeklyStats:
 
 # ─── Helpers ───
 
+_CONFIDENCE_RANK = {
+    "official_self_report": 0,
+    "benchmark_owner_report": 1,
+    "high_secondary": 2,
+    "medium_discovery": 3,
+    "low_discovery": 4,
+}
+
+
+def _extract_abstract(raw_content: str | None, title: str) -> str:
+    """Extract a readable abstract from raw_content."""
+    if not raw_content:
+        return ""
+
+    text = raw_content.strip()
+    if text == title or len(text) < 20:
+        return ""
+
+    # Take first 500 chars, trim to last sentence or paragraph boundary
+    excerpt = text[:500]
+    for sep in (". ", ".\n", "\n\n"):
+        last = excerpt.rfind(sep)
+        if last > 60:
+            excerpt = excerpt[: last + 1]
+            break
+
+    return excerpt.strip()
+
 
 def _build_article(event: EventRecord) -> Article:
-    """Convert an EventRecord with loaded claims into a deduplicated Article."""
-    # Deduplicate claims by (text, source_name) — keep unique perspectives only
-    seen: set[tuple[str, str]] = set()
-    unique_claims: list[ClaimDetail] = []
+    """Convert an EventRecord with loaded claims into an Article."""
+    abstract = _extract_abstract(event.raw_content, event.title)
+
+    # Derive metadata from claims
+    source_names: set[str] = set()
+    best_tier = "low_discovery"
+    best_status = "unconfirmed"
     for c in event.claims:
-        key = (c.claim_text, c.source_name)
-        if key not in seen:
-            seen.add(key)
-            unique_claims.append(
-                ClaimDetail(
-                    text=c.claim_text,
-                    source_name=c.source_name,
-                    confidence_tier=c.confidence_tier,
-                    confirmation_status=c.confirmation_status,
-                )
-            )
+        source_names.add(c.source_name)
+        if _CONFIDENCE_RANK.get(c.confidence_tier, 99) < _CONFIDENCE_RANK.get(best_tier, 99):
+            best_tier = c.confidence_tier
+        if c.confirmation_status == "confirmed":
+            best_status = "confirmed"
+        elif c.confirmation_status == "conflicted" and best_status != "confirmed":
+            best_status = "conflicted"
 
     return Article(
         title=event.title,
@@ -106,7 +127,11 @@ def _build_article(event: EventRecord) -> Article:
         source_type=event.source_type,
         event_type=event.event_type,
         model_slug=event.model_slug,
-        claims=unique_claims,
+        abstract=abstract,
+        url=event.canonical_path or "",
+        source_count=len(source_names),
+        confidence_tier=best_tier,
+        confirmation_status=best_status,
         event_id=event.id,
     )
 
@@ -159,13 +184,6 @@ async def _attach_cross_refs(
 
     for a in articles:
         a.cross_refs = refs.get(a.event_id, [])
-
-
-def _date_for_event(event: EventRecord) -> str | None:
-    """Return the effective date for filtering: published_date if valid, else observed_at date."""
-    if event.published_date and len(event.published_date) >= 10:
-        return event.published_date[:10]
-    return event.observed_at.strftime("%Y-%m-%d")
 
 
 # ─── Queries ───

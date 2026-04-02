@@ -25,16 +25,22 @@ def _fmt_dt(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%d %H:%M UTC")
 
 
+def _tier_label(tier: str) -> str:
+    return tier.replace("_", " ")
+
+
 def _format_article(article: Article) -> str:
     """Format a single article as a markdown block."""
     lines: list[str] = []
 
-    # Title
-    lines.append(f"### {article.title}")
+    # Title (linked if URL available)
+    if article.url and article.url.startswith("http"):
+        lines.append(f"### [{article.title}]({article.url})")
+    else:
+        lines.append(f"### {article.title}")
 
     # Metadata line
-    meta = []
-    meta.append(f"**Publisher:** {article.publisher}")
+    meta = [f"**Publisher:** {article.publisher}"]
     if article.published_date:
         meta.append(f"**Date:** {article.published_date}")
     type_label = _TYPE_LABELS.get(article.event_type, article.event_type)
@@ -42,19 +48,25 @@ def _format_article(article: Article) -> str:
     if article.model_slug:
         meta.append(f"**Model:** `{article.model_slug}`")
     lines.append(" | ".join(meta))
+
+    # Source confidence
+    status_parts = [f"{_tier_label(article.confidence_tier)}"]
+    if article.source_count > 1:
+        status_parts.append(f"{article.source_count} sources")
+    if article.confirmation_status != "unconfirmed":
+        status_parts.append(article.confirmation_status)
+    lines.append(f"*{', '.join(status_parts)}*")
     lines.append("")
 
-    # Claims — each unique claim is a distinct point from a source
-    if article.claims:
-        for c in article.claims:
-            tier = c.confidence_tier.replace("_", " ")
-            lines.append(f"- {c.text[:200]} *({c.source_name}, {tier})*")
-    lines.append("")
+    # Abstract — the actual content
+    if article.abstract:
+        lines.append(article.abstract)
+        lines.append("")
 
-    # Cross-references (only confirms/conflicts — already filtered in queries)
+    # Cross-references
     if article.cross_refs:
         for x in article.cross_refs:
-            lines.append(f"  - {x.relationship_type}: {x.other_title[:100]} ({x.other_org})")
+            lines.append(f"> **{x.relationship_type}:** {x.other_title[:100]} ({x.other_org})")
         lines.append("")
 
     return "\n".join(lines)
@@ -73,7 +85,7 @@ def _format_article_list(articles: list[Article]) -> str:
     lines: list[str] = []
     for publisher in sorted(by_publisher, key=lambda p: len(by_publisher[p]), reverse=True):
         pub_articles = by_publisher[publisher]
-        lines.append(f"## {publisher} ({len(pub_articles)} articles)")
+        lines.append(f"## {publisher} ({len(pub_articles)})")
         lines.append("")
         for a in pub_articles:
             lines.append(_format_article(a))
@@ -85,10 +97,12 @@ def _format_weekly_stats(stats: WeeklyStats) -> str:
     """Format the weekly summary statistics."""
     lines: list[str] = []
 
-    lines.append(f"**{stats.total_events}** events, ")
-    lines.append(f"**{stats.total_unique_claims}** unique claims, ")
-    lines.append(f"**{stats.confirmed_count}** confirmed, ")
-    lines.append(f"**{stats.conflicted_count}** conflicted")
+    lines.append(
+        f"**{stats.total_events}** events, "
+        f"**{stats.total_unique_claims}** unique claims, "
+        f"**{stats.confirmed_count}** confirmed, "
+        f"**{stats.conflicted_count}** conflicted"
+    )
     lines.append("")
 
     # Activity by org

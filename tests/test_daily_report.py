@@ -11,7 +11,6 @@ from ai_benchmark.models.events import ClaimRecord, CrossReference, EventRecord
 from ai_benchmark.reporting.report_formatter import format_json, format_markdown
 from ai_benchmark.reporting.report_queries import (
     Article,
-    ClaimDetail,
     CrossRefDetail,
     DailyReport,
     OrgActivity,
@@ -65,20 +64,12 @@ def _stub_report() -> DailyReport:
         source_type="changelog",
         event_type="model_release",
         model_slug="gpt-5",
-        claims=[
-            ClaimDetail(
-                text="GPT-5 released with improved reasoning",
-                source_name="OpenAI",
-                confidence_tier="official_self_report",
-                confirmation_status="confirmed",
-            ),
-            ClaimDetail(
-                text="GPT-5 available via API",
-                source_name="Reuters",
-                confidence_tier="high_secondary",
-                confirmation_status="confirmed",
-            ),
-        ],
+        abstract="OpenAI releases GPT-5 with significantly improved reasoning capabilities "
+        "and a new 1M token context window. Available via API immediately.",
+        url="https://openai.com/blog/gpt-5",
+        source_count=2,
+        confidence_tier="official_self_report",
+        confirmation_status="confirmed",
         cross_refs=[
             CrossRefDetail(
                 relationship_type="confirms",
@@ -95,6 +86,11 @@ def _stub_report() -> DailyReport:
         source_type="pricing_page",
         event_type="pricing_change",
         model_slug="gpt-5",
+        abstract="Input: $5/1M tokens, Output: $15/1M tokens.",
+        url="https://openai.com/pricing",
+        source_count=1,
+        confidence_tier="official_self_report",
+        confirmation_status="unconfirmed",
         event_id=2,
     )
     anthropic_article = Article(
@@ -104,6 +100,11 @@ def _stub_report() -> DailyReport:
         source_type="newsroom",
         event_type="model_release",
         model_slug="claude-opus-4.6",
+        abstract="Anthropic releases Claude Opus 4.6 with extended thinking and 1M context.",
+        url="https://anthropic.com/news/claude-opus-4-6",
+        source_count=1,
+        confidence_tier="official_self_report",
+        confirmation_status="unconfirmed",
         event_id=3,
     )
     return DailyReport(
@@ -152,24 +153,48 @@ async def test_gather_report_filters_by_published_date(db_session):
 
 
 @pytest.mark.asyncio
-async def test_gather_report_deduplicates_claims(db_session):
+async def test_gather_report_extracts_abstract(db_session):
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
+    raw = (
+        "## What's Changed\n\nAdded new feature for batch processing. Fixed memory leak in parser."
+    )
+    _make_event(
+        db_session,
+        title="openai/codex: v2.0",
+        canonical_path="https://github.com/openai/codex",
+        published_date=today,
+        raw_content=raw,
+    )
+    await db_session.flush()
+
+    data = await gather_daily_report(db_session)
+    article = data.yesterday[0]
+    assert "batch processing" in article.abstract
+    assert article.url == "https://github.com/openai/codex"
+
+
+@pytest.mark.asyncio
+async def test_gather_report_derives_confidence(db_session):
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     event = _make_event(
         db_session, title="GPT-5 Launch", canonical_path="/launch", published_date=today
     )
     await db_session.flush()
-
-    # Add same claim text multiple times (simulating multiple polls)
-    for _ in range(5):
-        _make_claim(db_session, event.id, claim_text="GPT-5 is here")
-    # Add a different claim
-    _make_claim(db_session, event.id, claim_text="GPT-5 available via API", source_name="Reuters")
+    _make_claim(db_session, event.id, confidence_tier="high_secondary", source_name="Reuters")
+    _make_claim(
+        db_session,
+        event.id,
+        confidence_tier="official_self_report",
+        source_name="OpenAI",
+        confirmation_status="confirmed",
+    )
     await db_session.flush()
 
     data = await gather_daily_report(db_session)
     article = next(a for a in data.yesterday if a.title == "GPT-5 Launch")
-    # Should have 2 unique claims, not 6
-    assert len(article.claims) == 2
+    assert article.confidence_tier == "official_self_report"
+    assert article.confirmation_status == "confirmed"
+    assert article.source_count == 2
 
 
 @pytest.mark.asyncio
@@ -259,13 +284,25 @@ def test_format_markdown_article_has_metadata():
     assert "**Type:** Model Release" in md
 
 
-def test_format_markdown_claims_displayed():
+def test_format_markdown_abstract_displayed():
     data = _stub_report()
     md = format_markdown(data)
-    assert "GPT-5 released with improved reasoning" in md
+    assert "improved reasoning" in md
+    assert "1M token context" in md
+
+
+def test_format_markdown_url_linked():
+    data = _stub_report()
+    md = format_markdown(data)
+    assert "[GPT-5 Launch](https://openai.com/blog/gpt-5)" in md
+
+
+def test_format_markdown_confidence_shown():
+    data = _stub_report()
+    md = format_markdown(data)
     assert "official self report" in md
-    assert "GPT-5 available via API" in md
-    assert "Reuters" in md
+    assert "2 sources" in md
+    assert "confirmed" in md
 
 
 def test_format_markdown_cross_refs_displayed():
@@ -311,7 +348,8 @@ def test_format_json_roundtrip():
     assert "last_7_days" in parsed
     assert "weekly_stats" in parsed
     assert len(parsed["yesterday"]) == 2
-    assert len(parsed["last_7_days"]) == 3
+    assert parsed["yesterday"][0]["abstract"] != ""
+    assert parsed["yesterday"][0]["url"] == "https://openai.com/blog/gpt-5"
 
 
 def test_format_json_datetime_serialization():
