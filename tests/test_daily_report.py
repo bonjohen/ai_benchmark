@@ -10,16 +10,13 @@ import pytest
 from ai_benchmark.models.events import ClaimRecord, CrossReference, EventRecord
 from ai_benchmark.reporting.report_formatter import format_json, format_markdown
 from ai_benchmark.reporting.report_queries import (
-    ClaimSummary,
-    CrossRefSummary,
+    Article,
+    ClaimDetail,
+    CrossRefDetail,
     DailyReport,
-    EventDetail,
     OrgActivity,
-    RecentChangesReport,
-    WeeklySummaryReport,
+    WeeklyStats,
     gather_daily_report,
-    gather_recent_changes,
-    gather_weekly_summary,
 )
 
 # ─── Helpers ───
@@ -58,223 +55,180 @@ def _make_claim(session, event_id: int, **kwargs) -> ClaimRecord:
     return claim
 
 
-def _make_xref(session, a_id: int, b_id: int, **kwargs) -> CrossReference:
-    defaults = {
-        "record_a_id": a_id,
-        "record_b_id": b_id,
-        "relationship_type": "supplements",
-        "created_at": datetime.now(UTC),
-    }
-    defaults.update(kwargs)
-    xref = CrossReference(**defaults)
-    session.add(xref)
-    return xref
-
-
 def _stub_report() -> DailyReport:
     """Build a minimal DailyReport for formatter tests."""
     now = datetime.now(UTC)
-    claims = [
-        ClaimSummary(
-            claim_text="GPT-5 released",
-            source_name="OpenAI",
-            confidence_tier="official_self_report",
-            confirmation_status="confirmed",
-            observed_at=now,
-        ),
-    ]
-    event = EventDetail(
-        event_id=1,
+    article = Article(
         title="GPT-5 Launch",
-        organization="OpenAI",
+        published_date="2026-04-01",
+        publisher="OpenAI",
+        source_type="changelog",
         event_type="model_release",
         model_slug="gpt-5",
-        published_date="2026-04-01",
-        observed_at=now,
-        source_type="changelog",
-        claims=claims,
+        claims=[
+            ClaimDetail(
+                text="GPT-5 released with improved reasoning",
+                source_name="OpenAI",
+                confidence_tier="official_self_report",
+                confirmation_status="confirmed",
+            ),
+            ClaimDetail(
+                text="GPT-5 available via API",
+                source_name="Reuters",
+                confidence_tier="high_secondary",
+                confirmation_status="confirmed",
+            ),
+        ],
         cross_refs=[
-            CrossRefSummary(
+            CrossRefDetail(
                 relationship_type="confirms",
-                other_event_title="GPT-5 pricing update",
-                other_event_org="OpenAI",
+                other_title="GPT-5 pricing update",
+                other_org="OpenAI",
             )
         ],
+        event_id=1,
     )
-    pricing_event = EventDetail(
-        event_id=2,
+    pricing_article = Article(
         title="GPT-5 Pricing",
-        organization="OpenAI",
+        published_date="2026-04-01",
+        publisher="OpenAI",
+        source_type="pricing_page",
         event_type="pricing_change",
         model_slug="gpt-5",
-        published_date="2026-04-01",
-        observed_at=now,
-        source_type="pricing_page",
-        claims=[],
-        cross_refs=[],
+        event_id=2,
     )
-    recent = RecentChangesReport(
+    anthropic_article = Article(
+        title="Claude Opus 4.6 Released",
+        published_date="2026-03-30",
+        publisher="Anthropic",
+        source_type="newsroom",
+        event_type="model_release",
+        model_slug="claude-opus-4.6",
+        event_id=3,
+    )
+    return DailyReport(
         generated_at=now,
-        window_hours=24,
-        events=[event, pricing_event],
-        total_count=2,
+        yesterday=[article, pricing_article],
+        last_7_days=[article, pricing_article, anthropic_article],
+        weekly_stats=WeeklyStats(
+            total_events=10,
+            total_unique_claims=25,
+            by_org=[
+                OrgActivity(organization="OpenAI", event_count=7, by_type={"model_release": 5}),
+                OrgActivity(organization="Anthropic", event_count=3, by_type={"model_release": 3}),
+            ],
+            by_type={"model_release": 8, "pricing_change": 2},
+            model_activity={"gpt-5": 5, "claude-opus-4.6": 3},
+            confirmed_count=4,
+            conflicted_count=1,
+        ),
     )
-    weekly = WeeklySummaryReport(
-        generated_at=now,
-        window_days=7,
-        total_events=10,
-        total_claims=25,
-        by_org=[OrgActivity(organization="OpenAI", event_count=10, by_type={"model_release": 5})],
-        by_type={"model_release": 5, "announcement": 5},
-        confirmed_events=[event],
-        conflicted_events=[],
-        model_activity={"gpt-5": 8, "claude-4": 3},
-        notable_cross_refs=[
-            CrossRefSummary(
-                relationship_type="confirms",
-                other_event_title="GPT-5 Launch (OpenAI) -> GPT-5 Pricing (OpenAI)",
-                other_event_org="",
-            )
-        ],
-    )
-    return DailyReport(recent_changes=recent, weekly_summary=weekly)
 
 
 # ─── Query tests ───
 
 
 @pytest.mark.asyncio
-async def test_gather_recent_changes_empty(db_session):
-    data = await gather_recent_changes(db_session)
-    assert data.total_count == 0
-    assert data.events == []
+async def test_gather_daily_report_empty(db_session):
+    data = await gather_daily_report(db_session)
+    assert data.yesterday == []
+    assert data.last_7_days == []
+    assert data.weekly_stats.total_events == 0
 
 
 @pytest.mark.asyncio
-async def test_gather_recent_changes_with_claims(db_session):
-    event = _make_event(db_session, title="GPT-5 Launch", canonical_path="/launch")
-    await db_session.flush()
-    _make_claim(db_session, event.id, claim_text="GPT-5 is here")
-    _make_claim(db_session, event.id, claim_text="GPT-5 available now")
+async def test_gather_report_filters_by_published_date(db_session):
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
+    old_date = "2024-01-15"
+
+    _make_event(db_session, title="Recent Event", canonical_path="/a", published_date=today)
+    _make_event(db_session, title="Old Event", canonical_path="/b", published_date=old_date)
     await db_session.flush()
 
-    data = await gather_recent_changes(db_session)
-    assert data.total_count == 1
-    assert len(data.events[0].claims) == 2
+    data = await gather_daily_report(db_session)
+    titles = [a.title for a in data.last_7_days]
+    assert "Recent Event" in titles
+    assert "Old Event" not in titles
 
 
 @pytest.mark.asyncio
-async def test_gather_recent_changes_excludes_old(db_session):
-    now = datetime.now(UTC)
-    _make_event(db_session, observed_at=now, canonical_path="/recent")
-    _make_event(
-        db_session,
-        observed_at=now - timedelta(hours=48),
-        canonical_path="/old",
+async def test_gather_report_deduplicates_claims(db_session):
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
+    event = _make_event(
+        db_session, title="GPT-5 Launch", canonical_path="/launch", published_date=today
     )
     await db_session.flush()
 
-    data = await gather_recent_changes(db_session, hours=24)
-    assert data.total_count == 1
+    # Add same claim text multiple times (simulating multiple polls)
+    for _ in range(5):
+        _make_claim(db_session, event.id, claim_text="GPT-5 is here")
+    # Add a different claim
+    _make_claim(db_session, event.id, claim_text="GPT-5 available via API", source_name="Reuters")
+    await db_session.flush()
+
+    data = await gather_daily_report(db_session)
+    article = next(a for a in data.yesterday if a.title == "GPT-5 Launch")
+    # Should have 2 unique claims, not 6
+    assert len(article.claims) == 2
 
 
 @pytest.mark.asyncio
-async def test_gather_recent_changes_priority_ordering(db_session):
-    now = datetime.now(UTC)
-    _make_event(
+async def test_gather_report_includes_cross_refs(db_session):
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
+    e1 = _make_event(
         db_session,
-        event_type="announcement",
-        observed_at=now,
-        canonical_path="/ann",
+        title="OpenAI releases GPT-6",
+        canonical_path="/a",
+        published_date=today,
     )
-    _make_event(
+    e2 = _make_event(
         db_session,
-        event_type="model_release",
-        observed_at=now - timedelta(minutes=5),
-        canonical_path="/release",
+        title="Anthropic launches Claude 5",
+        canonical_path="/b",
+        published_date=today,
     )
     await db_session.flush()
-
-    data = await gather_recent_changes(db_session)
-    assert data.events[0].event_type == "model_release"
-    assert data.events[1].event_type == "announcement"
-
-
-@pytest.mark.asyncio
-async def test_gather_recent_changes_with_cross_refs(db_session):
-    now = datetime.now(UTC)
-    e1 = _make_event(db_session, title="Event A", canonical_path="/a", observed_at=now)
-    e2 = _make_event(db_session, title="Event B", canonical_path="/b", observed_at=now)
-    await db_session.flush()
-    _make_xref(db_session, e1.id, e2.id, relationship_type="confirms")
+    xref = CrossReference(
+        record_a_id=e1.id,
+        record_b_id=e2.id,
+        relationship_type="confirms",
+        created_at=datetime.now(UTC),
+    )
+    db_session.add(xref)
     await db_session.flush()
 
-    data = await gather_recent_changes(db_session)
-    assert data.total_count == 2
-    # At least one event should have a cross-ref
-    has_xref = any(len(e.cross_refs) > 0 for e in data.events)
+    data = await gather_daily_report(db_session)
+    has_xref = any(len(a.cross_refs) > 0 for a in data.yesterday)
     assert has_xref
 
 
 @pytest.mark.asyncio
-async def test_gather_weekly_summary_aggregation(db_session):
+async def test_gather_report_yesterday_subset_of_weekly(db_session):
     now = datetime.now(UTC)
-    _make_event(db_session, organization="OpenAI", event_type="model_release", canonical_path="/a")
-    _make_event(
-        db_session, organization="Anthropic", event_type="announcement", canonical_path="/b"
-    )
-    _make_event(db_session, organization="OpenAI", event_type="pricing_change", canonical_path="/c")
-    await db_session.flush()
+    today = now.strftime("%Y-%m-%d")
+    three_days_ago = (now - timedelta(days=3)).strftime("%Y-%m-%d")
 
-    # Add claims for total count
-    for i in range(5):
-        _make_claim(db_session, event_id=1, claim_text=f"Claim {i}", observed_at=now)
-    await db_session.flush()
-
-    data = await gather_weekly_summary(db_session)
-    assert data.total_events == 3
-    assert data.total_claims == 5
-    assert len(data.by_org) == 2
-    assert data.by_type["model_release"] == 1
-    assert data.by_type["announcement"] == 1
-    assert data.by_type["pricing_change"] == 1
-
-
-@pytest.mark.asyncio
-async def test_gather_weekly_summary_confirmed_events(db_session):
-    event = _make_event(db_session, title="Confirmed Event", canonical_path="/conf")
-    await db_session.flush()
-    _make_claim(db_session, event.id, confirmation_status="confirmed")
-    await db_session.flush()
-
-    data = await gather_weekly_summary(db_session)
-    assert len(data.confirmed_events) == 1
-    assert data.confirmed_events[0].title == "Confirmed Event"
-
-
-@pytest.mark.asyncio
-async def test_gather_weekly_summary_model_activity(db_session):
-    e1 = _make_event(db_session, model_slug="gpt-5", canonical_path="/a")
-    e2 = _make_event(db_session, model_slug="claude-4", canonical_path="/b")
-    await db_session.flush()
-    _make_claim(db_session, e1.id)
-    _make_claim(db_session, e1.id, claim_text="Another claim")
-    _make_claim(db_session, e2.id)
-    await db_session.flush()
-
-    data = await gather_weekly_summary(db_session)
-    assert "gpt-5" in data.model_activity
-    assert data.model_activity["gpt-5"] == 2
-
-
-@pytest.mark.asyncio
-async def test_gather_daily_report(db_session):
-    _make_event(db_session, canonical_path="/test")
+    _make_event(db_session, title="Today Event", canonical_path="/a", published_date=today)
+    _make_event(db_session, title="Older Event", canonical_path="/b", published_date=three_days_ago)
     await db_session.flush()
 
     data = await gather_daily_report(db_session)
-    assert data.recent_changes.total_count == 1
-    assert data.weekly_summary.total_events == 1
+    yesterday_titles = {a.title for a in data.yesterday}
+    weekly_titles = {a.title for a in data.last_7_days}
+    assert yesterday_titles <= weekly_titles
+
+
+@pytest.mark.asyncio
+async def test_gather_report_filters_short_titles(db_session):
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
+    _make_event(db_session, title="OK Event Title", canonical_path="/a", published_date=today)
+    _make_event(db_session, title="Hi", canonical_path="/b", published_date=today)
+    await db_session.flush()
+
+    data = await gather_daily_report(db_session)
+    titles = [a.title for a in data.yesterday]
+    assert "OK Event Title" in titles
+    assert "Hi" not in titles
 
 
 # ─── Formatter tests ───
@@ -284,29 +238,34 @@ def test_format_markdown_structure():
     data = _stub_report()
     md = format_markdown(data)
     assert "# AI Benchmark Daily Report" in md
-    assert "## Recent Changes" in md
-    assert "## 7-Day Summary" in md
-    assert "### Model Releases" in md
-    assert "### Pricing Changes" in md
+    assert "# Yesterday" in md
+    assert "# Last 7 Days" in md
+    assert "# Weekly Summary" in md
 
 
-def test_format_markdown_empty_sections_omitted():
+def test_format_markdown_articles_grouped_by_publisher():
     data = _stub_report()
-    # Remove pricing event so that section is gone
-    data.recent_changes.events = [
-        e for e in data.recent_changes.events if e.event_type != "pricing_change"
-    ]
-    data.recent_changes.total_count = len(data.recent_changes.events)
     md = format_markdown(data)
-    assert "### Pricing Changes" not in md
+    assert "## OpenAI" in md
+    assert "## Anthropic" in md
+
+
+def test_format_markdown_article_has_metadata():
+    data = _stub_report()
+    md = format_markdown(data)
+    assert "**Publisher:** OpenAI" in md
+    assert "**Date:** 2026-04-01" in md
+    assert "**Model:** `gpt-5`" in md
+    assert "**Type:** Model Release" in md
 
 
 def test_format_markdown_claims_displayed():
     data = _stub_report()
     md = format_markdown(data)
-    assert "GPT-5 released" in md
+    assert "GPT-5 released with improved reasoning" in md
     assert "official self report" in md
-    assert "confirmed" in md
+    assert "GPT-5 available via API" in md
+    assert "Reuters" in md
 
 
 def test_format_markdown_cross_refs_displayed():
@@ -319,41 +278,44 @@ def test_format_markdown_cross_refs_displayed():
 def test_format_markdown_empty_report():
     now = datetime.now(UTC)
     data = DailyReport(
-        recent_changes=RecentChangesReport(
-            generated_at=now, window_hours=24, events=[], total_count=0
-        ),
-        weekly_summary=WeeklySummaryReport(
-            generated_at=now,
-            window_days=7,
+        generated_at=now,
+        yesterday=[],
+        last_7_days=[],
+        weekly_stats=WeeklyStats(
             total_events=0,
-            total_claims=0,
+            total_unique_claims=0,
             by_org=[],
             by_type={},
-            confirmed_events=[],
-            conflicted_events=[],
             model_activity={},
-            notable_cross_refs=[],
+            confirmed_count=0,
+            conflicted_count=0,
         ),
     )
     md = format_markdown(data)
-    assert "No new events detected" in md
-    assert "No events recorded" in md
+    assert "No articles" in md
+
+
+def test_format_markdown_weekly_stats():
+    data = _stub_report()
+    md = format_markdown(data)
+    assert "| OpenAI |" in md
+    assert "| `gpt-5` |" in md
+    assert "**4** confirmed" in md
 
 
 def test_format_json_roundtrip():
     data = _stub_report()
     result = format_json(data)
     parsed = json.loads(result)
-    assert "recent_changes" in parsed
-    assert "weekly_summary" in parsed
-    assert parsed["recent_changes"]["total_count"] == 2
-    assert parsed["weekly_summary"]["total_events"] == 10
+    assert "yesterday" in parsed
+    assert "last_7_days" in parsed
+    assert "weekly_stats" in parsed
+    assert len(parsed["yesterday"]) == 2
+    assert len(parsed["last_7_days"]) == 3
 
 
 def test_format_json_datetime_serialization():
     data = _stub_report()
     result = format_json(data)
     parsed = json.loads(result)
-    # Datetime should be an ISO string
-    generated = parsed["recent_changes"]["generated_at"]
-    assert "T" in generated  # ISO format
+    assert "T" in parsed["generated_at"]
