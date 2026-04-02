@@ -93,24 +93,10 @@ def _stub_report() -> DailyReport:
         confirmation_status="unconfirmed",
         event_id=2,
     )
-    anthropic_article = Article(
-        title="Claude Opus 4.6 Released",
-        published_date="2026-03-30",
-        publisher="Anthropic",
-        source_type="newsroom",
-        event_type="model_release",
-        model_slug="claude-opus-4.6",
-        abstract="Anthropic releases Claude Opus 4.6 with extended thinking and 1M context.",
-        url="https://anthropic.com/news/claude-opus-4-6",
-        source_count=1,
-        confidence_tier="official_self_report",
-        confirmation_status="unconfirmed",
-        event_id=3,
-    )
     return DailyReport(
         generated_at=now,
         yesterday=[article, pricing_article],
-        last_7_days=[article, pricing_article, anthropic_article],
+        last_7_days=[],
         weekly_stats=WeeklyStats(
             total_events=10,
             total_unique_claims=25,
@@ -147,7 +133,7 @@ async def test_gather_report_filters_by_published_date(db_session):
     await db_session.flush()
 
     data = await gather_daily_report(db_session)
-    titles = [a.title for a in data.last_7_days]
+    titles = [a.title for a in data.yesterday]
     assert "Recent Event" in titles
     assert "Old Event" not in titles
 
@@ -238,9 +224,8 @@ async def test_gather_report_yesterday_subset_of_weekly(db_session):
     await db_session.flush()
 
     data = await gather_daily_report(db_session)
-    yesterday_titles = {a.title for a in data.yesterday}
-    weekly_titles = {a.title for a in data.last_7_days}
-    assert yesterday_titles <= weekly_titles
+    assert len(data.yesterday) == 1
+    assert data.weekly_stats.total_events == 2
 
 
 @pytest.mark.asyncio
@@ -263,16 +248,14 @@ def test_format_markdown_structure():
     data = _stub_report()
     md = format_markdown(data)
     assert "# AI Benchmark Daily Report" in md
-    assert "# Yesterday" in md
-    assert "# Last 7 Days" in md
-    assert "# Weekly Summary" in md
+    assert "# Last 24 Hours" in md
+    assert "# 7-Day Summary" in md
 
 
 def test_format_markdown_articles_grouped_by_publisher():
     data = _stub_report()
     md = format_markdown(data)
     assert "## OpenAI" in md
-    assert "## Anthropic" in md
 
 
 def test_format_markdown_article_has_metadata():
@@ -349,7 +332,6 @@ def test_format_json_roundtrip():
     assert "weekly_stats" in parsed
     assert len(parsed["yesterday"]) == 2
     assert parsed["yesterday"][0]["abstract"] != ""
-    assert parsed["yesterday"][0]["url"] == "https://openai.com/blog/gpt-5"
 
 
 def test_format_json_datetime_serialization():

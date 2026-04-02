@@ -313,24 +313,20 @@ async def gather_daily_report(
     hours: int = 24,
     days: int = 7,
 ) -> DailyReport:
-    """Assemble the full daily report filtered by published_date."""
+    """Assemble the daily report: last 24h articles + 7-day summary stats."""
     now = datetime.now(UTC)
     today = now.strftime("%Y-%m-%d")
-    yesterday_dt = now - timedelta(days=1)
-    yesterday = yesterday_dt.strftime("%Y-%m-%d")
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     week_ago = (now - timedelta(days=days)).strftime("%Y-%m-%d")
 
     yesterday_articles = await _fetch_events_in_date_range(session, yesterday, today)
     await _attach_cross_refs(session, yesterday_articles)
-
-    weekly_articles = await _fetch_events_in_date_range(session, week_ago, today)
-    await _attach_cross_refs(session, weekly_articles)
 
     weekly_stats = await _gather_weekly_stats(session, week_ago, today)
 
     return DailyReport(
         generated_at=now,
         yesterday=yesterday_articles,
-        last_7_days=weekly_articles,
+        last_7_days=[],
         weekly_stats=weekly_stats,
     )
