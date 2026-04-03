@@ -2,6 +2,9 @@
 :: AI Benchmark — Daily Report (two-stage: extract JSON + Claude CLI summarize)
 :: Reads config from INSTALL_DIR\config\.env
 :: Requires Claude CLI (claude) on PATH
+::
+:: Set CLAUDE_SESSION to a session ID to resume an authorized session.
+:: Without it, claude -p starts a fresh session.
 
 setlocal enabledelayedexpansion
 
@@ -15,7 +18,10 @@ set PYTHON=%INSTALL_DIR%\venv\Scripts\python.exe
 set AI_BENCH_ENV_FILE=%ENV_FILE%
 set ARTIFACTS=%INSTALL_DIR%\artifacts
 set RAW=%ARTIFACTS%\raw_articles.json
-set REPORT=%ARTIFACTS%\daily_report.md
+
+:: Timestamped report filename: daily_reportYYYYMMDDHHMM.md
+for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set dt=%%I
+set REPORT=%ARTIFACTS%\daily_report%dt:~0,12%.md
 
 :: Load only AI_BENCH_ variables from .env — do NOT load ANTHROPIC_API_KEY
 :: or other API keys, which would cause Claude CLI to use the API key
@@ -50,7 +56,12 @@ echo Stage 1 complete: %RAW%
 
 :: Stage 2: Summarize with Claude CLI
 echo Stage 2: Summarizing with Claude CLI...
-claude -p "Read the file %RAW%. It contains AI industry events from the last 24 hours. Group the articles by topic (thematic, not by publisher). For each topic, write a 2-3 sentence summary, then list the articles. Skip any non-AI articles (wars, politics, sports). Write the final report as markdown to %REPORT%. Format: # AI Intelligence Daily Report, ## date, then ## Topic Name sections with summary paragraphs and bullet-pointed articles with [Source](url) links."
+
+:: Build claude command — resume session if CLAUDE_SESSION is set
+set CLAUDE_CMD=claude
+if defined CLAUDE_SESSION set CLAUDE_CMD=claude -r "%CLAUDE_SESSION%"
+
+%CLAUDE_CMD% -p "Read the file %RAW%. It contains AI industry events from the last 24 hours. Group the articles by topic (thematic, not by publisher). For each topic, write a 2-3 sentence summary, then list the articles. Skip any non-AI articles (wars, politics, sports). Write the final report as markdown to %REPORT%. Format: # AI Intelligence Daily Report, ## date, then ## Topic Name sections with summary paragraphs and bullet-pointed articles with [Source](url) links."
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Stage 2 failed — Claude CLI returned error
     exit /b 2
