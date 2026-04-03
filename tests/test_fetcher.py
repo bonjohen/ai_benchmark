@@ -63,3 +63,14 @@ async def test_fetch_many():
         results = await fetcher.fetch_many(["https://example.com/a", "https://example.com/b"])
     assert len(results) == 2
     assert all(r.ok for r in results)
+
+
+@pytest.mark.asyncio
+async def test_fetch_success_logs_fetch_complete(capture_logs):
+    fetcher = Fetcher(retry_attempts=1)
+    with respx.mock:
+        respx.get("https://example.com/ok").mock(return_value=httpx.Response(200, text="Hello"))
+        await fetcher.fetch("https://example.com/ok")
+
+    event_names = [entry["event"] for entry in capture_logs]
+    assert "fetch_complete" in event_names

@@ -155,6 +155,13 @@ class Fetcher:
                         error="403 Forbidden",
                     )
 
+                logger.info(
+                    "fetch_complete",
+                    url=url,
+                    status=response.status_code,
+                    content_length=len(response.text),
+                    elapsed_ms=round(elapsed_ms),
+                )
                 return FetchResult(
                     url=url,
                     status_code=response.status_code,

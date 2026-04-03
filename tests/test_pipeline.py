@@ -267,3 +267,60 @@ async def test_process_items_batch_dedup_still_works(db_session):
     )
     claims = list(result.scalars().all())
     assert len(claims) == 2
+
+
+# ─── Logging tests ───
+
+
+@pytest.mark.asyncio
+async def test_process_item_logs_event_created(db_session, capture_logs):
+    item = RawItem(
+        title="Anthropic Ships Claude 5",
+        url="/blog/claude5",
+        body="Anthropic released Claude 5 with improved reasoning.",
+        item_type="model_release",
+    )
+    event = await process_item(
+        db_session,
+        item,
+        source_id=1,
+        page_id=None,
+        organization="Anthropic",
+        source_type="newsroom",
+        classification="primary",
+    )
+    assert event is not None
+
+    event_names = [entry["event"] for entry in capture_logs]
+    assert "event_created" in event_names
+
+
+@pytest.mark.asyncio
+async def test_process_item_logs_duplicate(db_session, capture_logs):
+    item = RawItem(
+        title="Anthropic Ships Claude 5",
+        url="/blog/claude5",
+        body="Anthropic released Claude 5.",
+        item_type="model_release",
+    )
+    await process_item(
+        db_session,
+        item,
+        source_id=1,
+        page_id=None,
+        organization="Anthropic",
+        source_type="newsroom",
+        classification="primary",
+    )
+    # Second time — duplicate
+    await process_item(
+        db_session,
+        item,
+        source_id=1,
+        page_id=None,
+        organization="Anthropic",
+        source_type="newsroom",
+        classification="primary",
+    )
+    event_names = [entry["event"] for entry in capture_logs]
+    assert "item_duplicate" in event_names

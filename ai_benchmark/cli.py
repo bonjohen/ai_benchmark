@@ -28,7 +28,7 @@ def cli(ctx: click.Context) -> None:
     ctx.ensure_object(dict)
     settings = PipelineSettings()
     ctx.obj["settings"] = settings
-    configure_logging(settings.log_level, settings.log_format)
+    configure_logging(settings.log_level, settings.log_format, settings.log_dir)
 
 
 @cli.command()

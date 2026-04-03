@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+import structlog
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from ai_benchmark.models.base import Base, create_session_factory
@@ -27,3 +28,14 @@ async def db_session(db_engine) -> AsyncSession:
     session_factory = create_session_factory(db_engine)
     async with session_factory() as session:
         yield session
+
+
+@pytest.fixture
+def capture_logs():
+    """Capture structlog output for assertions.
+
+    Yields a list of dicts; each dict is one log event with keys like
+    ``"event"``, ``"log_level"``, etc.
+    """
+    with structlog.testing.capture_logs() as logs:
+        yield logs

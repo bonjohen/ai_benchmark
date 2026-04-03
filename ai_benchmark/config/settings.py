@@ -55,6 +55,7 @@ class PipelineSettings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///ai_benchmark.db"
     log_level: str = "INFO"
     log_format: str = "json"
+    log_dir: str | None = None
 
     user_agent: str = "ai-benchmark-pipeline/0.1"
     request_timeout: int = 30

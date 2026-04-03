@@ -29,11 +29,17 @@ $python = "$installDir\venv\Scripts\python.exe"
 
 $env:AI_BENCH_ENV_FILE = "$installDir\config\.env"
 
+# Ensure logs directory exists
+$logsDir = "$installDir\logs"
+if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Path $logsDir | Out-Null }
+$logFile = "$logsDir\report_range_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+
 # Stage 1: Batch JSON extraction (fast, one DB connection)
 Write-Host "=== Stage 1: Extracting raw JSON for $Since through $Until ==="
-& $python -m ai_benchmark report-range --since $Since --until $Until --output-dir $artifacts
+Write-Host "    Log file: $logFile"
+& $python -m ai_benchmark report-range --since $Since --until $Until --output-dir $artifacts 2>&1 | Tee-Object -FilePath $logFile
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Stage 1 (report-range) failed with exit code $LASTEXITCODE"
+    Write-Host "ERROR: Stage 1 (report-range) failed with exit code $LASTEXITCODE — see $logFile"
     exit 1
 }
 

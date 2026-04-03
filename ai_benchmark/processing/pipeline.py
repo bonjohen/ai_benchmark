@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+import structlog
+
 from ..collection.snapshot import SnapshotManager
 from ..models.events import EventRecord
 from .cross_reference import build_cross_references
@@ -20,6 +22,8 @@ from .normalizer import (
 )
 from .triage import ingest_candidate
 from .verification import create_claim, update_confirmation_status
+
+logger = structlog.get_logger(__name__)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -79,6 +83,15 @@ async def process_item(
     if item.metadata.get("benchmark_variant") and event_type == "announcement":
         event_type = "benchmark_result"
 
+    logger.debug(
+        "item_normalized",
+        title=norm_title[:80],
+        model_slug=model_slug,
+        published_date=published_date,
+        event_type=event_type,
+        organization=organization,
+    )
+
     # 1b. Discovery queue — check for new model slugs before dedup/creation
     if model_slug:
         await check_and_enqueue(session, model_slug, organization)
@@ -96,6 +109,12 @@ async def process_item(
             model_slug=model_slug,
         )
     if existing:
+        logger.debug(
+            "item_duplicate",
+            title=norm_title[:80],
+            existing_event_id=existing.id,
+            organization=organization,
+        )
         # Still create a claim for the existing event (multiple sources corroborate)
         confidence_tier = confidence_tier_for_classification(
             classification,
@@ -134,6 +153,17 @@ async def process_item(
     )
     session.add(event)
     await session.flush()
+
+    logger.info(
+        "event_created",
+        event_id=event.id,
+        title=norm_title[:80],
+        model_slug=model_slug,
+        published_date=published_date,
+        observed_at=event.observed_at.isoformat(),
+        event_type=event_type,
+        organization=organization,
+    )
 
     # 4. Create initial claim
     confidence_tier = confidence_tier_for_classification(
@@ -208,4 +238,12 @@ async def process_items(
             flush_count = 0
     if flush_count > 0:
         await session.flush()
+
+    logger.info(
+        "batch_processed",
+        total_items=len(items),
+        events_created=len(created),
+        duplicates=len(items) - len(created),
+        organization=organization,
+    )
     return created

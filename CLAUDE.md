@@ -106,6 +106,7 @@ If `AI_BENCH_DATABASE_URL` is not set (no `.env`, no env var), settings will war
 | `AI_BENCH_DATABASE_URL` | `sqlite+aiosqlite:///ai_benchmark.db` | Database connection |
 | `AI_BENCH_LOG_LEVEL` | `INFO` | Logging level |
 | `AI_BENCH_LOG_FORMAT` | `json` | `json` or `console` output |
+| `AI_BENCH_LOG_DIR` | — | Directory for log files; when set, logs go to both stdout and `pipeline_YYYYMMDD_HHMMSS.log` |
 | `AI_BENCH_GITHUB_TOKEN` | — | GitHub API access (Meta, GitHub discovery) |
 | `AI_BENCH_SEMANTIC_SCHOLAR_API_KEY` | — | Semantic Scholar enrichment |
 | `AI_BENCH_PROXY_URL` | — | HTTP proxy for fetcher |

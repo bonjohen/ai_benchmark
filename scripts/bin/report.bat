@@ -53,18 +53,23 @@ if not exist "%ARTIFACTS%" mkdir "%ARTIFACTS%"
 :: Ensure logs directory exists
 if not exist "%INSTALL_DIR%\logs" mkdir "%INSTALL_DIR%\logs"
 
+:: Timestamped log file for Stage 1 (Python extraction)
+for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set dt=%%I
+set LOGFILE=%INSTALL_DIR%\logs\report_%dt:~0,8%_%dt:~8,6%.log
+
 cd /d %INSTALL_DIR%
 
 echo [%date% %time%] Starting daily report generation for %DATE_ARG%
 
 :: Stage 1: Extract compact JSON from database
 echo Stage 1: Extracting articles for %DATE_ARG%...
-%PYTHON% -m ai_benchmark report --date %DATE_ARG% --output "%RAW%"
+echo [%date% %time%] Stage 1: report --date %DATE_ARG% >> "%LOGFILE%" 2>&1
+%PYTHON% -m ai_benchmark report --date %DATE_ARG% --output "%RAW%" >> "%LOGFILE%" 2>&1
 if %ERRORLEVEL% neq 0 (
-    echo ERROR: Stage 1 failed — JSON extraction returned error
+    echo ERROR: Stage 1 failed — see %LOGFILE%
     exit /b 1
 )
-echo Stage 1 complete: %RAW%
+echo Stage 1 complete: %RAW% (log: %LOGFILE%)
 
 :: Stage 2: Summarize with Claude CLI
 echo Stage 2: Summarizing with Claude CLI...
