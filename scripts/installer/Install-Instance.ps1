@@ -305,6 +305,18 @@ foreach ($spec in $binSpecs) {
             }
     }
 }
+
+# report.bat has its own template (two-stage: extract JSON + Claude CLI)
+$reportTemplatePath = Join-Path $SourceDir "scripts\bin\report.bat"
+if (Test-Path $reportTemplatePath) {
+    $reportOutputPath = Join-Path $Path "bin\report.bat"
+    Invoke-InstallerAction -Description "Generate bin\report.bat" -Action {
+        Invoke-TemplateSubstitution `
+            -TemplatePath $reportTemplatePath `
+            -OutputPath $reportOutputPath `
+            -Tokens @{ INSTALL_DIR = $Path }
+    }
+}
 Write-Host ""
 
 # ================================================================

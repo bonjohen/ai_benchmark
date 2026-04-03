@@ -341,6 +341,16 @@ Invoke-InstallerAction -Description "Generate bin scripts to temp directory" -Ac
             }
     }
 
+    # report.bat has its own template (two-stage: extract JSON + Claude CLI)
+    $reportTemplatePath = Join-Path $SourceDir "scripts\bin\report.bat"
+    if (Test-Path $reportTemplatePath) {
+        $reportOutputPath = Join-Path $binTmpDir "report.bat"
+        Invoke-TemplateSubstitution `
+            -TemplatePath $reportTemplatePath `
+            -OutputPath $reportOutputPath `
+            -Tokens @{ INSTALL_DIR = $Path }
+    }
+
     # Atomic copy: all or nothing
     $binDir = Join-Path $Path "bin"
     Get-ChildItem -Path $binTmpDir -Filter "*.bat" | ForEach-Object {
