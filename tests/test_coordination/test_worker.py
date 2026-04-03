@@ -150,6 +150,7 @@ class TestFetchAndExtractRSSBackfill:
             MagicMock(page_type="rss", canonical_url="https://news.google.com/rss/search?q=openai")
         ]
         mock_collector.extract_items.return_value = [normal_item]
+        mock_collector._enrich_rss_items = AsyncMock()
         mock_collector.collect_rss_backfill = AsyncMock(return_value=[backfill_item])
 
         with patch("ai_benchmark.coordination.worker.get_collector", return_value=mock_collector):

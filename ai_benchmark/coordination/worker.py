@@ -131,8 +131,12 @@ async def fetch_and_extract(
         if item.page_title is None:
             item.page_title = page.page_type
 
-    # RSS backfill: also fetch date-windowed Google News RSS
+    # Enrich Google News RSS items with real article meta descriptions
     is_google_rss = "rss" in task.page_type and "news.google.com/rss" in task.page_url
+    if is_google_rss:
+        await collector._enrich_rss_items(items, fetcher)
+
+    # RSS backfill: also fetch date-windowed Google News RSS
     if task.since_date and is_google_rss:
         backfill_items = await collector.collect_rss_backfill(page, fetcher, task.since_date)
         items = backfill_items + items
