@@ -108,23 +108,23 @@ The extract pipeline collects, processes, and verifies AI industry events from 2
                           │  Iterates each organization     │
                           └──────────────┬──────────────────┘
                                          │
-            ┌────────────────────────────┼────────────────────────────┐
-            │                            │                            │
-   ┌────────▼─────────┐     ┌───────────▼──────────┐     ┌──────────▼──────────┐
+            ┌────────────────────────────┼───────────────────────────┐
+            │                            │                           │
+   ┌────────▼───-──────┐     ┌───────────▼──────────┐     ┌──────────▼──────────┐
    │ HTML Fetch + Diff │     │ Google News RSS      │     │ API Call            │
    │ (primary method)  │     │ (Cloudflare fallback)│     │ (GitHub, S2, HF)    │
    └────────┬──────────┘     └───────────┬──────────┘     └──────────┬──────────┘
-            │                            │                            │
-            └────────────────────────────┼────────────────────────────┘
+            │                            │                           │
+            └────────────────────────────┼───────────────────────────┘
                                          │
                                ┌─────────▼─────────┐
-                               │  Quality Filter    │
-                               │  (stale, trivial,  │
-                               │   garbage removal) │
+                               │  Quality Filter   │
+                               │  (stale, trivial, │
+                               │  garbage removal) │
                                └─────────┬─────────┘
                                          │
                                ┌─────────▼─────────┐
-                               │  RawItem list      │
+                               │  RawItem list     │
                                └─────────┬─────────┘
                                          │
                           ┌──────────────▼──────────────────┐
@@ -259,6 +259,46 @@ ai-benchmark query --org OpenAI
 ai-benchmark query --model gpt-4
 ai-benchmark export --format csv --output events.csv
 ```
+
+## Daily Reporting
+
+Two-stage daily intelligence report: Python extracts compact JSON from the database, then Claude CLI summarizes and groups articles by topic.
+
+### Quick Start
+
+```bash
+# Generate today's report (JSON extract + Claude CLI summarization)
+C:\ai-data-pipeline\bin\report.bat
+
+# Generate report for a specific historical date
+C:\ai-data-pipeline\bin\report.bat 2026-03-15
+
+# JSON extraction only (no Claude CLI)
+ai-benchmark report --output raw_articles.json
+ai-benchmark report --date 2026-03-15 --output raw_articles_20260315.json
+
+# Batch extract JSON for a date range (one DB connection, fast)
+ai-benchmark report-range --since 2026-02-15 --output-dir artifacts/
+
+# Batch Claude CLI summarization over a date range
+C:\ai-data-pipeline\bin\report_range.ps1 -Since 2026-02-15
+
+# Weekly report from 7 daily reports
+C:\ai-data-pipeline\bin\weekly_report.bat 2026-03-30
+```
+
+### How It Works
+
+**Stage 1 (Python):** `ai-benchmark report` queries events by `published_date`, applies noise filtering (GitHub allowlist, short titles, empty abstracts), and outputs compact JSON with 8 fields per article: title, publisher, date, model, abstract, url, confirmed, sources.
+
+**Stage 2 (Claude CLI):** `report.bat` invokes `claude -p` to read the JSON, group articles by AI topic (not by publisher), write 2-3 sentence summaries per topic, and produce the final markdown report.
+
+**RSS enrichment:** Google News RSS items (which normally contain only a title echo) are automatically enriched during collection — the pipeline follows each article link and extracts the real `og:description` meta tag.
+
+**Output files:**
+- `artifacts/raw_articles_YYYYMMDD.json` �� compact JSON extract
+- `artifacts/daily_report_YYYYMMDD.md` — Claude CLI markdown summary
+- `artifacts/weekly_report_YYYYMMDD.md` — weekly synthesis from 7 dailies
 
 ## Configuration
 

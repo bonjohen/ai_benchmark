@@ -14,3 +14,4 @@ venv/
 .ruff_cache/
 logs/
 artifacts/
+artifacts/raw_articles.json
