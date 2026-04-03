@@ -37,22 +37,23 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 1.1 | Open | | | Add `_is_noise(event)` function to `report_queries.py` — filters short titles (<=10 chars), page chrome, RSS title-only articles (abstract empty or == title) |
-| 1.2 | Open | | | Add `_AI_REPO_PATTERNS` allowlist and GitHub filtering logic to `report_queries.py` — GitHub events whose title/path matches no pattern are noise |
-| 1.3 | Open | | | Modify `_build_article` in `report_queries.py` — compact fields: drop `event_type`, `source_type`, `cross_refs`, `event_id`; add `confirmed` bool; truncate abstract to 200 chars |
-| 1.4 | Open | | | Rewrite `format_json` in `report_formatter.py` — output compact structure: `{date, article_count, articles: [...]}` per PDR section 3.1 |
-| 1.5 | Open | | | Remove `format_markdown` and all markdown formatting helpers from `report_formatter.py` |
-| 1.6 | Open | | | Update `report` command in `cli.py` — remove `--format` choice (JSON only), remove `sys.stdout.reconfigure` workaround |
-| 1.7 | Open | | | Update `tests/test_daily_report.py` — test noise filtering (GitHub allowlist, short titles, empty abstracts), test compact JSON shape, remove markdown formatter tests |
-| 1.8 | Open | | | Verify against real DB: `AI_BENCH_DATABASE_URL=... python -m ai_benchmark report --output test.json` — confirm under 20K chars, no noise entries |
-| 1.9 | Open | | | `ruff check` and `ruff format --check` clean |
-| 1.10 | Open | | | `pytest tests/test_daily_report.py` all pass |
-| 1.11 | Open | | | Stage all Phase 1 changes |
+| 1.1 | Completed | 2026-04-02 04:00 PM | 2026-04-02 04:10 PM | Add `_is_noise(event)` function to `report_queries.py` — filters short titles (<=10 chars), page chrome, RSS title-only articles (abstract empty or == title) |
+| 1.2 | Completed | 2026-04-02 04:00 PM | 2026-04-02 04:10 PM | Add `_AI_REPO_PATTERNS` allowlist and GitHub filtering logic to `report_queries.py` — GitHub events whose title/path matches no pattern are noise |
+| 1.3 | Completed | 2026-04-02 04:10 PM | 2026-04-02 04:15 PM | Modify `_build_article` in `report_queries.py` — compact fields: drop `event_type`, `source_type`, `cross_refs`, `event_id`; add `confirmed` bool; truncate abstract to 200 chars |
+| 1.4 | Completed | 2026-04-02 04:15 PM | 2026-04-02 04:20 PM | Rewrite `format_json` in `report_formatter.py` — output compact structure: `{date, article_count, articles: [...]}` per PDR section 3.1 |
+| 1.5 | Completed | 2026-04-02 04:15 PM | 2026-04-02 04:20 PM | Remove `format_markdown` and all markdown formatting helpers from `report_formatter.py` |
+| 1.6 | Completed | 2026-04-02 04:10 PM | 2026-04-02 04:15 PM | Update `report` command in `cli.py` — remove `--format` choice (JSON only), remove `sys.stdout.reconfigure` workaround |
+| 1.7 | Completed | 2026-04-02 04:20 PM | 2026-04-02 04:30 PM | Update `tests/test_daily_report.py` — test noise filtering (GitHub allowlist, short titles, empty abstracts), test compact JSON shape, remove markdown formatter tests |
+| 1.8 | Completed | 2026-04-02 04:35 PM | 2026-04-02 04:36 PM | Verify against real DB: 15.6K chars, 25 articles, 3 GitHub (all AI-relevant), no filament/gvisor noise |
+| 1.9 | Completed | 2026-04-02 04:30 PM | 2026-04-02 04:33 PM | `ruff check` and `ruff format --check` clean |
+| 1.10 | Completed | 2026-04-02 04:33 PM | 2026-04-02 04:34 PM | `pytest tests/test_daily_report.py` — 16/16 pass |
+| 1.11 | Started | 2026-04-02 04:37 PM | | Stage all Phase 1 changes |
 | 1.12 | Open | | | Commit all Phase 1 changes |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
+- **Changes:** Rewrote `report_queries.py` (compact Article dataclass, `_is_noise()` with GitHub allowlist, removed weekly stats/cross-refs/markdown support), rewrote `report_formatter.py` (compact JSON only), updated CLI (JSON-only, no `--format`), rewrote tests (16 tests: 6 noise filtering, 7 query, 3 formatter).
+- **Changes hosted at:** TBD
 - **Commit:** `Compact report JSON with noise filtering and GitHub allowlist`
 
 ## Phase 2: Claude CLI Integration Script

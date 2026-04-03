@@ -239,25 +239,19 @@ def export(ctx: click.Context, fmt: str, output_path: Path | None, limit: int) -
 
 
 @cli.command()
-@click.option(
-    "--format", "fmt", type=click.Choice(["markdown", "json"]), default="markdown"
-)
 @click.option("--output", "output_path", type=click.Path(path_type=Path), default=None)
-@click.option("--hours", default=24, help="Recent changes window in hours.")
-@click.option("--days", default=7, help="Summary window in days.")
+@click.option("--hours", default=24, help="Lookback window in hours.")
 @click.pass_context
 def report(
     ctx: click.Context,
-    fmt: str,
     output_path: Path | None,
     hours: int,
-    days: int,
 ) -> None:
-    """Generate a daily intelligence report."""
+    """Generate a daily intelligence report as JSON."""
     settings: PipelineSettings = ctx.obj["settings"]
 
     async def _report() -> None:
-        from .reporting.report_formatter import format_json, format_markdown
+        from .reporting.report_formatter import format_json
         from .reporting.report_queries import gather_daily_report
 
         engine = create_engine(settings.database_url)
@@ -265,17 +259,14 @@ def report(
 
         session_factory = create_session_factory(engine)
         async with session_factory() as session:
-            data = await gather_daily_report(session, hours=hours, days=days)
+            data = await gather_daily_report(session, hours=hours)
 
-        content = format_markdown(data) if fmt == "markdown" else format_json(data)
+        content = format_json(data)
 
         if output_path:
             output_path.write_text(content, encoding="utf-8")
             click.echo(f"Report written to {output_path}")
         else:
-            import sys
-
-            sys.stdout.reconfigure(encoding="utf-8")
             click.echo(content)
 
         await engine.dispose()
