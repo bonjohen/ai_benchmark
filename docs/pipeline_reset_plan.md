@@ -44,8 +44,8 @@ Open  ──>  Started  ──>  Completed
 | 1.4 | Completed | 2026-04-03 12:00 AM | 2026-04-03 12:07 AM | Add tests in `tests/test_daily_report.py`: (a) `test_gather_report_with_reference_date` — events on that date included, events on other dates excluded; (b) `test_gather_report_reference_date_sets_generated_at` — `generated_at` reflects the reference date, not now |
 | 1.5 | Completed | 2026-04-03 12:08 AM | 2026-04-03 12:08 AM | `ruff check` and `ruff format --check` clean |
 | 1.6 | Completed | 2026-04-03 12:08 AM | 2026-04-03 12:08 AM | `pytest tests/test_daily_report.py` all pass (18/18) |
-| 1.7 | Started | 2026-04-03 12:09 AM | | Stage all Phase 1 changes |
-| 1.8 | Open | | | Commit all Phase 1 changes |
+| 1.7 | Completed | 2026-04-03 12:09 AM | 2026-04-03 12:09 AM | Stage all Phase 1 changes |
+| 1.8 | Completed | 2026-04-03 12:10 AM | 2026-04-03 12:10 AM | Commit all Phase 1 changes |
 
 ### Phase 1 Summary
 
@@ -60,15 +60,15 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Rewrite `scripts/bin/report.bat` — accept optional `%~1` as date (YYYY-MM-DD); compute today if omitted; derive `DATE_SAFE` (strip hyphens); filenames `raw_articles_YYYYMMDD.json` and `daily_report_YYYYMMDD.md`; pass `--date` to Python CLI |
-| 2.2 | Open | | | Update deployed copy at `C:\ai-data-pipeline\bin\report.bat` with `INSTALL_DIR=C:\ai-data-pipeline` |
-| 2.3 | Open | | | Stage all Phase 2 changes |
-| 2.4 | Open | | | Commit all Phase 2 changes |
+| 2.1 | Completed | 2026-04-03 12:10 AM | 2026-04-03 12:12 AM | Rewrite `scripts/bin/report.bat` — accept optional `%~1` as date (YYYY-MM-DD); compute today if omitted; derive `DATE_SAFE` (strip hyphens); filenames `raw_articles_YYYYMMDD.json` and `daily_report_YYYYMMDD.md`; pass `--date` to Python CLI |
+| 2.2 | Completed | 2026-04-03 12:12 AM | 2026-04-03 12:13 AM | Update deployed copy at `C:\ai-data-pipeline\bin\report.bat` with `INSTALL_DIR=C:\ai-data-pipeline` |
+| 2.3 | Completed | 2026-04-03 12:13 AM | 2026-04-03 12:13 AM | Stage all Phase 2 changes |
+| 2.4 | Completed | 2026-04-03 12:13 AM | 2026-04-03 12:13 AM | Commit all Phase 2 changes |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Rewrote `scripts/bin/report.bat` (date arg, deterministic filenames, `--date` pass-through). Updated deployed copy at `C:\ai-data-pipeline\bin\report.bat` (fixed path, added `-p` flag, added `--date`).
+- **Changes hosted at:** `scripts/bin/report.bat`, `C:\ai-data-pipeline\bin\report.bat`
 - **Commit:** `Update report.bat with date argument and deterministic filenames`
 
 ## Phase 3: Batch Report Generation
