@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -377,3 +377,40 @@ def test_format_json_no_legacy_fields():
     assert "event_id" not in article
     assert "confidence_tier" not in article
     assert "confirmation_status" not in article
+
+
+# ─── Historical date (reference_date) tests ───
+
+
+@pytest.mark.asyncio
+async def test_gather_report_with_reference_date(db_session):
+    target_date = date(2026, 3, 15)
+    _make_event(
+        db_session,
+        title="Event On Target Date",
+        canonical_path="/target",
+        published_date="2026-03-15",
+        raw_content="This event happened on the target date with enough detail to pass.",
+    )
+    _make_event(
+        db_session,
+        title="Event On Other Date",
+        canonical_path="/other",
+        published_date="2026-03-14",
+        raw_content="This event happened on a different date with enough detail to pass.",
+    )
+    await db_session.flush()
+
+    data = await gather_daily_report(db_session, reference_date=target_date)
+    titles = [a.title for a in data.articles]
+    assert "Event On Target Date" in titles
+    assert "Event On Other Date" not in titles
+
+
+@pytest.mark.asyncio
+async def test_gather_report_reference_date_sets_generated_at(db_session):
+    target_date = date(2026, 3, 15)
+    data = await gather_daily_report(db_session, reference_date=target_date)
+    assert data.generated_at.year == 2026
+    assert data.generated_at.month == 3
+    assert data.generated_at.day == 15

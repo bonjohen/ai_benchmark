@@ -6,9 +6,13 @@ import asyncio
 import contextlib
 import signal
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import click
 import structlog
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 from .config.settings import PipelineSettings, load_source_catalog
 from .main import configure_logging
@@ -241,11 +245,19 @@ def export(ctx: click.Context, fmt: str, output_path: Path | None, limit: int) -
 @cli.command()
 @click.option("--output", "output_path", type=click.Path(path_type=Path), default=None)
 @click.option("--hours", default=24, help="Lookback window in hours.")
+@click.option(
+    "--date",
+    "report_date",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=None,
+    help="Generate report for a specific date (YYYY-MM-DD). Overrides --hours.",
+)
 @click.pass_context
 def report(
     ctx: click.Context,
     output_path: Path | None,
     hours: int,
+    report_date: datetime | None,
 ) -> None:
     """Generate a daily intelligence report as JSON."""
     settings: PipelineSettings = ctx.obj["settings"]
@@ -257,9 +269,10 @@ def report(
         engine = create_engine(settings.database_url)
         from .models import events as ev_models  # noqa: F401
 
+        ref_date = report_date.date() if report_date else None
         session_factory = create_session_factory(engine)
         async with session_factory() as session:
-            data = await gather_daily_report(session, hours=hours)
+            data = await gather_daily_report(session, hours=hours, reference_date=ref_date)
 
         content = format_json(data)
 

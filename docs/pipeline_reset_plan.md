@@ -38,18 +38,18 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 1.1 | Open | | | Add `reference_date: date \| None = None` param to `gather_daily_report()` in `ai_benchmark/reporting/report_queries.py` — when set, query window is that single calendar day; `hours` ignored; `generated_at` set to that date |
-| 1.2 | Open | | | Add `from datetime import date` import to `report_queries.py` (needed for type annotation) |
-| 1.3 | Open | | | Add `--date` option to `report` CLI command in `ai_benchmark/cli.py` — `click.DateTime(formats=["%Y-%m-%d"])`, passed as `reference_date` to `gather_daily_report()` |
-| 1.4 | Open | | | Add tests in `tests/test_daily_report.py`: (a) `test_gather_report_with_reference_date` — events on that date included, events on other dates excluded; (b) `test_gather_report_reference_date_sets_generated_at` — `generated_at` reflects the reference date, not now |
-| 1.5 | Open | | | `ruff check` and `ruff format --check` clean |
-| 1.6 | Open | | | `pytest tests/test_daily_report.py` all pass |
-| 1.7 | Open | | | Stage all Phase 1 changes |
+| 1.1 | Completed | 2026-04-03 12:00 AM | 2026-04-03 12:05 AM | Add `reference_date: date \| None = None` param to `gather_daily_report()` in `ai_benchmark/reporting/report_queries.py` — when set, query window is that single calendar day; `hours` ignored; `generated_at` set to that date |
+| 1.2 | Completed | 2026-04-03 12:00 AM | 2026-04-03 12:05 AM | Add `from datetime import date` import to `report_queries.py` (needed for type annotation) |
+| 1.3 | Completed | 2026-04-03 12:00 AM | 2026-04-03 12:06 AM | Add `--date` option to `report` CLI command in `ai_benchmark/cli.py` — `click.DateTime(formats=["%Y-%m-%d"])`, passed as `reference_date` to `gather_daily_report()` |
+| 1.4 | Completed | 2026-04-03 12:00 AM | 2026-04-03 12:07 AM | Add tests in `tests/test_daily_report.py`: (a) `test_gather_report_with_reference_date` — events on that date included, events on other dates excluded; (b) `test_gather_report_reference_date_sets_generated_at` — `generated_at` reflects the reference date, not now |
+| 1.5 | Completed | 2026-04-03 12:08 AM | 2026-04-03 12:08 AM | `ruff check` and `ruff format --check` clean |
+| 1.6 | Completed | 2026-04-03 12:08 AM | 2026-04-03 12:08 AM | `pytest tests/test_daily_report.py` all pass (18/18) |
+| 1.7 | Started | 2026-04-03 12:09 AM | | Stage all Phase 1 changes |
 | 1.8 | Open | | | Commit all Phase 1 changes |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
+- **Changes:** Modified `ai_benchmark/reporting/report_queries.py` (added `reference_date` param), `ai_benchmark/cli.py` (added `--date` option), `tests/test_daily_report.py` (added 2 tests), `docs/pipeline_reset_plan.md` (status updates).
 - **Changes hosted at:** TBD
 - **Commit:** `Add --date parameter for historical daily report generation`
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
@@ -168,15 +168,26 @@ async def _fetch_events_in_date_range(
 async def gather_daily_report(
     session: AsyncSession,
     hours: int = 24,
+    reference_date: date | None = None,
 ) -> DailyReport:
-    """Assemble the daily report: noise-filtered articles from the last 24h."""
-    now = datetime.now(UTC)
-    today = now.strftime("%Y-%m-%d")
-    cutoff = (now - timedelta(hours=hours)).strftime("%Y-%m-%d")
+    """Assemble the daily report: noise-filtered articles from a date or recent window.
 
-    articles = await _fetch_events_in_date_range(session, cutoff, today)
+    When *reference_date* is provided the query window is that single calendar
+    day and *hours* is ignored.  Otherwise the window spans the last *hours*
+    hours from now.
+    """
+    if reference_date is not None:
+        day_str = reference_date.isoformat()
+        articles = await _fetch_events_in_date_range(session, day_str, day_str)
+        generated_at = datetime.combine(reference_date, datetime.min.time(), tzinfo=UTC)
+    else:
+        now = datetime.now(UTC)
+        today = now.strftime("%Y-%m-%d")
+        cutoff = (now - timedelta(hours=hours)).strftime("%Y-%m-%d")
+        articles = await _fetch_events_in_date_range(session, cutoff, today)
+        generated_at = now
 
     return DailyReport(
-        generated_at=now,
+        generated_at=generated_at,
         articles=articles,
     )
