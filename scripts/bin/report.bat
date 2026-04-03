@@ -35,14 +35,15 @@ set DATE_SAFE=%DATE_ARG:-=%
 set RAW=%ARTIFACTS%\raw_articles_%DATE_SAFE%.json
 set REPORT=%ARTIFACTS%\daily_report_%DATE_SAFE%.md
 
-:: Load only AI_BENCH_ variables from .env — do NOT load ANTHROPIC_API_KEY
-:: or other API keys, which would cause Claude CLI to use the API key
-:: instead of OAuth authentication.
+:: Load AI_BENCH_ variables and CLAUDE_SESSION from .env.
+:: Do NOT load ANTHROPIC_API_KEY or other API keys, which would cause
+:: Claude CLI to use the API key instead of OAuth authentication.
 if exist "%ENV_FILE%" (
     for /f "usebackq tokens=1,* delims==" %%A in ("%ENV_FILE%") do (
         set "LINE=%%A"
         if not "!LINE:~0,1!"=="#" (
             if "!LINE:~0,9!"=="AI_BENCH_" set "%%A=%%B"
+            if "!LINE!"=="CLAUDE_SESSION" set "%%A=%%B"
         )
     )
 )
@@ -74,11 +75,9 @@ echo Stage 1 complete: %RAW% (log: %LOGFILE%)
 :: Stage 2: Summarize with Claude CLI
 echo Stage 2: Summarizing with Claude CLI...
 
-:: Build claude command — resume session if CLAUDE_SESSION is set
-set CLAUDE_CMD=claude
-if defined CLAUDE_SESSION set CLAUDE_CMD=claude -r "%CLAUDE_SESSION%"
-
-%CLAUDE_CMD% -p "Read the file %RAW%. It contains AI industry events from %DATE_ARG%. Group the articles by topic (thematic, not by publisher). For each topic, write a 2-3 sentence summary, then list the articles. Skip any non-AI articles (wars, politics, sports). Write the final report as markdown to %REPORT%. Format: # AI Intelligence Daily Report, ## %DATE_ARG%, then ## Topic Name sections with summary paragraphs and bullet-pointed articles with [Source](url) links."
+:: Claude CLI uses OAuth because ANTHROPIC_API_KEY was cleared above.
+:: -p runs a one-shot prompt (non-interactive, no session resume).
+claude -p "Read the file %RAW%. It contains AI industry events from %DATE_ARG%. Group the articles by topic (thematic, not by publisher). For each topic, write a 2-3 sentence summary, then list the articles. Skip any non-AI articles (wars, politics, sports). Write the final report as markdown to %REPORT%. Format: # AI Intelligence Daily Report, ## %DATE_ARG%, then ## Topic Name sections with summary paragraphs and bullet-pointed articles with [Source](url) links."
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Stage 2 failed — Claude CLI returned error
     exit /b 2

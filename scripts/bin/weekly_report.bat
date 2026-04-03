@@ -57,12 +57,13 @@ if %FOUND% equ 0 (
 set SUNDAY_SAFE=%SUNDAY:-=%
 set REPORT=%ARTIFACTS%\weekly_report_%SUNDAY_SAFE%.md
 
-:: Load only AI_BENCH_ variables from .env
+:: Load AI_BENCH_ variables and CLAUDE_SESSION from .env
 if exist "%ENV_FILE%" (
     for /f "usebackq tokens=1,* delims==" %%A in ("%ENV_FILE%") do (
         set "LINE=%%A"
         if not "!LINE:~0,1!"=="#" (
             if "!LINE:~0,9!"=="AI_BENCH_" set "%%A=%%B"
+            if "!LINE!"=="CLAUDE_SESSION" set "%%A=%%B"
         )
     )
 )
@@ -72,12 +73,9 @@ if not exist "%ARTIFACTS%" mkdir "%ARTIFACTS%"
 
 cd /d %INSTALL_DIR%
 
-:: Build claude command — resume session if CLAUDE_SESSION is set
-set CLAUDE_CMD=claude
-if defined CLAUDE_SESSION set CLAUDE_CMD=claude -r "%CLAUDE_SESSION%"
-
+:: Claude CLI uses OAuth because ANTHROPIC_API_KEY was cleared above.
 echo Synthesizing weekly report with Claude CLI...
-%CLAUDE_CMD% -p "Read these daily AI intelligence reports: %FILE_LIST%. They cover the week of %MONDAY% through %SUNDAY%. Produce a weekly intelligence summary with these sections: # AI Intelligence Weekly Report, ## Week of %MONDAY% through %SUNDAY%, ## Key Developments (the 3-5 most significant events of the week), ## Story Arcs (announcements that evolved over multiple days), ## Emerging Trends (patterns visible across multiple days), ## Competitive Landscape (moves and responses between AI companies). Write the report as markdown to %REPORT%."
+claude -p "Read these daily AI intelligence reports: %FILE_LIST%. They cover the week of %MONDAY% through %SUNDAY%. Produce a weekly intelligence summary with these sections: # AI Intelligence Weekly Report, ## Week of %MONDAY% through %SUNDAY%, ## Key Developments (the 3-5 most significant events of the week), ## Story Arcs (announcements that evolved over multiple days), ## Emerging Trends (patterns visible across multiple days), ## Competitive Landscape (moves and responses between AI companies). Write the report as markdown to %REPORT%."
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Claude CLI returned error
     exit /b 2
