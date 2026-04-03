@@ -47,8 +47,8 @@ Open  ──>  Started  ──>  Completed
 | 1.8 | Completed | 2026-04-02 04:35 PM | 2026-04-02 04:36 PM | Verify against real DB: 15.6K chars, 25 articles, 3 GitHub (all AI-relevant), no filament/gvisor noise |
 | 1.9 | Completed | 2026-04-02 04:30 PM | 2026-04-02 04:33 PM | `ruff check` and `ruff format --check` clean |
 | 1.10 | Completed | 2026-04-02 04:33 PM | 2026-04-02 04:34 PM | `pytest tests/test_daily_report.py` — 16/16 pass |
-| 1.11 | Started | 2026-04-02 04:37 PM | | Stage all Phase 1 changes |
-| 1.12 | Open | | | Commit all Phase 1 changes |
+| 1.11 | Completed | 2026-04-02 04:37 PM | 2026-04-02 04:38 PM | Stage all Phase 1 changes |
+| 1.12 | Completed | 2026-04-02 04:38 PM | 2026-04-02 04:39 PM | Commit all Phase 1 changes |
 
 ### Phase 1 Summary
 
@@ -63,14 +63,15 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Create `scripts/bin/report.bat` — Stage 1: call venv python `ai_benchmark report --output artifacts/raw_articles.json`; Stage 2: call `claude -p` with prompt to read JSON, group by topic, write markdown to `artifacts/daily_report.md` |
+| 2.1 | Completed | 2026-04-02 04:42 PM | 2026-04-02 04:45 PM | Create `scripts/bin/report.bat` — Stage 1: call venv python `ai_benchmark report --output artifacts/raw_articles.json`; Stage 2: call `claude -p` with prompt to read JSON, group by topic, write markdown to `artifacts/daily_report.md` |
 | 2.2 | Open | | | Test script manually from `C:\ai-data-pipeline` — verify `raw_articles.json` created, Claude CLI invoked, `daily_report.md` written |
-| 2.3 | Open | | | Stage all Phase 2 changes |
-| 2.4 | Open | | | Commit all Phase 2 changes |
+| 2.3 | Completed | 2026-04-02 04:46 PM | 2026-04-02 04:46 PM | Stage all Phase 2 changes |
+| 2.4 | Completed | 2026-04-02 04:46 PM | 2026-04-02 04:47 PM | Commit all Phase 2 changes |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `scripts/bin/report.bat` — two-stage script: Stage 1 extracts compact JSON to `artifacts/raw_articles.json`, Stage 2 invokes Claude CLI to group by topic and write `artifacts/daily_report.md`. Includes error handling, .env loading, and artifacts directory creation.
+- **Changes hosted at:** TBD
 - **Commit:** `Add report.bat for two-stage daily report (extract + Claude CLI)`
 
 ## Phase 3: Deploy and Verify
