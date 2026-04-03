@@ -287,6 +287,73 @@ def report(
     asyncio.run(_report())
 
 
+@cli.command("report-range")
+@click.option(
+    "--since",
+    required=True,
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    help="Start date (YYYY-MM-DD, inclusive).",
+)
+@click.option(
+    "--until",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=None,
+    help="End date (YYYY-MM-DD, inclusive). Defaults to today.",
+)
+@click.option(
+    "--output-dir",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Directory to write raw_articles_YYYYMMDD.json files.",
+)
+@click.pass_context
+def report_range(
+    ctx: click.Context,
+    since: datetime,
+    until: datetime | None,
+    output_dir: Path,
+) -> None:
+    """Extract daily report JSON for every date in a range."""
+    settings: PipelineSettings = ctx.obj["settings"]
+
+    async def _range() -> None:
+        from datetime import date, timedelta
+
+        from .reporting.report_formatter import format_json
+        from .reporting.report_queries import gather_daily_report
+
+        engine = create_engine(settings.database_url)
+        from .models import events as ev_models  # noqa: F401
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        start = since.date()
+        end = until.date() if until else date.today()
+
+        session_factory = create_session_factory(engine)
+        total = 0
+        with_articles = 0
+        current = start
+        async with session_factory() as session:
+            while current <= end:
+                data = await gather_daily_report(session, reference_date=current)
+                content = format_json(data)
+                fname = f"raw_articles_{current.strftime('%Y%m%d')}.json"
+                (output_dir / fname).write_text(content, encoding="utf-8")
+                total += 1
+                if data.articles:
+                    with_articles += 1
+                current += timedelta(days=1)
+
+        click.echo(
+            f"Generated {total} reports ({with_articles} with articles,"
+            f" {total - with_articles} empty)"
+        )
+        await engine.dispose()
+
+    asyncio.run(_range())
+
+
 @cli.command()
 @click.pass_context
 def run(ctx: click.Context) -> None:

@@ -78,17 +78,17 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Add `report-range` CLI command in `ai_benchmark/cli.py` — `--since` (required), `--until` (default today), `--output-dir` (required); loop dates, call `gather_daily_report(session, reference_date=d)`, write `raw_articles_YYYYMMDD.json`; print summary |
-| 3.2 | Open | | | Create `scripts/bin/report_range.ps1` — PowerShell script; `param($Since, $Until)`; loop dates; skip if `daily_report_YYYYMMDD.md` exists; call `report.bat $dateStr`; use `{{INSTALL_DIR}}` template token |
-| 3.3 | Open | | | `ruff check` and `ruff format --check` clean |
-| 3.4 | Open | | | `pytest tests/test_daily_report.py` all pass |
-| 3.5 | Open | | | Stage all Phase 3 changes |
-| 3.6 | Open | | | Commit all Phase 3 changes |
+| 3.1 | Completed | 2026-04-03 12:14 AM | 2026-04-03 12:16 AM | Add `report-range` CLI command in `ai_benchmark/cli.py` — `--since` (required), `--until` (default today), `--output-dir` (required); loop dates, call `gather_daily_report(session, reference_date=d)`, write `raw_articles_YYYYMMDD.json`; print summary |
+| 3.2 | Completed | 2026-04-03 12:16 AM | 2026-04-03 12:17 AM | Create `scripts/bin/report_range.ps1` — PowerShell script; `param($Since, $Until)`; loop dates; skip if `daily_report_YYYYMMDD.md` exists; call `report.bat $dateStr`; use `{{INSTALL_DIR}}` template token |
+| 3.3 | Completed | 2026-04-03 12:17 AM | 2026-04-03 12:17 AM | `ruff check` and `ruff format --check` clean |
+| 3.4 | Completed | 2026-04-03 12:17 AM | 2026-04-03 12:17 AM | `pytest tests/test_daily_report.py` all pass (18/18) |
+| 3.5 | Completed | 2026-04-03 12:18 AM | 2026-04-03 12:18 AM | Stage all Phase 3 changes |
+| 3.6 | Completed | 2026-04-03 12:18 AM | 2026-04-03 12:18 AM | Commit all Phase 3 changes |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added `report-range` CLI command to `ai_benchmark/cli.py`. Created `scripts/bin/report_range.ps1` (two-stage batch: JSON extraction then Claude CLI summarization with skip/retry logic).
+- **Changes hosted at:** `ai_benchmark/cli.py`, `scripts/bin/report_range.ps1`
 - **Commit:** `Add report-range command and batch summarization script`
 
 ## Phase 4: Weekly Report
