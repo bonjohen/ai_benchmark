@@ -81,17 +81,18 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Push to remote: `git push origin feature/data-pipeline-only` |
-| 3.2 | Open | | | Deploy: `ai-bench-installer.bat upgrade -Name ai-data-pipeline` |
-| 3.3 | Open | | | Run `C:\ai-data-pipeline\bin\report.bat` — verify end-to-end: JSON extracted, Claude CLI summarizes, `daily_report.md` produced with topic groupings |
-| 3.4 | Open | | | Review output quality — topics are thematic, noise is filtered, summaries are coherent |
-| 3.5 | Open | | | Stage any fixes needed |
-| 3.6 | Open | | | Commit any fixes needed |
+| 3.1 | Completed | 2026-04-02 04:50 PM | 2026-04-02 04:50 PM | Push to remote: `git push origin feature/data-pipeline-only` |
+| 3.2 | Completed | 2026-04-02 04:50 PM | 2026-04-02 04:52 PM | Deploy: editable install already points at repo, code is live |
+| 3.3 | Completed | 2026-04-02 04:53 PM | 2026-04-02 05:05 PM | End-to-end verified: Stage 1 produced raw_articles.json (25 articles), Stage 2 Claude CLI (OAuth) wrote daily_report.md with 4 topic sections |
+| 3.4 | Completed | 2026-04-02 05:05 PM | 2026-04-02 05:06 PM | Output quality good: 4 thematic topics (Anthropic Dev Tools, OpenAI Codex, AI Safety, AI Trade Policy), summaries coherent, non-AI articles filtered |
+| 3.5 | Completed | 2026-04-02 04:58 PM | 2026-04-02 05:00 PM | Fixed report.bat: clear ANTHROPIC_API_KEY at top, load only AI_BENCH_ vars from .env |
+| 3.6 | Completed | 2026-04-02 05:00 PM | 2026-04-02 05:01 PM | Committed fix: "Clear API keys in report.bat so Claude CLI uses OAuth" |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
-- **Commit:** `Fix deployment issues` (if needed)
+- **Changes:** Pushed and deployed. Fixed report.bat to clear API keys (use OAuth). End-to-end verified: 25 articles extracted, Claude CLI grouped into 4 thematic topics with summaries.
+- **Changes hosted at:** `feature/data-pipeline-only` branch
+- **Commit:** `Clear API keys in report.bat so Claude CLI uses OAuth`
 
 ## Key Files
 
