@@ -133,19 +133,21 @@ Open  ──>  Started  ──>  Completed
 **Goal:** Deployed instance has clean DB with backfilled data from Feb 15 and all reporting scripts.
 **Depends on:** Phase 5.
 
+All steps run from `C:\Projects\ai_benchmark` (repo root) unless noted. Steps 4–11 set `AI_BENCH_ENV_FILE=C:\ai-data-pipeline\config\.env` and use the deployed venv Python at `C:\ai-data-pipeline\venv\Scripts\python.exe`.
+
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 6.1 | Open | | | Push to remote: `git push origin feature/data-pipeline-only` |
-| 6.2 | Open | | | Deploy: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/installer/Update-Instance.ps1 -Name ai-data-pipeline` |
-| 6.3 | Open | | | Verify new bin scripts exist: `ls C:\ai-data-pipeline\bin\weekly_report.bat C:\ai-data-pipeline\bin\report_range.ps1` |
-| 6.4 | Open | | | Safety export: `ai-benchmark export --format json --limit 99999 --output C:\ai-data-pipeline\artifacts\pre_wipe_events.json` |
-| 6.5 | Open | | | Delete DB: remove `C:\ai-data-pipeline\data\ai_benchmark.db` |
-| 6.6 | Open | | | Init schema: `ai-benchmark init-db` |
-| 6.7 | Open | | | Backfill: `ai-benchmark collect --since 2026-02-15` (user kicks off) |
-| 6.8 | Open | | | Batch daily reports Stage 1: `ai-benchmark report-range --since 2026-02-15 --output-dir C:\ai-data-pipeline\artifacts` |
-| 6.9 | Open | | | Batch daily reports Stage 2: `C:\ai-data-pipeline\bin\report_range.ps1 -Since 2026-02-15` (user kicks off) |
-| 6.10 | Open | | | Generate weekly reports: `weekly_report.bat` for each complete week (user kicks off) |
-| 6.11 | Open | | | Review output quality |
+| 6.1 | Open | | | **[repo root]** Push to remote: `git push origin feature/data-pipeline-only` |
+| 6.2 | Open | | | **[repo root]** Deploy: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/installer/Update-Instance.ps1 -Name ai-data-pipeline` |
+| 6.3 | Open | | | **[repo root]** Verify new bin scripts exist: `ls C:\ai-data-pipeline\bin\weekly_report.bat C:\ai-data-pipeline\bin\report_range.ps1` |
+| 6.4 | Open | | | **[C:\ai-data-pipeline]** Safety export: `.\venv\Scripts\python.exe -m ai_benchmark export --format json --limit 99999 --output artifacts\pre_wipe_events.json` |
+| 6.5 | Open | | | **[C:\ai-data-pipeline]** Delete DB: `del data\ai_benchmark.db` |
+| 6.6 | Open | | | **[C:\ai-data-pipeline]** Init schema: `.\venv\Scripts\python.exe -m ai_benchmark init-db` |
+| 6.7 | Open | | | **[C:\ai-data-pipeline]** Backfill (logged): `.\venv\Scripts\python.exe -m ai_benchmark collect --since 2026-02-15 > logs\backfill.log 2>&1` — monitor with `Get-Content logs\backfill.log -Wait` in a second terminal |
+| 6.8 | Open | | | **[C:\ai-data-pipeline]** Batch daily reports Stage 1: `.\venv\Scripts\python.exe -m ai_benchmark report-range --since 2026-02-15 --output-dir artifacts` |
+| 6.9 | Open | | | **[C:\ai-data-pipeline]** Batch daily reports Stage 2: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File bin\report_range.ps1 -Since 2026-02-15` (user kicks off) |
+| 6.10 | Open | | | **[C:\ai-data-pipeline]** Generate weekly reports: `bin\weekly_report.bat YYYY-MM-DD` for each complete week Sunday (user kicks off) |
+| 6.11 | Open | | | Review output quality: check `artifacts\` for daily/weekly report files |
 
 ### Phase 6 Summary
 
