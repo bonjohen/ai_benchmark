@@ -78,6 +78,18 @@ def extract_nextjs_rsc_payloads(html: str) -> list[str]:
     return payloads
 
 
+def _extract_meta_description(html: str) -> str | None:
+    """Extract og:description or meta description from HTML."""
+    soup = BeautifulSoup(html, "lxml")
+    og = soup.find("meta", property="og:description")
+    if og and og.get("content"):
+        return og["content"].strip()
+    meta = soup.find("meta", attrs={"name": "description"})
+    if meta and meta.get("content"):
+        return meta["content"].strip()
+    return None
+
+
 @dataclass
 class RawItem:
     """A raw extracted item from a source page before normalization."""
@@ -146,6 +158,27 @@ class SourceCollector(abc.ABC):
                 )
             )
         return items
+
+    async def _enrich_rss_items(self, items: list[RawItem], fetcher: Fetcher) -> None:
+        """Follow Google News RSS links and replace title-echo bodies with real snippets."""
+        log = logger.bind(source=self.source_config.source_name)
+        for item in items:
+            if not item.url or "news.google.com" not in item.url:
+                continue
+            # Only enrich if body is a title echo (title + publisher, or empty)
+            body_remainder = item.body.replace(item.title, "", 1).strip()
+            if len(body_remainder) >= 30:
+                continue
+            try:
+                result = await fetcher.fetch(item.url)
+                if result.ok:
+                    desc = _extract_meta_description(result.body_text)
+                    if desc and len(desc) > len(item.title):
+                        item.body = desc[:500]
+                        log.debug("rss_enriched", title=item.title[:60])
+            except Exception:
+                log.debug("rss_enrich_failed", title=item.title[:60])
+            await asyncio.sleep(1.0)
 
     def content_selectors(self, page: PageConfig) -> list[str] | None:
         """Return CSS selectors for main content extraction. Override per source."""
@@ -224,6 +257,10 @@ class SourceCollector(abc.ABC):
             if item.page_title is None:
                 item.page_title = page.page_type
 
+        # Enrich Google News RSS items with real article meta descriptions
+        if "rss" in page.page_type:
+            await self._enrich_rss_items(items, fetcher)
+
         # In backfill mode, skip quality filtering — the user explicitly
         # requested historical data, so stale-date checks are counterproductive.
         if not since_date:
@@ -254,6 +291,7 @@ class SourceCollector(abc.ABC):
                 for item in items:
                     if item.page_title is None:
                         item.page_title = page.page_type
+                await self._enrich_rss_items(items, fetcher)
                 log.info("backfill_window_fetched", url=url, count=len(items))
                 all_items.extend(items)
             else:
