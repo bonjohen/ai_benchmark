@@ -5,6 +5,10 @@
 
 setlocal enabledelayedexpansion
 
+:: Clear API keys so Claude CLI uses OAuth, not API key billing
+set ANTHROPIC_API_KEY=
+set ANTHROPIC_AUTH_TOKEN=
+
 set INSTALL_DIR=C:\ai-data-pipeline
 set ENV_FILE=%INSTALL_DIR%\config\.env
 set PYTHON=%INSTALL_DIR%\venv\Scripts\python.exe
@@ -13,12 +17,14 @@ set ARTIFACTS=%INSTALL_DIR%\artifacts
 set RAW=%ARTIFACTS%\raw_articles.json
 set REPORT=%ARTIFACTS%\daily_report.md
 
-:: Load environment from .env
+:: Load only AI_BENCH_ variables from .env — do NOT load ANTHROPIC_API_KEY
+:: or other API keys, which would cause Claude CLI to use the API key
+:: instead of OAuth authentication.
 if exist "%ENV_FILE%" (
     for /f "usebackq tokens=1,* delims==" %%A in ("%ENV_FILE%") do (
         set "LINE=%%A"
         if not "!LINE:~0,1!"=="#" (
-            if not "%%A"=="" set "%%A=%%B"
+            if "!LINE:~0,9!"=="AI_BENCH_" set "%%A=%%B"
         )
     )
 )
