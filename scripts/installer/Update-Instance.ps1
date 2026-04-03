@@ -351,9 +351,32 @@ Invoke-InstallerAction -Description "Generate bin scripts to temp directory" -Ac
             -Tokens @{ INSTALL_DIR = $Path }
     }
 
+    # weekly_report.bat
+    $weeklyTemplatePath = Join-Path $SourceDir "scripts\bin\weekly_report.bat"
+    if (Test-Path $weeklyTemplatePath) {
+        $weeklyOutputPath = Join-Path $binTmpDir "weekly_report.bat"
+        Invoke-TemplateSubstitution `
+            -TemplatePath $weeklyTemplatePath `
+            -OutputPath $weeklyOutputPath `
+            -Tokens @{ INSTALL_DIR = $Path }
+    }
+
+    # report_range.ps1
+    $rangeTemplatePath = Join-Path $SourceDir "scripts\bin\report_range.ps1"
+    if (Test-Path $rangeTemplatePath) {
+        $rangeOutputPath = Join-Path $binTmpDir "report_range.ps1"
+        Invoke-TemplateSubstitution `
+            -TemplatePath $rangeTemplatePath `
+            -OutputPath $rangeOutputPath `
+            -Tokens @{ INSTALL_DIR = $Path }
+    }
+
     # Atomic copy: all or nothing
     $binDir = Join-Path $Path "bin"
     Get-ChildItem -Path $binTmpDir -Filter "*.bat" | ForEach-Object {
+        Copy-Item $_.FullName -Destination $binDir -Force
+    }
+    Get-ChildItem -Path $binTmpDir -Filter "*.ps1" | ForEach-Object {
         Copy-Item $_.FullName -Destination $binDir -Force
     }
     Remove-Item $binTmpDir -Recurse -Force -ErrorAction SilentlyContinue

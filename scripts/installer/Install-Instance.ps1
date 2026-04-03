@@ -317,6 +317,30 @@ if (Test-Path $reportTemplatePath) {
             -Tokens @{ INSTALL_DIR = $Path }
     }
 }
+
+# weekly_report.bat
+$weeklyTemplatePath = Join-Path $SourceDir "scripts\bin\weekly_report.bat"
+if (Test-Path $weeklyTemplatePath) {
+    $weeklyOutputPath = Join-Path $Path "bin\weekly_report.bat"
+    Invoke-InstallerAction -Description "Generate bin\weekly_report.bat" -Action {
+        Invoke-TemplateSubstitution `
+            -TemplatePath $weeklyTemplatePath `
+            -OutputPath $weeklyOutputPath `
+            -Tokens @{ INSTALL_DIR = $Path }
+    }
+}
+
+# report_range.ps1
+$rangeTemplatePath = Join-Path $SourceDir "scripts\bin\report_range.ps1"
+if (Test-Path $rangeTemplatePath) {
+    $rangeOutputPath = Join-Path $Path "bin\report_range.ps1"
+    Invoke-InstallerAction -Description "Generate bin\report_range.ps1" -Action {
+        Invoke-TemplateSubstitution `
+            -TemplatePath $rangeTemplatePath `
+            -OutputPath $rangeOutputPath `
+            -Tokens @{ INSTALL_DIR = $Path }
+    }
+}
 Write-Host ""
 
 # ================================================================

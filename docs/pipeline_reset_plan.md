@@ -115,17 +115,17 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Add `weekly_report.bat` generation to `scripts/installer/Install-Instance.ps1` — same pattern as report.bat (Invoke-TemplateSubstitution with INSTALL_DIR token) |
-| 5.2 | Open | | | Add `report_range.ps1` generation to `scripts/installer/Install-Instance.ps1` |
-| 5.3 | Open | | | Add `weekly_report.bat` generation to `scripts/installer/Update-Instance.ps1` (in the temp dir + atomic copy block) |
-| 5.4 | Open | | | Add `report_range.ps1` generation to `scripts/installer/Update-Instance.ps1` (in the temp dir + atomic copy block) |
-| 5.5 | Open | | | Stage all Phase 5 changes |
-| 5.6 | Open | | | Commit all Phase 5 changes |
+| 5.1 | Completed | 2026-04-03 12:22 AM | 2026-04-03 12:24 AM | Add `weekly_report.bat` generation to `scripts/installer/Install-Instance.ps1` — same pattern as report.bat (Invoke-TemplateSubstitution with INSTALL_DIR token) |
+| 5.2 | Completed | 2026-04-03 12:22 AM | 2026-04-03 12:24 AM | Add `report_range.ps1` generation to `scripts/installer/Install-Instance.ps1` |
+| 5.3 | Completed | 2026-04-03 12:24 AM | 2026-04-03 12:25 AM | Add `weekly_report.bat` generation to `scripts/installer/Update-Instance.ps1` (in the temp dir + atomic copy block) |
+| 5.4 | Completed | 2026-04-03 12:24 AM | 2026-04-03 12:25 AM | Add `report_range.ps1` generation to `scripts/installer/Update-Instance.ps1` (in the temp dir + atomic copy block) |
+| 5.5 | Completed | 2026-04-03 12:25 AM | 2026-04-03 12:25 AM | Stage all Phase 5 changes |
+| 5.6 | Completed | 2026-04-03 12:25 AM | 2026-04-03 12:25 AM | Commit all Phase 5 changes |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Added `weekly_report.bat` and `report_range.ps1` generation to both `Install-Instance.ps1` and `Update-Instance.ps1`. Updated atomic copy in Update-Instance to also handle `*.ps1` files.
+- **Changes hosted at:** `scripts/installer/Install-Instance.ps1`, `scripts/installer/Update-Instance.ps1`
 - **Commit:** `Add weekly_report.bat and report_range.ps1 to installer`
 
 ## Phase 6: Deploy, Reset, Backfill
