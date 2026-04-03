@@ -98,14 +98,14 @@ Open  ──>  Started  ──>  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Create `scripts/bin/weekly_report.bat` — accept optional `%~1` as week-ending Sunday (YYYY-MM-DD); compute Monday through Sunday dates; build file paths for 7 `daily_report_YYYYMMDD.md` files; warn on missing; call Claude CLI to synthesize; write `weekly_report_YYYYMMDD.md`; use `{{INSTALL_DIR}}` template token; clear API keys; support `CLAUDE_SESSION` |
-| 4.2 | Open | | | Stage all Phase 4 changes |
-| 4.3 | Open | | | Commit all Phase 4 changes |
+| 4.1 | Completed | 2026-04-03 12:19 AM | 2026-04-03 12:21 AM | Create `scripts/bin/weekly_report.bat` — accept optional `%~1` as week-ending Sunday (YYYY-MM-DD); compute Monday through Sunday dates; build file paths for 7 `daily_report_YYYYMMDD.md` files; warn on missing; call Claude CLI to synthesize; write `weekly_report_YYYYMMDD.md`; use `{{INSTALL_DIR}}` template token; clear API keys; support `CLAUDE_SESSION` |
+| 4.2 | Completed | 2026-04-03 12:21 AM | 2026-04-03 12:21 AM | Stage all Phase 4 changes |
+| 4.3 | Completed | 2026-04-03 12:21 AM | 2026-04-03 12:21 AM | Commit all Phase 4 changes |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `scripts/bin/weekly_report.bat` — computes Monday–Sunday dates via PowerShell, checks for 7 daily report files, synthesizes via Claude CLI, writes `weekly_report_YYYYMMDD.md`.
+- **Changes hosted at:** `scripts/bin/weekly_report.bat`
 - **Commit:** `Add weekly report script synthesizing 7 daily reports`
 
 ## Phase 5: Installer Integration
