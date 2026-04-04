@@ -63,6 +63,12 @@ cd /d %INSTALL_DIR%
 echo [%date% %time%] Starting daily report generation for %DATE_ARG%
 
 :: Stage 1: Extract compact JSON from database
+:: Skip if the file already exists (report_range.ps1 batch-extracts all dates
+:: in Stage 1, so re-extracting here is redundant and spawns an extra Python process).
+if exist "%RAW%" (
+    echo Stage 1: Skipping extraction — %RAW% already exists
+    goto stage2
+)
 echo Stage 1: Extracting articles for %DATE_ARG%...
 echo [%date% %time%] Stage 1: report --date %DATE_ARG% >> "%LOGFILE%" 2>&1
 %PYTHON% -m ai_benchmark report --date %DATE_ARG% --output "%RAW%" >> "%LOGFILE%" 2>&1
@@ -72,6 +78,7 @@ if %ERRORLEVEL% neq 0 (
 )
 echo Stage 1 complete: %RAW% (log: %LOGFILE%)
 
+:stage2
 :: Stage 2: Summarize with Claude CLI
 echo Stage 2: Summarizing with Claude CLI...
 

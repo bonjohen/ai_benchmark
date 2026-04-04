@@ -37,9 +37,13 @@ $logFile = "$logsDir\report_range_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 # Stage 1: Batch JSON extraction (fast, one DB connection)
 Write-Host "=== Stage 1: Extracting raw JSON for $Since through $Until ==="
 Write-Host "    Log file: $logFile"
-& $python -m ai_benchmark report-range --since $Since --until $Until --output-dir $artifacts 2>&1 | Tee-Object -FilePath $logFile
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Stage 1 (report-range) failed with exit code $LASTEXITCODE — see $logFile"
+# Redirect stdout+stderr to log file directly (no Tee-Object pipe, which can
+# swallow $LASTEXITCODE and wrap stderr lines in ErrorRecord objects).
+& $python -m ai_benchmark report-range --since $Since --until $Until --output-dir $artifacts > $logFile 2>&1
+$exitCode = $LASTEXITCODE
+Get-Content $logFile
+if ($exitCode -ne 0) {
+    Write-Host "ERROR: Stage 1 (report-range) failed with exit code $exitCode — see $logFile"
     exit 1
 }
 
