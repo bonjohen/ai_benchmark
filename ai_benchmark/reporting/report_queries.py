@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from ..models.events import EventRecord
@@ -69,6 +70,21 @@ _CONFIDENCE_RANK = {
     "low_discovery": 4,
 }
 
+# Leaderboard scrape pattern: per-row entries from LMArena, Artificial Analysis,
+# SWE-bench, etc. Body looks like "Rank: 1, Score: 1504, Variant: arena_elo".
+# These are statistics, not news articles, and shouldn't be summarized one by one.
+_LEADERBOARD_BODY_RE = re.compile(r"^Rank:\s*\d+,\s*Score:")
+
+# Google News RSS default description that appears when the feed has no real
+# per-item description. The pipeline's RSS enrichment is supposed to replace
+# this with the article's og:description, but enrichment skips items whose
+# title is short enough that body-minus-title still exceeds the 30-char
+# threshold — leaving the placeholder behind.
+_GOOGLE_NEWS_PLACEHOLDER = (
+    "Comprehensive up-to-date news coverage, aggregated from sources all "
+    "over the world by Google News."
+)
+
 
 def _extract_abstract(raw_content: str | None, title: str) -> str:
     """Extract a readable abstract from raw_content, truncated to 200 chars."""
@@ -102,6 +118,18 @@ def _is_noise(event: EventRecord) -> bool:
     # RSS title-only: no useful abstract (nothing to summarize beyond the title)
     abstract = _extract_abstract(event.raw_content, title)
     if not abstract:
+        return True
+
+    # Leaderboard scrape rows are statistics, not articles. The benchmark
+    # collectors emit one event per row with body = "Rank: N, Score: ...".
+    # These overwhelm the report (60%+ of high-volume days) without adding
+    # any narrative content.
+    if _LEADERBOARD_BODY_RE.match(abstract):
+        return True
+
+    # Google News RSS placeholder description — the pipeline's enrichment
+    # didn't replace the default feed text, so there's no real abstract.
+    if abstract.strip() == _GOOGLE_NEWS_PLACEHOLDER:
         return True
 
     # GitHub events must match AI repo patterns
@@ -145,16 +173,23 @@ async def _fetch_events_in_date_range(
     date_from: str,
     date_to: str,
 ) -> list[Article]:
-    """Fetch events with published_date in [date_from, date_to], noise-filtered."""
+    """Fetch events first observed in [date_from, date_to], noise-filtered.
+
+    Scopes by ``date(observed_at)`` rather than ``published_date`` because most
+    leaderboard rows and many scraped pages have no parseable publication date.
+    ``observed_at`` is always set on first creation (see processing/pipeline.py)
+    and represents the first time the pipeline encountered the event, which is
+    the right semantic for a daily intelligence report.
+    """
+    observed_day = func.date(EventRecord.observed_at)
     stmt = (
         select(EventRecord)
         .options(selectinload(EventRecord.claims))
         .where(
-            EventRecord.published_date.isnot(None),
-            EventRecord.published_date >= date_from,
-            EventRecord.published_date <= date_to,
+            observed_day >= date_from,
+            observed_day <= date_to,
         )
-        .order_by(EventRecord.published_date.desc())
+        .order_by(EventRecord.observed_at.desc())
     )
     result = await session.execute(stmt)
     events = list(result.scalars().unique().all())

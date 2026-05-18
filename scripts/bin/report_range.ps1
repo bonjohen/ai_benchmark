@@ -48,13 +48,19 @@ if ($exitCode -ne 0) {
 }
 
 # Stage 2: Claude CLI summarization for each date
+# A single Claude session is shared across all dates so Claude retains context
+# from earlier reports (thematic consistency, avoids redundant summaries).
 Write-Host ""
 Write-Host "=== Stage 2: Claude CLI summarization ==="
+
+$sessionId = [guid]::NewGuid().ToString()
+Write-Host "    Claude session: $sessionId"
 
 $current = [DateTime]$Since
 $end = [DateTime]$Until
 $generated = 0
 $skipped = 0
+$isFirst = $true
 
 while ($current -le $end) {
     $dateStr = $current.ToString("yyyy-MM-dd")
@@ -65,18 +71,25 @@ while ($current -le $end) {
         Write-Host "SKIP $dateStr - daily_report_$dateSafe.md already exists"
         $skipped++
     } else {
-        Write-Host "Generating $dateStr..."
-        & $reportBat $dateStr
+        # First date creates the session; subsequent dates resume it.
+        if ($isFirst) {
+            $sessionMode = "new"
+        } else {
+            $sessionMode = "resume"
+        }
+        Write-Host "Generating $dateStr ($sessionMode session)..."
+        & $reportBat $dateStr $sessionId $sessionMode
         if ($LASTEXITCODE -ne 0) {
             Write-Host "WARNING: report.bat failed for $dateStr (exit $LASTEXITCODE), retrying once..."
             Start-Sleep -Seconds 5
-            & $reportBat $dateStr
+            & $reportBat $dateStr $sessionId $sessionMode
             if ($LASTEXITCODE -ne 0) {
                 Write-Host "ERROR: report.bat failed for $dateStr on retry, skipping"
                 $current = $current.AddDays(1)
                 continue
             }
         }
+        $isFirst = $false
         $generated++
     }
 

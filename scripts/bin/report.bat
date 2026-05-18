@@ -29,6 +29,12 @@ if not defined DATE_ARG (
     set DATE_ARG=!dt:~0,4!-!dt:~4,2!-!dt:~6,2!
 )
 
+:: Optional session args (passed by report_range.ps1 for cross-date context).
+::   %2 = session UUID    %3 = "new" (create) or "resume" (continue)
+:: When omitted, falls back to plain -p (standalone single-date use).
+set SESSION_ID=%~2
+set SESSION_MODE=%~3
+
 :: Derive DATE_SAFE (strip hyphens): 2026-03-15 -> 20260315
 set DATE_SAFE=%DATE_ARG:-=%
 
@@ -79,12 +85,43 @@ if %ERRORLEVEL% neq 0 (
 echo Stage 1 complete: %RAW% (log: %LOGFILE%)
 
 :stage2
+:: Empty-day short-circuit: if the JSON has zero articles, write a stub
+:: directly. Without this, Claude CLI in -p mode asks an interactive
+:: clarification question on empty input, exits 0, and no file is written.
+findstr /c:"\"article_count\": 0," "%RAW%" >nul 2>&1
+if %ERRORLEVEL% equ 0 (
+    echo Stage 2: Empty day — writing stub report ^(no articles in extract^)
+    (
+        echo # AI Intelligence Daily Report
+        echo.
+        echo ## %DATE_ARG%
+        echo.
+        echo No AI industry articles were collected for this date. The data extract for %DATE_ARG% returned zero articles from the monitored sources.
+    ) > "%REPORT%"
+    echo Report written to %REPORT%
+    echo [%date% %time%] Daily report complete for %DATE_ARG% ^(empty^)
+    exit /b 0
+)
+
 :: Stage 2: Summarize with Claude CLI
 echo Stage 2: Summarizing with Claude CLI...
 
 :: Claude CLI uses OAuth because ANTHROPIC_API_KEY was cleared above.
-:: -p runs a one-shot prompt (non-interactive, no session resume).
-claude -p "Read the file %RAW%. It contains AI industry events from %DATE_ARG%. Group the articles by topic (thematic, not by publisher). For each topic, write a 2-3 sentence summary, then list the articles. Skip any non-AI articles (wars, politics, sports). Write the final report as markdown to %REPORT%. Format: # AI Intelligence Daily Report, ## %DATE_ARG%, then ## Topic Name sections with summary paragraphs and bullet-pointed articles with [Source](url) links."
+set PROMPT=Read the file %RAW%. It contains AI industry events from %DATE_ARG%. Group the articles by topic (thematic, not by publisher). For each topic, write a 2-3 sentence summary, then list the articles. Skip any non-AI articles (wars, politics, sports). Write the final report as markdown to %REPORT%. Format: # AI Intelligence Daily Report, ## %DATE_ARG%, then ## Topic Name sections with summary paragraphs and bullet-pointed articles with [Source](url) links.
+
+:: Branch on session mode:
+::   "new"    = first date in a batch — create session with --session-id, use -p
+::   "resume" = subsequent date — resume session with -r, use -p
+::   (none)   = standalone run — plain -p, no session
+if "%SESSION_MODE%"=="resume" (
+    echo    Resuming session %SESSION_ID%
+    claude -r %SESSION_ID% -p "%PROMPT%"
+) else if "%SESSION_MODE%"=="new" (
+    echo    Creating session %SESSION_ID%
+    claude --session-id %SESSION_ID% -p "%PROMPT%"
+) else (
+    claude -p "%PROMPT%"
+)
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Stage 2 failed — Claude CLI returned error
     exit /b 2

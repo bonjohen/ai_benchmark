@@ -61,7 +61,12 @@ function Invoke-TemplateSubstitution {
         New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     }
 
-    Set-Content -Path $OutputPath -Value $content -Encoding UTF8 -NoNewline
+    # Use .NET WriteAllText with explicit no-BOM UTF-8 encoding.
+    # PowerShell 5.1's `Set-Content -Encoding UTF8` writes a BOM, which breaks
+    # .bat files (cmd.exe parses the BOM as part of the first command, so
+    # `@echo off` no longer takes effect).
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($OutputPath, $content, $utf8NoBom)
 }
 
 function Write-InstallerLog {
